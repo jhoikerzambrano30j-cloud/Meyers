@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A1A1A">
+    <meta name="description" content="Meyer's Real Estate — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.">
+    <meta name="author" content="Meyer's Real Estate">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Meyer's Real Estate | Inmobiliaria y Bienes Raíces">
+    <meta property="og:description" content="Encuentra la propiedad que se adapta a tu estilo de vida. Asesoría personalizada y respuesta en menos de 24 horas.">
+    <meta property="og:locale" content="es_VE">
+
+    <title>Meyer's Real Estate | Inmobiliaria y Bienes Raíces</title>
+
+    <!-- Favicon (SVG embebido con la inicial de la marca) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1A1A'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='40' font-style='italic' text-anchor='middle' fill='%23E1BD45'%3EM%3C/text%3E%3C/svg%3E">
+
+    <!-- Fuentes de Google: Montserrat (cuerpo) + Great Vibes (script de marca) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <!-- Iconos de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <a class="skip-link" href="#inicio">Saltar al contenido principal</a>
+
+    <!-- ==================== NAVEGACIÓN ==================== -->
+    <nav class="navbar" id="navbar" aria-label="Navegación principal">
+        <div class="nav-container">
+            <a href="#inicio" class="nav-logo" aria-label="Meyer's Real Estate - Inicio">
+                <!-- Reemplazar con el LOGO PRINCIPAL del manual de identidad -->
+                <div class="logo-placeholder">
+                    <span class="logo-script">Meyer's</span>
+                    <span class="logo-sub">Real Estate</span>
+                </div>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#inicio" class="nav-link">Inicio</a></li>
+                <li><a href="#propiedades" class="nav-link">Propiedades</a></li>
+                <li><a href="#servicios" class="nav-link">Servicios</a></li>
+                <li><a href="#nosotros" class="nav-link">Nosotros</a></li>
+                <li><a href="#contacto" class="nav-link">Contacto</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="tel:+584140000000" class="nav-phone" data-phone>
+                    <i class="fas fa-phone" aria-hidden="true"></i> +58 414-000-0000
+                </a>
+                <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-controls="navMenu" aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="nav-overlay" id="navOverlay" hidden></div>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <header class="hero" id="inicio">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <p class="hero-subtitle">Bienvenido a Meyer's</p>
+            <h1 class="hero-title">Llegaste al lugar indicado</h1>
+            <p class="hero-slogan">Estás en tu casa</p>
+            <p class="hero-text">Somos diferentes, porque mejoramos cada día. Encuentra la propiedad que se adapta a tu estilo de vida.</p>
+            <a href="#propiedades" class="btn btn-primary">Explorar Propiedades</a>
+        </div>
+
+        <!-- Buscador Flotante -->
+        <div class="search-container">
+            <form class="search-form" id="searchForm" role="search" aria-label="Buscar propiedades">
+                <div class="search-group">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="casa">Casa</option>
+                        <option value="apartamento">Apartamento</option>
+                        <option value="terreno">Terreno</option>
+                        <option value="local-comercial">Local Comercial</option>
+                    </select>
+                </div>
+                <div class="search-group">
+                    <label for="ubicacion">Ubicación</label>
+                    <select id="ubicacion" name="ubicacion">
+                        <option value="">Todas</option>
+                        <option value="zona-norte">Zona Norte</option>
+                        <option value="zona-sur">Zona Sur</option>
+                        <option value="centro">Centro</option>
+                    </select>
+                </div>
+                <div class="search-group">
+                    <label for="precio">Precio</label>
+                    <select id="precio" name="precio">
+                        <option value="" data-min="" data-max="">Cualquiera</option>
+                        <option value="hasta-50000" data-min="0" data-max="50000">Hasta $50,000</option>
+                        <option value="50000-100000" data-min="50000" data-max="100000">$50,000 - $100,000</option>
+                        <option value="100000-200000" data-min="100000" data-max="200000">$100,000 - $200,000</option>
+                        <option value="200000-plus" data-min="200000" data-max="">Más de $200,000</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-search">
+                    <i class="fas fa-search" aria-hidden="true"></i> Buscar
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <!-- ==================== PROPIEDADES DESTACADAS ==================== -->
+    <section class="section section-properties" id="propiedades">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2 class="section-title">Propiedades Destacadas</h2>
+                <p class="section-subtitle">Selección exclusiva de nuestros mejores inmuebles</p>
+            </div>
+
+            <div class="results-bar" id="resultsBar">
+                <p class="results-count" id="resultsCount" aria-live="polite"></p>
+                <button type="button" class="btn-clear" id="clearFilters" hidden>
+                    <i class="fas fa-times" aria-hidden="true"></i> Limpiar filtros
+                </button>
+            </div>
+
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Las tarjetas de propiedades se generan con JavaScript -->
+            </div>
+
+            <div class="section-footer" id="viewAllWrapper">
+                <button type="button" class="btn btn-outline" id="viewAllBtn">Ver todas las propiedades</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SERVICIOS ==================== -->
+    <section class="section section-alt" id="servicios">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2 class="section-title">Nuestros Servicios</h2>
+                <p class="section-subtitle">Soluciones integrales para comprar, vender o alquilar</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card reveal">
+                    <div class="service-icon"><i class="fas fa-home" aria-hidden="true"></i></div>
+                    <h3>Compra y Venta</h3>
+                    <p>Te acompañamos en todo el proceso, desde la búsqueda hasta la firma de documentos.</p>
+                </div>
+                <div class="service-card reveal">
+                    <div class="service-icon"><i class="fas fa-file-signature" aria-hidden="true"></i></div>
+                    <h3>Asesoría Legal</h3>
+                    <p>Contamos con expertos en documentación, títulos y trámites legales inmobiliarios.</p>
+                </div>
+                <div class="service-card reveal">
+                    <div class="service-icon"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i></div>
+                    <h3>Financiamiento</h3>
+                    <p>Te ayudamos a encontrar las mejores opciones de crédito y planes de pago.</p>
+                </div>
+                <div class="service-card reveal">
+                    <div class="service-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></div>
+                    <h3>Valoración de Inmuebles</h3>
+                    <p>Conoce el valor real de tu propiedad con nuestro análisis de mercado personalizado.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== NOSOTROS (CEO) ==================== -->
+    <section class="section" id="nosotros">
+        <div class="container">
+            <div class="about-container">
+                <div class="about-image reveal">
+                    <!-- Reemplazar con foto de la CEO (Mayerlyn Martínez) -->
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" alt="Mayerlyn Martínez, CEO y Broker de Meyer's Real Estate" loading="lazy">
+                    <div class="about-badge">
+                        <span class="badge-label">Desde</span>
+                        <span class="badge-year">2020</span>
+                    </div>
+                </div>
+                <div class="about-content reveal">
+                    <span class="about-tag">Nuestra Historia</span>
+                    <h2 class="section-title-left">Meyer's Real Estate</h2>
+                    <p class="about-text">
+                        Fundada en 2020 por <strong>Mayerlyn Martínez</strong>, Meyer's nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.
+                    </p>
+                    <p class="about-text">
+                        No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Propiedades Vendidas</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Clientes Satisfechos</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">5+</span>
+                            <span class="stat-label">Años de Experiencia</span>
+                        </div>
+                    </div>
+                    <a href="#contacto" class="btn btn-primary">Agenda una consulta</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TESTIMONIOS ==================== -->
+    <section class="section section-alt" id="testimonios">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+                <p class="section-subtitle">Historias reales de quienes ya encontraron su hogar con nosotros</p>
+            </div>
+            <div class="testimonials-slider" id="testimonialsSlider" aria-label="Testimonios de clientes">
+                <!-- Testimonios generados con JS -->
+            </div>
+            <div class="slider-dots" id="sliderDots"></div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA CONTACTO ==================== -->
+    <section class="section section-cta" id="contacto">
+        <div class="container">
+            <div class="cta-container">
+                <div class="cta-content reveal">
+                    <h2 class="cta-title">¿Listo para encontrar tu próximo hogar?</h2>
+                    <p class="cta-text">Déjanos tus datos y un asesor se pondrá en contacto contigo en menos de 24 horas.</p>
+                    <ul class="cta-benefits">
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Asesoría personalizada</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Sin compromiso</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Respuesta rápida</li>
+                    </ul>
+                </div>
+                <div class="cta-form-wrapper reveal">
+                    <form class="contact-form" id="contactForm" novalidate>
+                        <h3>Solicita Información</h3>
+                        <div class="form-group">
+                            <label class="sr-only" for="nombre">Nombre completo</label>
+                            <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required minlength="3" autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="email">Correo electrónico</label>
+                            <input type="email" id="email" name="email" placeholder="Correo electrónico" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="telefono">Teléfono o WhatsApp</label>
+                            <input type="tel" id="telefono" name="telefono" placeholder="Teléfono / WhatsApp" required pattern="[0-9+()\-\s]{7,}" autocomplete="tel">
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="interes">Interés</label>
+                            <select id="interes" name="interes" required>
+                                <option value="">Estoy interesado en...</option>
+                                <option value="comprar">Comprar una propiedad</option>
+                                <option value="vender">Vender mi propiedad</option>
+                                <option value="alquilar">Alquilar</option>
+                                <option value="invertir">Invertir</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only" for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" rows="4" placeholder="Cuéntanos qué buscas..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Enviar Mensaje</button>
+                        <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <!-- Reemplazar con ISOTIPO o LOGO SECUNDARIO -->
+                        <span class="logo-script">Meyer's</span>
+                        <span class="logo-sub">Real Estate</span>
+                    </div>
+                    <p class="footer-desc">Somos diferentes, porque mejoramos cada día. Tu hogar te espera.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram" rel="noopener"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Facebook" rel="noopener"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="WhatsApp" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="LinkedIn" rel="noopener"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#propiedades">Propiedades</a></li>
+                        <li><a href="#servicios">Servicios</a></li>
+                        <li><a href="#nosotros">Nosotros</a></li>
+                        <li><a href="#testimonios">Testimonios</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="#servicios">Compra y Venta</a></li>
+                        <li><a href="#servicios">Financiamiento</a></li>
+                        <li><a href="#servicios">Asesoría Legal</a></li>
+                        <li><a href="#servicios">Valoración</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Av. Principal, Torre Meyer's, Piso 5</li>
+                        <li><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+584140000000" data-phone>+58 414-000-0000</a></li>
+                        <li><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:info@meyers.com" data-email>info@meyers.com</a></li>
+                        <li><i class="fas fa-clock" aria-hidden="true"></i> Lun - Vie: 9:00 AM - 6:00 PM</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="year">2026</span> Meyer's Real Estate. Todos los derechos reservados.</p>
+                <p>Diseñado con <span class="heart" aria-label="amor">&hearts;</span> para Meyer's</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón Flotante de WhatsApp -->
+    <a href="https://wa.me/584140000000" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp" data-whatsapp>
+        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+    </a>
+
+    <!-- Botón Volver Arriba -->
+    <button type="button" class="back-to-top" id="backToTop" aria-label="Volver arriba" hidden>
+        <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- ==================== MODAL DE PROPIEDAD ==================== -->
+    <div class="modal-overlay" id="propertyModal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button type="button" class="modal-close" id="modalClose" aria-label="Cerrar detalle de la propiedad">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <noscript>
+        <p style="padding: 100px 20px; text-align: center; font-family: sans-serif;">
+            Para ver las propiedades necesitas activar JavaScript en tu navegador.
+        </p>
+    </noscript>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
