@@ -7,20 +7,35 @@
    VARIABLES DE MARCA
    ============================================ */
 :root {
-    /* Colores Principales */
+    /* ===== Colores de identidad (Manual de Identidad) ===== */
     --gold: #E1BD45;           /* Dorado principal */
-    --gold-dark: #B89A2E;      /* Dorado oscuro para hovers */
-    --gold-light: #F5E6A3;     /* Dorado claro para detalles */
-    --silver: #9D9D9C;         /* Plateado / Gris */
     --off-white: #F5F5F5;      /* Blanco roto */
+    --silver: #9D9D9C;         /* Plateado */
+
+    /* Tonos derivados del dorado (cromado y contraste) */
+    --gold-light: #F7EA9E;
+    --gold-dark: #A8851C;
+
+    /* Tonos derivados del plateado */
+    --silver-light: #EDEDEC;
+    --silver-dark: #6F6F6E;
+
+    /* Neutros base */
     --white: #FFFFFF;
     --dark: #1A1A1A;           /* Casi negro para textos */
     --gray-text: #555555;      /* Gris para párrafos */
-    --green: #2ecc71;
 
-    /* Tipografías */
-    --font-script: 'Great Vibes', cursive; /* Sustituto de "Master Of Break" */
-    --font-body: 'Montserrat', sans-serif;
+    /* Estados */
+    --green: #2ecc71;
+    --red: #e74c3c;
+
+    /* ===== Efecto cromado (Manual de Identidad) ===== */
+    --chrome-gold: linear-gradient(135deg, #A8851C 0%, #E1BD45 22%, #FFF7CE 45%, #F3D978 52%, #E1BD45 70%, #A8851C 100%);
+    --chrome-silver: linear-gradient(135deg, #6F6F6E 0%, #9D9D9C 25%, #F4F4F3 50%, #C9C9C8 65%, #9D9D9C 82%, #6F6F6E 100%);
+
+    /* ===== Tipografías (Manual: Master Of Break + Montserrat) ===== */
+    --font-script: 'Master Of Break', cursive; /* Principal */
+    --font-body: 'Montserrat', sans-serif;                    /* Secundaria */
 
     /* Espaciado */
     --section-padding: 100px 0;
@@ -31,6 +46,23 @@
     --shadow-sm: 0 5px 20px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 15px 40px rgba(0, 0, 0, 0.12);
     --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.18);
+}
+
+/* ============================================
+   TIPOGRAFÍAS DE MARCA (archivos locales)
+   Principal: Master Of Break · Secundaria: Montserrat
+   ============================================ */
+@font-face {
+    font-family: 'Master Of Break';
+    src: url('fonts/MasterOfBreak.ttf') format('truetype');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-display: swap;
 }
 
 /* ============================================
@@ -46,7 +78,7 @@
 
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 90px;
+    scroll-padding-top: 100px;
     -webkit-text-size-adjust: 100%;
 }
 
@@ -138,7 +170,7 @@ h1, h2, h3, h4 {
 
 /* Efecto Dorado Metálico (clave del branding) */
 .text-gold-gradient {
-    background: linear-gradient(135deg, #B67B03 0%, #DAAF08 25%, #FEE9A0 50%, #DAAF08 75%, #B67B03 100%);
+    background: var(--chrome-gold);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -163,7 +195,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
     color: var(--white);
     box-shadow: 0 4px 15px rgba(225, 189, 69, 0.4);
 }
@@ -196,6 +228,22 @@ h1, h2, h3, h4 {
 }
 
 /* ============================================
+   LOGO DE MARCA (insignia circular)
+   ============================================ */
+.brand-badge {
+    width: 64px;
+    height: 64px;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.brand-badge--footer {
+    width: 120px;
+    height: 120px;
+}
+
+/* ============================================
    NAVBAR
    ============================================ */
 .navbar {
@@ -204,7 +252,7 @@ h1, h2, h3, h4 {
     left: 0;
     width: 100%;
     z-index: 1000;
-    padding: 20px 0;
+    padding: 14px 0;
     transition: var(--transition);
 }
 
@@ -212,7 +260,7 @@ h1, h2, h3, h4 {
     background: rgba(255, 255, 255, 0.98);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    padding: 12px 0;
+    padding: 10px 0;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
 }
 
@@ -241,15 +289,20 @@ h1, h2, h3, h4 {
 
 .logo-script {
     font-family: var(--font-script);
-    font-size: 2.2rem;
+    font-size: 2.3rem;
     line-height: 1.15;
-    color: var(--gold);
-    text-shadow: 1px 1px 2px rgba(184, 154, 46, 0.3);
+    background: var(--chrome-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
 .logo-sub {
-    font-size: 0.65rem;
-    letter-spacing: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--silver);
     margin-top: 2px;
@@ -413,10 +466,16 @@ h1, h2, h3, h4 {
 
 .hero-slogan {
     font-family: var(--font-script);
-    font-size: clamp(2.5rem, 7vw, 5rem);
-    color: var(--gold);
+    font-size: clamp(2rem, 6vw, 4.2rem);
+    background: var(--chrome-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
     margin-bottom: 20px;
-    line-height: 1;
+    line-height: 1.4;
+    padding: 0.1em 0.15em 0.25em;
 }
 
 .hero-text {
@@ -534,7 +593,7 @@ h1, h2, h3, h4 {
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: var(--gold);
+    background: var(--chrome-gold);
 }
 
 .section-subtitle {
@@ -613,7 +672,7 @@ h1, h2, h3, h4 {
     position: absolute;
     top: 15px;
     left: 15px;
-    background: var(--gold);
+    background: var(--chrome-gold);
     color: var(--white);
     padding: 6px 14px;
     border-radius: 20px;
@@ -793,7 +852,7 @@ h1, h2, h3, h4 {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-dark));
     transform: scaleX(0);
     transition: var(--transition);
 }
@@ -858,7 +917,7 @@ h1, h2, h3, h4 {
     right: -20px;
     width: 110px;
     height: 110px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    background: var(--chrome-gold);
     border-radius: 50%;
     display: flex;
     flex-direction: column;
