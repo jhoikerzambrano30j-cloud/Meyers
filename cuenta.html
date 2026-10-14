@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A1A1A">
+    <title>Mi cuenta | Meyer's Inmobiliaria</title>
+    <meta name="robots" content="noindex">
+
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+    <div class="admin-topbar">
+        <div class="admin-brand">
+            <img src="img/logo-meyer.png" alt="Meyer's">
+            <div>
+                Mi cuenta
+                <small>Meyer's Inmobiliaria</small>
+            </div>
+        </div>
+        <div class="admin-actions">
+            <a href="index.html" class="btn-sm btn-edit"><i class="fas fa-house"></i> Ir al inicio</a>
+            <button type="button" id="logoutBtn" class="btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        </div>
+    </div>
+
+    <div class="account-page">
+        <div class="account-wrap">
+            <h1 id="greeting">Hola</h1>
+            <p class="account-sub">Gestiona tus datos y revisa tus propiedades favoritas.</p>
+
+            <div class="alert" id="alert"></div>
+
+            <div class="panel-card">
+                <h3><i class="fas fa-user" style="color:#B8931F"></i> Mis datos</h3>
+                <form id="profileForm" class="form-grid">
+                    <div class="field">
+                        <label for="fullName">Nombre completo</label>
+                        <input type="text" id="fullName">
+                    </div>
+                    <div class="field">
+                        <label for="phone">Teléfono / WhatsApp</label>
+                        <input type="tel" id="phone">
+                    </div>
+                    <div class="field full">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" disabled>
+                    </div>
+                    <div class="field full">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel-card">
+                <h3><i class="fas fa-heart" style="color:#B8931F"></i> Mis favoritos</h3>
+                <div id="favWrap"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let user = null;
+        const $ = (s) => document.querySelector(s);
+        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+        const alertBox = $('#alert');
+        const show = (m, t) => { alertBox.textContent = m; alertBox.className = 'alert show ' + (t === 'error' ? 'alert-error' : 'alert-success'); };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = await Auth.requireAuth('login.html');
+            if (!user) return;
+
+            $('#logoutBtn').addEventListener('click', () => Auth.signOut());
+            $('#email').value = user.email;
+
+            const profile = await Auth.getProfile(user.id);
+            if (profile) {
+                $('#fullName').value = profile.full_name || '';
+                $('#phone').value = profile.phone || '';
+                $('#greeting').textContent = 'Hola, ' + ((profile.full_name || '').split(' ')[0] || 'bienvenido');
+            }
+
+            $('#profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { error } = await window.db.from('profiles').update({
+                    full_name: $('#fullName').value.trim(),
+                    phone: $('#phone').value.trim()
+                }).eq('id', user.id);
+                show(error ? 'Error: ' + error.message : 'Datos actualizados correctamente.', error ? 'error' : 'success');
+            });
+
+            cargarFavoritos();
+        });
+
+        async function cargarFavoritos() {
+            const wrap = $('#favWrap');
+            const { data, error } = await window.db
+                .from('favorites')
+                .select('property_id, properties(*)')
+                .order('created_at', { ascending: false });
+
+            if (error) { wrap.innerHTML = '<p style="color:#c0392b">Error: ' + esc(error.message) + '</p>'; return; }
+
+            const props = (data || []).map((r) => r.properties).filter(Boolean);
+            if (!props.length) {
+                wrap.innerHTML = '<div class="empty"><i class="fas fa-heart-broken"></i><p>Aún no has guardado favoritos.<br>Explora las propiedades y toca el corazón 🤍</p><a href="index.html#propiedades" class="btn-sm btn-gold" style="margin-top:14px;display:inline-flex">Ver propiedades</a></div>';
+                return;
+            }
+
+            wrap.innerHTML = '<div class="fav-grid">' + props.map((p) => `
+                <article class="property-card" style="cursor:default">
+                    <div class="property-image">
+                        ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy">` : ''}
+                        <div class="property-price">${money(p.precio)}</div>
+                        <button class="fav-btn active" data-quitar="${p.id}" title="Quitar de favoritos">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="property-content">
+                        <p class="property-type">${esc(p.tipo)}</p>
+                        <h3 class="property-title">${esc(p.titulo)}</h3>
+                        <p class="property-location"><i class="fas fa-map-marker-alt"></i> ${esc(p.ubicacion)}</p>
+                    </div>
+                </article>
+            `).join('') + '</div>';
+
+            wrap.querySelectorAll('[data-quitar]').forEach((b) =>
+                b.addEventListener('click', async () => {
+                    await Auth.toggleFavorite(b.dataset.quitar);
+                    cargarFavoritos();
+                }));
+        }
+    </script>
+</body>
+</html>

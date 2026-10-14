@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A1A1A">
+    <title>Panel de Administración | Meyer's Inmobiliaria</title>
+    <meta name="robots" content="noindex">
+
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-topbar">
+        <div class="admin-brand">
+            <img src="img/logo-meyer.png" alt="Meyer's">
+            <div>
+                Panel de Administración
+                <small>Meyer's Inmobiliaria</small>
+            </div>
+        </div>
+        <div class="admin-actions">
+            <span style="font-size:0.85rem;color:rgba(255,255,255,0.8)">
+                <i class="fas fa-user-shield" style="color:#E1BD45"></i> <span id="adminName">…</span>
+            </span>
+            <a href="index.html" class="btn-sm btn-edit"><i class="fas fa-eye"></i> Ver sitio</a>
+            <button type="button" id="logoutBtnAdmin" class="btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        </div>
+    </div>
+
+    <div class="admin-wrap">
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="propiedades"><i class="fas fa-house"></i> Propiedades</button>
+            <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
+            <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
+        </div>
+
+        <!-- ============ PROPIEDADES ============ -->
+        <section class="admin-panel active" id="tab-propiedades">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Propiedades</h2>
+                    <p id="propertiesCount">Cargando…</p>
+                </div>
+                <button type="button" class="btn-sm btn-gold" id="btnNewProperty">
+                    <i class="fas fa-plus"></i> Nueva propiedad
+                </button>
+            </div>
+
+            <!-- Formulario -->
+            <div class="panel-card" id="formCard" style="display:none">
+                <h3 id="formTitle">Nueva propiedad</h3>
+                <form id="propertyForm">
+                    <input type="hidden" id="propId">
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="codigo">Código</label>
+                            <input type="text" id="codigo" placeholder="Ej: MY-007">
+                        </div>
+                        <div class="field">
+                            <label for="titulo">Título *</label>
+                            <input type="text" id="titulo" required placeholder="Ej: Casa con jardín">
+                        </div>
+                        <div class="field">
+                            <label for="tipo">Tipo *</label>
+                            <select id="tipo" required>
+                                <option value="">Selecciona…</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Apartamento">Apartamento</option>
+                                <option value="Terreno">Terreno</option>
+                                <option value="Local Comercial">Local Comercial</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="ubicacion">Ubicación *</label>
+                            <select id="ubicacion" required>
+                                <option value="">Selecciona…</option>
+                                <option value="Zona Norte">Zona Norte</option>
+                                <option value="Zona Sur">Zona Sur</option>
+                                <option value="Centro">Centro</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="precio">Precio (USD) *</label>
+                            <input type="number" id="precio" min="0" step="100" required>
+                        </div>
+                        <div class="field">
+                            <label for="area">Área (m²)</label>
+                            <input type="number" id="area" min="0" step="1">
+                        </div>
+                        <div class="field">
+                            <label for="habitaciones">Habitaciones</label>
+                            <input type="number" id="habitaciones" min="0" step="1" value="0">
+                        </div>
+                        <div class="field">
+                            <label for="banos">Baños</label>
+                            <input type="number" id="banos" min="0" step="1" value="0">
+                        </div>
+
+                        <div class="field full">
+                            <label for="descripcion">Descripción</label>
+                            <textarea id="descripcion" placeholder="Describe la propiedad…"></textarea>
+                        </div>
+                        <div class="field full">
+                            <label for="caracteristicas">Características (separadas por coma)</label>
+                            <input type="text" id="caracteristicas" placeholder="Piscina, Jardín, Estacionamiento">
+                        </div>
+                        <div class="field">
+                            <label for="badge">Etiqueta (opcional)</label>
+                            <input type="text" id="badge" placeholder="Ej: Destacada">
+                        </div>
+                        <div class="field">
+                            <label for="badgeClass">Color de etiqueta</label>
+                            <select id="badgeClass">
+                                <option value="">Dorado</option>
+                                <option value="new">Verde</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <div class="checkbox-field">
+                                <input type="checkbox" id="destacada">
+                                <label for="destacada" style="margin:0">Mostrar como propiedad destacada</label>
+                            </div>
+                        </div>
+
+                        <div class="field full">
+                            <label>Fotos (se optimizan a WebP automáticamente)</label>
+                            <div class="uploader" id="uploader">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Haz clic o arrastra las fotos aquí</strong><br>JPG, PNG o WebP</p>
+                                <input type="file" id="imagenInput" accept="image/*" multiple hidden>
+                            </div>
+                            <div class="thumbs" id="thumbs"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar propiedad</button>
+                        <button type="button" class="btn-sm btn-edit" id="btnCancelForm">Cancelar</button>
+                    </div>
+                    <div class="alert" id="formStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Foto</th><th>Código</th><th>Propiedad</th><th>Precio</th>
+                            <th>Destacada</th><th>Creada</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertiesTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============ USUARIOS ============ -->
+        <section class="admin-panel" id="tab-usuarios">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Usuarios registrados</h2>
+                    <p id="usersCount">Cargando…</p>
+                </div>
+                <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+                    <label class="checkbox-field" style="font-weight:400;font-size:0.85rem">
+                        <input type="checkbox" id="usersFilter"> Ocultar administradores
+                    </label>
+                    <button type="button" class="btn-sm btn-dark" id="btnExportUsers">
+                        <i class="fas fa-file-csv"></i> Exportar CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th><th>Correo</th><th>Teléfono</th>
+                            <th>Rol</th><th>Registro</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============ MENSAJES ============ -->
+        <section class="admin-panel" id="tab-mensajes">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Mensajes de contacto</h2>
+                    <p id="leadsCount">Cargando…</p>
+                </div>
+                <button type="button" class="btn-sm btn-dark" id="btnExportLeads">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th><th>Nombre</th><th>Contacto</th>
+                            <th>Interés</th><th>Mensaje</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

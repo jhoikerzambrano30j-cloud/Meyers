@@ -1,91 +1,70 @@
-# Meyer's Real Estate — Sitio web
+# Meyer's Inmobiliaria — Sitio web + Panel de administración
 
-Sitio inmobiliario de una sola página construido con HTML, CSS y JavaScript
-vanilla (sin dependencias de build). Mejora y corrección del proyecto original.
+Sitio web inmobiliario con **Supabase** como backend (base de datos, usuarios,
+fotos y seguridad) y **JavaScript puro** en el frontend. Se despliega como sitio
+estático en Vercel.
 
-## Contenido
+## Estructura
 
 ```
 Proyecto/
-├── index.html   Estructura y contenido
-├── styles.css   Estilos, identidad de marca y responsive
-├── script.js    Datos, filtros, modal, slider y formulario
-└── README.md    Este archivo
+├── index.html            Sitio público (inicio, propiedades, contacto)
+├── login.html            Ingreso de usuarios
+├── registro.html         Crear cuenta (nombre, correo, teléfono)
+├── cuenta.html           Área del usuario (sus datos + favoritos)
+├── admin.html            Panel de administración (solo admin)
+├── styles.css            Estilos del sitio público
+├── app.css               Estilos de auth, cuenta y panel admin
+├── script.js             Lógica del sitio público
+├── admin.js              Lógica del panel de administración
+├── auth.js               Sesión, usuarios y favoritos (compartido)
+├── supabase-client.js    Cliente de Supabase + optimización de imágenes
+├── config.js             👈 AQUÍ van tus claves de Supabase
+├── sql/
+│   └── schema.sql        👈 Base de datos completa (tablas, RLS, storage)
+├── fonts/                Master Of Break + Montserrat
+└── img/                  Logo y favicon
 ```
 
-## Cómo ejecutarlo
+## Puesta en marcha (una sola vez)
 
-1. Abre `index.html` con doble clic en tu navegador, o
-2. Sírvelo en local (recomendado para rutas y fuentes):
+1. **Crear las tablas en Supabase**
+   - Entra a tu proyecto de Supabase → **SQL Editor** → **New query**.
+   - Copia TODO el contenido de `sql/schema.sql` y pulsa **Run**.
+   - Esto crea: `profiles`, `properties`, `property_images`, `favorites`,
+     `testimonials`, `leads`, el bucket de fotos `propiedades` y todas las
+     políticas de seguridad (RLS).
 
-```bash
-# Con Python instalado
-python -m http.server 5500
-# Luego abre http://localhost:5500
-```
+2. **Pegar las claves**
+   - Supabase → **Project Settings → API**.
+   - Copia el **Project URL** y la **anon public key**.
+   - Pégalos en `config.js` (`supabaseUrl` y `supabaseAnonKey`).
+   - ⚠️ La `anon key` es pública. NUNCA pongas la `service_role`.
 
-## Identidad de marca
+3. **Hacerte administrador**
+   - Regístrate primero en la web (`registro.html`) con tu correo.
+   - Luego, en el **SQL Editor**, ejecuta (con tu correo real):
+     ```sql
+     update public.profiles set role = 'admin'
+     where id = (select id from auth.users where email = 'TU-CORREO@EJEMPLO.COM');
+     ```
 
-Los valores de color y tipografía se mantienen según el manual de identidad:
+4. **Subir a GitHub / Vercel**
+   - Haz commit y push. Vercel despliega solo.
 
-| Token        | Valor     | Uso                    |
-|--------------|-----------|------------------------|
-| `--gold`     | `#E1BD45` | Dorado principal       |
-| `--gold-dark`| `#B89A2E` | Hover / acentos        |
-| `--silver`   | `#9D9D9C` | Textos secundarios     |
-| `--off-white`| `#F5F5F5` | Fondos alternos        |
-| `--dark`     | `#1A1A1A` | Textos / fondos oscuros|
+## Qué puede hacer cada rol
 
-Tipografías: **Montserrat** (cuerpo) y **Great Vibes** (script de marca).
+| Rol | Puede |
+|---|---|
+| Visitante | Ver propiedades, filtrar, ver detalle, enviar contacto |
+| Usuario registrado | Todo lo anterior + guardar **favoritos** y editar sus datos |
+| Administrador | Todo + crear/editar/borrar propiedades, subir fotos, ver usuarios y mensajes, **exportar a CSV** |
 
-## Errores corregidos del código original
+## Notas
 
-1. **Insignia "Desde 2020"**: el HTML mostraba `20` dos veces en lugar del año.
-2. **Buscador sin resultados**: renderizaba todas las propiedades y luego las
-   sobrescribía con el mensaje. Ahora renderiza solo los resultados y muestra un
-   estado vacío con acción para limpiar los filtros.
-3. **Error de JavaScript con `href="#"`**: `querySelector('#')` lanzaba
-   `SyntaxError` en logo, redes y "Ver todas". Ahora se controla y no rompe.
-4. **Botón "Ver todas las propiedades"**: no hacía nada. Ahora muestra el
-   catálogo completo y oculta los filtros.
-5. **Filtro de precio**: se interpretaba texto frágil (`"200000+"`). Ahora usa
-   `data-min` / `data-max` en cada opción.
-6. **Imágenes roscas/imágenes rotas**: se añadió `onerror` con imagen de respaldo
-   (SVG embebido sin comillas conflictivas).
-7. **Menú móvil**: no bloqueaba el scroll, no cerraba con ESC ni al pulsar
-   fuera, y la hamburguesa no se animaba. Todo corregido.
-8. **`[hidden]` anulado por el CSS**: los componentes con `display:flex`
-   ignoraban el atributo `hidden`; se añadió una regla global.
-9. **Inyección de HTML**: todo el contenido dinámico pasa por `escapeHtml()`.
-10. **Validación del formulario**: se sustituye el `alert()` por un mensaje
-    inline accesible y validación nativa.
-11. **Insignias de precio/badge**: se conserva el estilo y se normaliza la clase.
-
-## Mejoras añadidas
-
-- **Modal de detalle** de propiedad con características, accesos de teclado,
-  trampa de foco, cierre con ESC y CTA a WhatsApp con mensaje prellenado.
-- **Buscador** con barra de resultados ("X propiedades encontradas") y botón
-  para limpiar filtros.
-- **Slider de testimonios** con autoplay, pausa al pasar el ratón/foco,
-  sincronización de puntos y respeto a `prefers-reduced-motion`.
-- **Navegación activa** según la sección visible (IntersectionObserver).
-- **Animaciones de aparición** al hacer scroll, con soporte de movimiento
-  reducido.
-- **Botón "volver arriba"** y WhatsApp con mensaje predefinido.
-- **Accesibilidad**: enlace "saltar al contenido", `aria-*`, foco visible,
-  etiquetas para lectores de pantalla y atributos `alt` descriptivos.
-- **SEO/social**: `theme-color`, Open Graph, favicon SVG embebido y metadatos.
-- **Configuración centralizada** del teléfono, correo y WhatsApp en
-  `CONFIG`, dentro de `script.js`.
-
-## Cómo personalizar
-
-- **Propiedades y testimonios**: edita los arrays `PROPIEDADES` y `TESTIMONIOS`
-  al inicio de `script.js`.
-- **Datos de contacto**: edita el objeto `CONFIG` en `script.js`.
-- **Formulario de contacto**: la función `initContactForm()` incluye un
-  comentario donde conectar tu backend o servicio de correo (Formspree,
-  EmailJS, etc.).
-- **Logo y foto de la CEO**: reemplaza los comentarios `<!-- Reemplazar ... -->`
-  en `index.html` por las imágenes reales.
+- **Fotos**: al subirlas en el panel, se **redimensionan a 1600 px y se
+  convierten a WebP** automáticamente antes de guardarse, para que pesen menos.
+- **Usuarios**: cada registro guarda nombre, correo y teléfono. El admin los ve
+  y los exporta desde la pestaña **Usuarios**.
+- **Sin Supabase configurado**, la web muestra propiedades de ejemplo y el
+  formulario de contacto simula el envío (modo demostración).
