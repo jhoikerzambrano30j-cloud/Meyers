@@ -50,6 +50,19 @@ as $$
     );
 $$;
 
+-- ¿El usuario actual es el master?
+create or replace function public.is_master()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1 from public.profiles
+        where id = auth.uid() and role = 'master'
+    );
+$$;
+
 -- Políticas de perfiles
 drop policy if exists "profiles_select" on public.profiles;
 create policy "profiles_select" on public.profiles
@@ -118,6 +131,15 @@ begin
             if new.role = 'master' and old.role is distinct from 'master' then
                 raise exception 'Solo el propietario puede asignar el rol master';
             end if;
+            -- Nadie puede cambiar su propio rol ni su estado
+            if old.id = auth.uid() and (new.role is distinct from old.role or new.bloqueado is distinct from old.bloqueado) then
+                raise exception 'No puedes cambiar tu propio rol ni tu estado';
+            end if;
+            -- Solo el master puede modificar a otro administrador
+            if not public.is_master() and old.role in ('admin', 'master')
+               and (new.role is distinct from old.role or new.bloqueado is distinct from old.bloqueado) then
+                raise exception 'Solo el master puede modificar a un administrador';
+            end if;
             if not public.is_admin() then
                 if new.role is distinct from old.role then
                     raise exception 'No autorizado para cambiar el rol';
@@ -175,11 +197,12 @@ begin
     if not public.is_admin() then
         raise exception 'No autorizado';
     end if;
-    if exists (select 1 from public.profiles where id = target_id and role = 'master') then
-        raise exception 'No se puede eliminar al master';
-    end if;
     if target_id = auth.uid() then
         raise exception 'No puedes eliminarte a ti mismo';
+    end if;
+    if exists (select 1 from public.profiles where id = target_id and role in ('admin', 'master'))
+       and not public.is_master() then
+        raise exception 'Solo el master puede eliminar administradores';
     end if;
     delete from auth.users where id = target_id;
 end;
@@ -195,8 +218,12 @@ begin
     if not public.is_admin() then
         raise exception 'No autorizado';
     end if;
-    if exists (select 1 from public.profiles where id = target_id and role = 'master') then
-        raise exception 'No se puede bloquear al master';
+    if target_id = auth.uid() then
+        raise exception 'No puedes bloquearte a ti mismo';
+    end if;
+    if exists (select 1 from public.profiles where id = target_id and role in ('admin', 'master'))
+       and not public.is_master() then
+        raise exception 'Solo el master puede bloquear administradores';
     end if;
     update public.profiles set bloqueado = blocked where id = target_id;
     update auth.users

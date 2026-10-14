@@ -410,10 +410,10 @@ async function loadUsuarios() {
         b.addEventListener('click', () => eliminarUsuario(b.dataset.delete)));
 }
 
-/** Botones de acción por usuario (el master no se puede bloquear ni borrar). */
+/** Botones de acción por usuario (solo si puedes gestionarlo). */
 function accionesUsuario(u) {
     const mail = `<a class="btn-sm btn-edit" href="mailto:${esc(u.email || '')}" title="Enviar correo"><i class="fas fa-envelope"></i></a>`;
-    if (u.role === 'master') return `<div class="cell-actions">${mail}</div>`;
+    if (!puedeGestionar(u)) return `<div class="cell-actions">${mail}</div>`;
     const bloquear = `<button class="btn-sm ${u.bloqueado ? 'btn-edit' : 'btn-warn'}" data-block="${esc(u.id)}" data-blocked="${u.bloqueado}">
         <i class="fas fa-${u.bloqueado ? 'unlock' : 'ban'}"></i> ${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button>`;
     const borrar = `<button class="btn-sm btn-danger" data-delete="${esc(u.id)}" title="Eliminar"><i class="fas fa-trash"></i></button>`;
@@ -434,15 +434,30 @@ async function eliminarUsuario(id) {
     await loadUsuarios();
 }
 
-/** Selector de rol (el master no se puede cambiar desde aquí). */
+/** Selector de rol. No se puede cambiar el master, ni tu propia cuenta,
+ *  ni un administrador si tú no eres el master. */
 function rolSelect(u) {
     if (u.role === 'master') {
         return '<span class="badge-master"><i class="fas fa-crown"></i> Master</span>';
+    }
+    if (!puedeGestionar(u)) {
+        return u.role === 'admin'
+            ? '<span class="badge-admin">Administrador</span>'
+            : '<span class="badge-user">Usuario</span>';
     }
     return `<select class="role-select" data-role="${esc(u.id)}">
         <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuario</option>
         <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrador</option>
     </select>`;
+}
+
+/** ¿Puedo gestionar (rol / bloquear / eliminar) a este usuario? */
+function puedeGestionar(u) {
+    if (!currentUser || !currentProfile) return false;
+    if (u.id === currentUser.id) return false;                              // no a ti mismo
+    if (u.role === 'master') return false;                                  // nunca al master
+    if (u.role === 'admin' && currentProfile.role !== 'master') return false; // admins solo los toca el master
+    return true;
 }
 
 async function cambiarRol(sel) {
