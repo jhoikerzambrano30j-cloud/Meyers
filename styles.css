@@ -364,7 +364,7 @@ h1, h2, h3, h4 {
 .nav-actions {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 28px;
 }
 
 .nav-phone {
@@ -372,10 +372,13 @@ h1, h2, h3, h4 {
     font-weight: 600;
     color: var(--gold);
     white-space: nowrap;
+    padding-right: 28px;
+    border-right: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .navbar.scrolled .nav-phone {
     color: var(--gold-dark);
+    border-right-color: rgba(0, 0, 0, 0.15);
 }
 
 .hamburger {
@@ -1524,13 +1527,19 @@ h1, h2, h3, h4 {
 /* ============================================
    RESPONSIVE
    ============================================ */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .nav-menu {
+        gap: 22px;
+    }
+    .nav-actions {
         gap: 20px;
+    }
+    .nav-phone {
+        padding-right: 20px;
     }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1250px) {
     .nav-menu {
         gap: 15px;
     }

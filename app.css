@@ -7,7 +7,7 @@
 #authArea {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 24px;
 }
 
 .nav-auth-link {
@@ -32,7 +32,7 @@
 }
 
 .nav-auth-primary {
-    padding: 8px 16px;
+    padding: 10px 24px;
     border-radius: 30px;
     background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
     color: var(--white);
@@ -669,6 +669,12 @@ table.data .cell-actions {
 }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1400px) {
+    #authArea {
+        gap: 18px;
+    }
+}
+
 @media (max-width: 720px) {
     .form-grid {
         grid-template-columns: 1fr;
