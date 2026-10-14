@@ -225,8 +225,16 @@ async function cargarImagenesDePropiedad(propertyId, portada) {
 }
 
 function agregarArchivos(fileList) {
-    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
+    const MAX_MB = 15;
+    const todos = Array.from(fileList || []);
+    const noImagen = todos.filter((f) => !f.type.startsWith('image/'));
+    const grandes = todos.filter((f) => f.type.startsWith('image/') && f.size > MAX_MB * 1024 * 1024);
+    const files = todos.filter((f) => f.type.startsWith('image/') && f.size <= MAX_MB * 1024 * 1024);
+
+    if (noImagen.length) alert('Se ignoraron archivos que no son imágenes.');
+    if (grandes.length) alert('Estas imágenes superan ' + MAX_MB + ' MB y se ignoraron: ' + grandes.map((f) => f.name).join(', '));
     if (!files.length) return;
+
     files.forEach((file) => {
         const url = URL.createObjectURL(file);
         imagenes.push({ url, path: null, blob: file, esNueva: true });

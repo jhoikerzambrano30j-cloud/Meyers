@@ -56,8 +56,8 @@ Proyecto/
 
 | Rol | Puede |
 |---|---|
-| Visitante | Ver propiedades, filtrar, ver detalle, enviar contacto |
-| Usuario registrado | Todo lo anterior + guardar **favoritos** y editar sus datos |
+| Visitante | Ver el sitio, servicios, testimonios y enviar el formulario de contacto. **No ve el catálogo de propiedades.** |
+| Usuario registrado | Ver las propiedades, filtrar, ver el detalle, guardar **favoritos** y editar sus datos |
 | Administrador | Todo + crear/editar/borrar propiedades, subir fotos, ver usuarios y mensajes, **exportar a CSV** |
 
 ## Notas

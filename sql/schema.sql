@@ -78,6 +78,31 @@ create trigger on_auth_user_created
     after insert on auth.users
     for each row execute function public.handle_new_user();
 
+-- Evita que un usuario se asigne el rol de administrador por su cuenta.
+-- (En el SQL Editor auth.uid() es null, así que tú sí puedes asignar roles.)
+create or replace function public.protect_profile_role()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if auth.uid() is not null and not public.is_admin() then
+        if tg_op = 'INSERT' then
+            new.role := 'user';
+        elsif new.role is distinct from old.role then
+            raise exception 'No autorizado para cambiar el rol';
+        end if;
+    end if;
+    return new;
+end;
+$$;
+
+drop trigger if exists profiles_protect_role on public.profiles;
+create trigger profiles_protect_role
+    before insert or update on public.profiles
+    for each row execute function public.protect_profile_role();
+
 -- ----------------------------------------------------------------------------
 -- 2. PROPIEDADES
 -- ----------------------------------------------------------------------------

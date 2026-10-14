@@ -168,14 +168,6 @@ h1, h2, h3, h4 {
     line-height: 1.2;
 }
 
-/* Efecto Dorado Metálico (clave del branding) */
-.text-gold-gradient {
-    background: var(--chrome-gold);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 /* ============================================
    BOTONES
    ============================================ */
@@ -285,34 +277,6 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
     line-height: 1;
-}
-
-/* Apila "Meyer's" y "Real Estate" (evita que se solapen) */
-.logo-placeholder {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
-}
-
-.logo-script {
-    font-family: var(--font-script);
-    font-size: 2.3rem;
-    line-height: 1.15;
-    background: var(--chrome-gold);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
-}
-
-.logo-sub {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--silver);
-    margin-top: 2px;
 }
 
 .nav-menu {
@@ -1209,10 +1173,6 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
-}
-
-.footer-logo .logo-script {
-    font-size: 2.5rem;
 }
 
 .footer-desc {
