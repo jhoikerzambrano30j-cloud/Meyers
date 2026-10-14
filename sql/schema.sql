@@ -17,7 +17,7 @@ create table if not exists public.profiles (
     full_name  text,
     email      text,
     phone      text,
-    role       text not null default 'user' check (role in ('user', 'admin')),
+    role       text not null default 'user' check (role in ('user', 'admin', 'master')),
     created_at timestamptz not null default now()
 );
 
@@ -32,7 +32,7 @@ set search_path = public
 as $$
     select exists (
         select 1 from public.profiles
-        where id = auth.uid() and role = 'admin'
+        where id = auth.uid() and role in ('admin', 'master')
     );
 $$;
 
@@ -78,8 +78,10 @@ create trigger on_auth_user_created
     after insert on auth.users
     for each row execute function public.handle_new_user();
 
--- Evita que un usuario se asigne el rol de administrador por su cuenta.
--- (En el SQL Editor auth.uid() es null, así que tú sí puedes asignar roles.)
+-- Guardián de roles:
+--  · Un usuario normal no puede cambiar su propio rol.
+--  · Nadie desde la app puede asignar el rol 'master' (solo el SQL Editor).
+--  · No se puede degradar al master desde la app.
 create or replace function public.protect_profile_role()
 returns trigger
 language plpgsql
@@ -87,11 +89,24 @@ security definer
 set search_path = public
 as $$
 begin
-    if auth.uid() is not null and not public.is_admin() then
+    if auth.uid() is not null then
         if tg_op = 'INSERT' then
-            new.role := 'user';
-        elsif new.role is distinct from old.role then
-            raise exception 'No autorizado para cambiar el rol';
+            if new.role = 'master' then
+                raise exception 'Solo el propietario puede asignar el rol master';
+            end if;
+            if not public.is_admin() then
+                new.role := 'user';
+            end if;
+        else
+            if old.role = 'master' and new.role is distinct from 'master' then
+                raise exception 'No se puede cambiar el rol del master';
+            end if;
+            if new.role = 'master' and old.role is distinct from 'master' then
+                raise exception 'Solo el propietario puede asignar el rol master';
+            end if;
+            if not public.is_admin() and new.role is distinct from old.role then
+                raise exception 'No autorizado para cambiar el rol';
+            end if;
         end if;
     end if;
     return new;
@@ -102,6 +117,31 @@ drop trigger if exists profiles_protect_role on public.profiles;
 create trigger profiles_protect_role
     before insert or update on public.profiles
     for each row execute function public.protect_profile_role();
+
+-- Límite: máximo 5 administradores (contando al master)
+create or replace function public.enforce_admin_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    total int;
+begin
+    if new.role = 'admin' and old.role is distinct from 'admin' then
+        select count(*) into total from public.profiles where role in ('admin', 'master');
+        if total >= 5 then
+            raise exception 'Máximo 5 administradores permitidos';
+        end if;
+    end if;
+    return new;
+end;
+$$;
+
+drop trigger if exists profiles_admin_limit on public.profiles;
+create trigger profiles_admin_limit
+    before update on public.profiles
+    for each row execute function public.enforce_admin_limit();
 
 -- ----------------------------------------------------------------------------
 -- 2. PROPIEDADES

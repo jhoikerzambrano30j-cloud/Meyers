@@ -22,10 +22,10 @@
         return data || null;
     };
 
-    /** ¿Es administrador? */
+    /** ¿Es administrador o master? */
     Auth.isAdmin = async function () {
         const profile = await Auth.getProfile();
-        return Boolean(profile && profile.role === 'admin');
+        return Boolean(profile && (profile.role === 'admin' || profile.role === 'master'));
     };
 
     // ------------------------------------------------------------
@@ -66,7 +66,7 @@
         const user = await Auth.getUser();
         if (!user) { window.location.href = 'login.html'; return null; }
         const profile = await Auth.getProfile(user.id);
-        if (!profile || profile.role !== 'admin') {
+        if (!profile || (profile.role !== 'admin' && profile.role !== 'master')) {
             window.location.href = 'index.html';
             return null;
         }
@@ -118,7 +118,7 @@
 
         const profile = await Auth.getProfile(user.id);
         const nombre = (profile && profile.full_name) ? profile.full_name.split(' ')[0] : 'Mi cuenta';
-        const esAdmin = profile && profile.role === 'admin';
+        const esAdmin = profile && (profile.role === 'admin' || profile.role === 'master');
 
         area.innerHTML =
             (esAdmin ? '<a class="nav-auth-link" href="admin.html"><i class="fas fa-user-shield"></i> Admin</a>' : '') +

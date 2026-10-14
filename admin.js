@@ -72,7 +72,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentProfile = session.profile;
 
     const nameEl = $('#adminName');
-    if (nameEl) nameEl.textContent = currentProfile.full_name || currentUser.email;
+    if (nameEl) {
+        nameEl.textContent = (currentProfile.full_name || currentUser.email) +
+            (currentProfile.role === 'master' ? ' · Master' : ' · Admin');
+    }
 
     $('#logoutBtnAdmin')?.addEventListener('click', () => Auth.signOut());
 
@@ -374,27 +377,54 @@ async function loadUsuarios() {
     }
 
     cacheUsuarios = data || [];
+    const admins = cacheUsuarios.filter((u) => u.role === 'admin' || u.role === 'master').length;
     const countEl = $('#usersCount');
-    if (countEl) countEl.textContent = cacheUsuarios.length + ' usuarios registrados';
+    if (countEl) countEl.textContent = `${cacheUsuarios.length} usuarios · ${admins} de 5 administradores`;
 
     if (!cacheUsuarios.length) {
         tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>Todavía no hay usuarios registrados.</p></div></td></tr>';
         return;
     }
 
-    const soloUsuarios = cacheUsuarios.filter((u) => u.role !== 'admin');
-    const lista = $("#usersFilter")?.checked ? soloUsuarios : cacheUsuarios;
+    const soloUsuarios = cacheUsuarios.filter((u) => u.role !== 'admin' && u.role !== 'master');
+    const lista = $('#usersFilter')?.checked ? soloUsuarios : cacheUsuarios;
 
     tbody.innerHTML = lista.map((u) => `
         <tr>
             <td>${esc(u.full_name || '—')}</td>
             <td>${esc(u.email || '—')}</td>
             <td>${esc(u.phone || '—')}</td>
-            <td>${u.role === 'admin' ? '<span style="color:#B8931F;font-weight:700">Admin</span>' : 'Usuario'}</td>
+            <td>${rolSelect(u)}</td>
             <td>${fecha(u.created_at)}</td>
             <td><a class="btn-sm btn-edit" href="mailto:${esc(u.email || '')}"><i class="fas fa-envelope"></i></a></td>
         </tr>
     `).join('');
+
+    tbody.querySelectorAll('[data-role]').forEach((sel) =>
+        sel.addEventListener('change', () => cambiarRol(sel)));
+}
+
+/** Selector de rol (el master no se puede cambiar desde aquí). */
+function rolSelect(u) {
+    if (u.role === 'master') {
+        return '<span class="badge-master"><i class="fas fa-crown"></i> Master</span>';
+    }
+    return `<select class="role-select" data-role="${esc(u.id)}">
+        <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuario</option>
+        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrador</option>
+    </select>`;
+}
+
+async function cambiarRol(sel) {
+    const id = sel.dataset.role;
+    const { error } = await window.db.from('profiles').update({ role: sel.value }).eq('id', id);
+    if (error) {
+        const msg = /5 administradores|máximo/i.test(error.message)
+            ? 'Ya hay 5 administradores (el máximo permitido).'
+            : error.message;
+        alert('No se pudo cambiar el rol: ' + msg);
+    }
+    await loadUsuarios();
 }
 
 function exportUsuarios() {

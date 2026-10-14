@@ -582,6 +582,39 @@ table.data .cell-actions {
     transform: translateY(-2px);
 }
 
+/* Roles en la tabla de usuarios */
+.badge-master {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #EBD06A, var(--gold), #B8931F);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.role-select {
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    background: var(--off-white);
+    color: var(--dark);
+    cursor: pointer;
+}
+
+.role-select:focus {
+    border-color: var(--gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(225, 189, 69, 0.15);
+}
+
 /* Estado vacío */
 .empty {
     text-align: center;
