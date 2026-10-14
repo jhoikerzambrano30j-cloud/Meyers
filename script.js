@@ -9,10 +9,10 @@
    CONFIGURACIÓN GLOBAL (edita aquí los datos de contacto)
    ============================================================ */
 const CONFIG = {
-    telefonoDisplay: '+58 414-000-0000',
-    telefono: '+584140000000',
-    whatsapp: '584140000000',
-    email: 'info@meyers.com',
+    telefonoDisplay: '0414-1338254',
+    telefono: '+584141338254',
+    whatsapp: '584141338254',
+    email: 'inmb.mimeyerhouse@gmail.com',
     whatsappMensaje: 'Hola Meyer\'s, me gustaría recibir información sobre una propiedad.'
 };
 

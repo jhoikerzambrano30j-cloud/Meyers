@@ -24,6 +24,6 @@ window.APP_CONFIG = {
 
     // Datos de contacto (se usan en la web y en WhatsApp)
     contacto: {
-        whatsapp: '584140000000'
+        whatsapp: '584141338254'
     }
 };
