@@ -668,6 +668,44 @@ table.data .cell-actions {
     gap: 24px;
 }
 
+/* ============================================================
+   CATÁLOGO BLOQUEADO PARA INVITADOS
+   ============================================================ */
+.catalog-gate {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+    background: var(--white);
+    border: 1px solid rgba(225, 189, 69, 0.45);
+    border-radius: 18px;
+    padding: 55px 35px;
+    box-shadow: var(--shadow-sm);
+}
+
+.catalog-gate i {
+    font-size: 2.6rem;
+    color: var(--gold-dark);
+    margin-bottom: 18px;
+}
+
+.catalog-gate h3 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.catalog-gate p {
+    color: var(--gray-text);
+    margin-bottom: 26px;
+    line-height: 1.7;
+}
+
+.catalog-gate-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1400px) {
     #authArea {

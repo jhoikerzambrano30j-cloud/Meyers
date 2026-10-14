@@ -107,6 +107,8 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
    ============================================================ */
 const state = { visibles: [], filtrosActivos: false, mostrarTodas: false };
 let favoritos = new Set();
+let currentUser = null;
+let catalogoPermitido = false;
 
 /* ============================================================
    INICIALIZACIÓN
@@ -120,16 +122,23 @@ async function init() {
     initMobileMenu();
     initActiveNav();
 
-    await cargarDatos();
-    await cargarFavoritos();
+    if (window.Auth) {
+        currentUser = await window.Auth.getUser();
+        window.Auth.renderAuthArea('#authArea');
+    }
+    catalogoPermitido = Boolean(currentUser);
+
+    await cargarTestimonios();
+    if (catalogoPermitido) {
+        await cargarPropiedades();
+        await cargarFavoritos();
+    }
 
     initProperties();
     initTestimonials();
     initContactForm();
     initSmoothScroll();
     initBackToTop();
-
-    if (window.Auth) window.Auth.renderAuthArea('#authArea');
 }
 
 /** Aplica los datos de CONFIG a los enlaces del documento. */
@@ -146,30 +155,33 @@ function applyConfig() {
 /* ============================================================
    CARGA DE DATOS DESDE SUPABASE
    ============================================================ */
-async function cargarDatos() {
+async function cargarPropiedades() {
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
+    try {
+        const { data, error } = await window.db
+            .from('properties')
+            .select('*')
+            .order('destacada', { ascending: false })
+            .order('created_at', { ascending: false });
+        if (!error && data && data.length) PROPIEDADES = data.map(mapPropiedad);
+    } catch (e) {
+        console.warn('[Meyer\'s] No se pudieron cargar las propiedades:', e);
+    }
+}
+
+async function cargarTestimonios() {
     if (!window.isSupabaseReady || !window.isSupabaseReady()) {
         window.warnSupabaseMissing && window.warnSupabaseMissing();
         return;
     }
     try {
-        const { data: props, error } = await window.db
-            .from('properties')
-            .select('*')
-            .order('destacada', { ascending: false })
-            .order('created_at', { ascending: false });
-
-        if (!error && props && props.length) {
-            PROPIEDADES = props.map(mapPropiedad);
-        }
-
-        const { data: test } = await window.db
+        const { data } = await window.db
             .from('testimonials').select('*').order('sort_order', { ascending: true });
-
-        if (test && test.length) {
-            TESTIMONIOS = test.map((t) => ({ nombre: t.nombre, rol: t.rol, texto: t.texto, avatar: t.avatar }));
+        if (data && data.length) {
+            TESTIMONIOS = data.map((t) => ({ nombre: t.nombre, rol: t.rol, texto: t.texto, avatar: t.avatar }));
         }
     } catch (e) {
-        console.warn('[Meyer\'s] No se pudo cargar desde Supabase:', e);
+        console.warn('[Meyer\'s] No se pudieron cargar los testimonios:', e);
     }
 }
 
@@ -237,7 +249,24 @@ function initProperties() {
     if (clearBtn) clearBtn.addEventListener('click', resetFilters);
 
     initModal();
+
+    if (!catalogoPermitido) {
+        showCatalogGate();
+        return;
+    }
     renderFeatured();
+}
+
+/** Oculta el catálogo y muestra el mensaje para invitados. */
+function showCatalogGate() {
+    const gate = $('#catalogGate');
+    const grid = $('#propertiesGrid');
+    const results = $('#resultsBar');
+    const viewAll = $('#viewAllWrapper');
+    if (results) results.hidden = true;
+    if (viewAll) viewAll.hidden = true;
+    if (grid) grid.hidden = true;
+    if (gate) gate.hidden = false;
 }
 
 async function onToggleFavorito(btn) {
@@ -316,6 +345,11 @@ function renderFeatured() {
 }
 
 function applyFilters() {
+    if (!catalogoPermitido) {
+        showCatalogGate();
+        $('#propiedades')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+        return;
+    }
     const tipo = $('#tipo')?.value || '';
     const ubicacion = $('#ubicacion')?.value || '';
     const precioOption = $('#precio')?.selectedOptions?.[0];

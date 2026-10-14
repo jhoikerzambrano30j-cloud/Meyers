@@ -103,9 +103,11 @@ create table if not exists public.properties (
 
 alter table public.properties enable row level security;
 
+-- Solo los usuarios con sesión pueden ver las propiedades (catálogo privado)
 drop policy if exists "properties_public_read" on public.properties;
-create policy "properties_public_read" on public.properties
-    for select using (true);
+drop policy if exists "properties_authenticated_read" on public.properties;
+create policy "properties_authenticated_read" on public.properties
+    for select using (auth.uid() is not null);
 
 drop policy if exists "properties_admin_write" on public.properties;
 create policy "properties_admin_write" on public.properties
@@ -139,9 +141,11 @@ create table if not exists public.property_images (
 
 alter table public.property_images enable row level security;
 
+-- Solo los usuarios con sesión pueden ver las fotos de la galería
 drop policy if exists "images_public_read" on public.property_images;
-create policy "images_public_read" on public.property_images
-    for select using (true);
+drop policy if exists "images_authenticated_read" on public.property_images;
+create policy "images_authenticated_read" on public.property_images
+    for select using (auth.uid() is not null);
 
 drop policy if exists "images_admin_write" on public.property_images;
 create policy "images_admin_write" on public.property_images
