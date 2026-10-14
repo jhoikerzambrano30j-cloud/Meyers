@@ -124,6 +124,13 @@ async function init() {
 
     if (window.Auth) {
         currentUser = await window.Auth.getUser();
+        if (currentUser) {
+            const perfil = await window.Auth.getProfile(currentUser.id);
+            if (perfil && perfil.bloqueado) {
+                await window.db.auth.signOut();
+                currentUser = null;
+            }
+        }
         window.Auth.renderAuthArea('#authArea');
     }
     catalogoPermitido = Boolean(currentUser);

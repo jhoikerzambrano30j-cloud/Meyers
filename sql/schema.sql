@@ -18,6 +18,7 @@ create table if not exists public.profiles (
     email      text,
     phone      text,
     role       text not null default 'user' check (role in ('user', 'admin', 'master')),
+    bloqueado  boolean not null default false,
     created_at timestamptz not null default now()
 );
 
@@ -33,6 +34,19 @@ as $$
     select exists (
         select 1 from public.profiles
         where id = auth.uid() and role in ('admin', 'master')
+    );
+$$;
+
+-- ¿El usuario actual está bloqueado?
+create or replace function public.esta_bloqueado()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+    select coalesce(
+        (select bloqueado from public.profiles where id = auth.uid()),
+        false
     );
 $$;
 
@@ -104,8 +118,13 @@ begin
             if new.role = 'master' and old.role is distinct from 'master' then
                 raise exception 'Solo el propietario puede asignar el rol master';
             end if;
-            if not public.is_admin() and new.role is distinct from old.role then
-                raise exception 'No autorizado para cambiar el rol';
+            if not public.is_admin() then
+                if new.role is distinct from old.role then
+                    raise exception 'No autorizado para cambiar el rol';
+                end if;
+                if new.bloqueado is distinct from old.bloqueado then
+                    raise exception 'No autorizado para cambiar el estado de la cuenta';
+                end if;
             end if;
         end if;
     end if;
@@ -143,6 +162,54 @@ create trigger profiles_admin_limit
     before update on public.profiles
     for each row execute function public.enforce_admin_limit();
 
+-- ============================================================================
+-- ADMINISTRACIÓN DE USUARIOS (eliminar / bloquear) — solo admin o master
+-- ============================================================================
+create or replace function public.admin_delete_user(target_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if not public.is_admin() then
+        raise exception 'No autorizado';
+    end if;
+    if exists (select 1 from public.profiles where id = target_id and role = 'master') then
+        raise exception 'No se puede eliminar al master';
+    end if;
+    if target_id = auth.uid() then
+        raise exception 'No puedes eliminarte a ti mismo';
+    end if;
+    delete from auth.users where id = target_id;
+end;
+$$;
+
+create or replace function public.admin_set_blocked(target_id uuid, blocked boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if not public.is_admin() then
+        raise exception 'No autorizado';
+    end if;
+    if exists (select 1 from public.profiles where id = target_id and role = 'master') then
+        raise exception 'No se puede bloquear al master';
+    end if;
+    update public.profiles set bloqueado = blocked where id = target_id;
+    update auth.users
+       set banned_until = case when blocked then (now() + interval '100 years') else null end
+     where id = target_id;
+end;
+$$;
+
+revoke all on function public.admin_delete_user(uuid) from public;
+revoke all on function public.admin_set_blocked(uuid, boolean) from public;
+grant execute on function public.admin_delete_user(uuid) to authenticated;
+grant execute on function public.admin_set_blocked(uuid, boolean) to authenticated;
+
 -- ----------------------------------------------------------------------------
 -- 2. PROPIEDADES
 -- ----------------------------------------------------------------------------
@@ -172,7 +239,7 @@ alter table public.properties enable row level security;
 drop policy if exists "properties_public_read" on public.properties;
 drop policy if exists "properties_authenticated_read" on public.properties;
 create policy "properties_authenticated_read" on public.properties
-    for select using (auth.uid() is not null);
+    for select using (auth.uid() is not null and not public.esta_bloqueado());
 
 drop policy if exists "properties_admin_write" on public.properties;
 create policy "properties_admin_write" on public.properties
@@ -210,7 +277,7 @@ alter table public.property_images enable row level security;
 drop policy if exists "images_public_read" on public.property_images;
 drop policy if exists "images_authenticated_read" on public.property_images;
 create policy "images_authenticated_read" on public.property_images
-    for select using (auth.uid() is not null);
+    for select using (auth.uid() is not null and not public.esta_bloqueado());
 
 drop policy if exists "images_admin_write" on public.property_images;
 create policy "images_admin_write" on public.property_images
@@ -230,7 +297,8 @@ alter table public.favorites enable row level security;
 
 drop policy if exists "favorites_own" on public.favorites;
 create policy "favorites_own" on public.favorites
-    for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+    for all using (auth.uid() = user_id and not public.esta_bloqueado())
+    with check (auth.uid() = user_id and not public.esta_bloqueado());
 
 -- ----------------------------------------------------------------------------
 -- 5. TESTIMONIOS

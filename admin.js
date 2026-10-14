@@ -364,7 +364,7 @@ function closeForm() {
 async function loadUsuarios() {
     const tbody = $('#usersTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6"><div class="spinner"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="spinner"></div></td></tr>';
 
     const { data, error } = await window.db
         .from('profiles')
@@ -372,17 +372,18 @@ async function loadUsuarios() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        tbody.innerHTML = `<tr><td colspan="6">Error: ${esc(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7">Error: ${esc(error.message)}</td></tr>`;
         return;
     }
 
     cacheUsuarios = data || [];
     const admins = cacheUsuarios.filter((u) => u.role === 'admin' || u.role === 'master').length;
+    const bloqueados = cacheUsuarios.filter((u) => u.bloqueado).length;
     const countEl = $('#usersCount');
-    if (countEl) countEl.textContent = `${cacheUsuarios.length} usuarios · ${admins} de 5 administradores`;
+    if (countEl) countEl.textContent = `${cacheUsuarios.length} usuarios · ${admins} de 5 administradores · ${bloqueados} bloqueados`;
 
     if (!cacheUsuarios.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>Todavía no hay usuarios registrados.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><i class="fas fa-users"></i><p>Todavía no hay usuarios registrados.</p></div></td></tr>';
         return;
     }
 
@@ -395,13 +396,42 @@ async function loadUsuarios() {
             <td>${esc(u.email || '—')}</td>
             <td>${esc(u.phone || '—')}</td>
             <td>${rolSelect(u)}</td>
+            <td>${u.bloqueado ? '<span class="badge-blocked">Bloqueado</span>' : '<span class="badge-active">Activo</span>'}</td>
             <td>${fecha(u.created_at)}</td>
-            <td><a class="btn-sm btn-edit" href="mailto:${esc(u.email || '')}"><i class="fas fa-envelope"></i></a></td>
+            <td>${accionesUsuario(u)}</td>
         </tr>
     `).join('');
 
     tbody.querySelectorAll('[data-role]').forEach((sel) =>
         sel.addEventListener('change', () => cambiarRol(sel)));
+    tbody.querySelectorAll('[data-block]').forEach((b) =>
+        b.addEventListener('click', () => bloquearUsuario(b.dataset.block, b.dataset.blocked !== 'true')));
+    tbody.querySelectorAll('[data-delete]').forEach((b) =>
+        b.addEventListener('click', () => eliminarUsuario(b.dataset.delete)));
+}
+
+/** Botones de acción por usuario (el master no se puede bloquear ni borrar). */
+function accionesUsuario(u) {
+    const mail = `<a class="btn-sm btn-edit" href="mailto:${esc(u.email || '')}" title="Enviar correo"><i class="fas fa-envelope"></i></a>`;
+    if (u.role === 'master') return `<div class="cell-actions">${mail}</div>`;
+    const bloquear = `<button class="btn-sm ${u.bloqueado ? 'btn-edit' : 'btn-warn'}" data-block="${esc(u.id)}" data-blocked="${u.bloqueado}">
+        <i class="fas fa-${u.bloqueado ? 'unlock' : 'ban'}"></i> ${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button>`;
+    const borrar = `<button class="btn-sm btn-danger" data-delete="${esc(u.id)}" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+    return `<div class="cell-actions">${mail}${bloquear}${borrar}</div>`;
+}
+
+async function bloquearUsuario(id, bloquear) {
+    if (!confirm(bloquear ? '¿Bloquear a este usuario? No podrá iniciar sesión.' : '¿Desbloquear a este usuario?')) return;
+    const { error } = await window.db.rpc('admin_set_blocked', { target_id: id, blocked: bloquear });
+    if (error) alert('No se pudo actualizar: ' + error.message);
+    await loadUsuarios();
+}
+
+async function eliminarUsuario(id) {
+    if (!confirm('¿Eliminar definitivamente a este usuario? No se puede deshacer.')) return;
+    const { error } = await window.db.rpc('admin_delete_user', { target_id: id });
+    if (error) alert('No se pudo eliminar: ' + error.message);
+    await loadUsuarios();
 }
 
 /** Selector de rol (el master no se puede cambiar desde aquí). */

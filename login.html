@@ -84,9 +84,21 @@
                 if (error) {
                     btn.disabled = false;
                     btn.innerHTML = original;
-                    show(error.message === 'Invalid login credentials'
-                        ? 'Correo o contraseña incorrectos.'
-                        : error.message, 'error');
+                    const esBloqueo = /banned|blocked|bloquead/i.test(error.message);
+                    show(esBloqueo
+                        ? 'Tu cuenta está bloqueada. Contacta al administrador.'
+                        : error.message === 'Invalid login credentials'
+                            ? 'Correo o contraseña incorrectos.'
+                            : error.message, 'error');
+                    return;
+                }
+
+                const perfil = await Auth.getProfile();
+                if (perfil && perfil.bloqueado) {
+                    await window.db.auth.signOut();
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                    show('Tu cuenta está bloqueada. Contacta al administrador.', 'error');
                     return;
                 }
 
