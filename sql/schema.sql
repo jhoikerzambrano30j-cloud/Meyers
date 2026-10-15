@@ -287,6 +287,48 @@ create trigger properties_touch
     for each row execute function public.touch_updated_at();
 
 -- ----------------------------------------------------------------------------
+-- CÓDIGO AUTOMÁTICO (MY-00007) — nunca se reutiliza
+-- ----------------------------------------------------------------------------
+create sequence if not exists public.property_codigo_seq;
+
+-- La secuencia continúa después del número más alto que ya exista
+select setval(
+    'public.property_codigo_seq',
+    coalesce((select max(substring(codigo from '([0-9]+)$')::int) from public.properties), 0),
+    true
+);
+
+create or replace function public.next_property_codigo()
+returns text
+language sql
+security definer
+set search_path = public
+as $$
+    select 'MY-' || lpad(nextval('public.property_codigo_seq')::text, 5, '0');
+$$;
+
+create or replace function public.set_property_codigo()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if new.codigo is null or btrim(new.codigo) = '' then
+        new.codigo := public.next_property_codigo();
+    end if;
+    return new;
+end;
+$$;
+
+drop trigger if exists properties_set_codigo on public.properties;
+create trigger properties_set_codigo
+    before insert on public.properties
+    for each row execute function public.set_property_codigo();
+
+alter table public.properties alter column codigo set default public.next_property_codigo();
+
+-- ----------------------------------------------------------------------------
 -- 3. GALERÍA DE PROPIEDADES (varias fotos por propiedad)
 -- ----------------------------------------------------------------------------
 create table if not exists public.property_images (

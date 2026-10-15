@@ -313,6 +313,9 @@ async function guardarPropiedad(e) {
 
         let propertyId = $('#propId').value || null;
 
+        // Al editar, si dejan el código vacío, se conserva el que ya tenía
+        if (propertyId && !payload.codigo) delete payload.codigo;
+
         if (propertyId) {
             const { error } = await window.db.from('properties').update(payload).eq('id', propertyId);
             if (error) throw error;
