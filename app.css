@@ -1180,6 +1180,68 @@ table.compare-table tr:hover td {
 }
 
 /* ============================================================
+   AYUDAS (botones "?" con explicación)
+   ============================================================ */
+.help-wrap {
+    position: relative;
+    display: inline-block;
+    margin-left: 6px;
+}
+
+.help-btn {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-dark);
+    background: transparent;
+    color: var(--gold-dark);
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    font-family: var(--font-body);
+    vertical-align: middle;
+    padding: 0;
+}
+
+.help-btn:hover,
+.help-btn:focus {
+    background: var(--gold-dark);
+    color: #fff;
+}
+
+.help-tip {
+    position: absolute;
+    top: 150%;
+    left: 50%;
+    transform: translate(-50%, -4px);
+    z-index: 40;
+    width: min(270px, 75vw);
+    background: var(--dark);
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.5;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events: none;
+}
+
+.help-wrap:hover .help-tip,
+.help-wrap .help-tip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+/* ============================================================
    CIERRES REALIZADOS
    ============================================================ */
 .cierres-grid {

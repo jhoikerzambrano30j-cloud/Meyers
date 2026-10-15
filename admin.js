@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initUbicaciones();
     initMayusculas();
     initCaracteristicas();
+    initAyudas();
     $('#btnNewProperty')?.addEventListener('click', () => openForm(null));
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
@@ -965,3 +966,51 @@ function closeCierreForm() {
     cierreEditandoId = null;
     cierrePathsViejos = [];
 }
+
+/* ============================================================
+   AYUDAS — botones "?" que explican cada campo
+   ============================================================ */
+const AYUDAS = [
+    ['codigo', 'Si lo dejas vacío, el sistema asigna uno solo (ej. MY-00001) y nunca lo reutiliza.'],
+    ['titulo', 'Nombre corto y claro de la propiedad. Se guarda en MAYÚSCULAS.'],
+    ['tipo', 'Categoría: Casa, Apartamento, Terreno o Local Comercial.'],
+    ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
+    ['zona', 'Sector o urbanización DENTRO de la ciudad. Solo aparecen las zonas de la ciudad elegida.'],
+    ['precio', 'Precio en dólares (USD). Solo números.'],
+    ['area', 'Superficie en metros cuadrados (m²).'],
+    ['habitaciones', 'Cantidad de habitaciones. Pon 0 si no aplica.'],
+    ['banos', 'Cantidad de baños. Pon 0 si no aplica.'],
+    ['descripcion', 'Escribe un resumen y cada detalle en una línea nueva (ENTER). Se mostrará ordenado en la web.'],
+    ['caracteristicasBox', 'Marca las que tenga la propiedad. En la web se muestran con ✓.'],
+    ['badge', 'Cartelito de color sobre la foto (ej. DESTACADA, NUEVA). Opcional.'],
+    ['badgeClass', 'Color del cartelito: Dorado = elegante (ideal para destacadas). Verde = resalta novedades.'],
+    ['destacada', 'Las destacadas aparecen primero y en la sección "Propiedades Destacadas".'],
+    ['uploader', 'Sube una o varias fotos. Se optimizan solas (quedan rápidas) y se guardan en la nube.'],
+    ['cierreTitulo', 'Un título corto para el cierre (ej. FAMILIA GONZÁLEZ — CASA CHARALLAVE).'],
+    ['cierreDesc', 'Detalle opcional. Puedes usar ENTER para separar en líneas.'],
+    ['cierreUploader', 'Sube la foto del cierre. Se optimiza sola.']
+];
+
+function initAyudas() {
+    AYUDAS.forEach(([id, texto]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const field = el.closest('.field') || el.closest('.checkbox-field') || el.parentElement;
+        const label = field ? field.querySelector('label') : null;
+        if (!label || label.querySelector('.help-btn')) return;
+        const wrap = document.createElement('span');
+        wrap.className = 'help-wrap';
+        wrap.innerHTML = '<button type="button" class="help-btn" aria-label="Ayuda">?</button>' +
+            '<span class="help-tip">' + esc(texto) + '</span>';
+        label.appendChild(wrap);
+    });
+}
+
+/* Al tocar "?" (útil en celular) se muestra la explicación */
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.help-btn');
+    document.querySelectorAll('.help-tip.show').forEach((t) => {
+        if (!btn || t.previousElementSibling !== btn) t.classList.remove('show');
+    });
+    if (btn) btn.nextElementSibling.classList.toggle('show');
+});
