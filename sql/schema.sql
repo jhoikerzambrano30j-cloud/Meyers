@@ -314,7 +314,7 @@ create policy "images_admin_write" on public.property_images
 -- 4. FAVORITOS (cada usuario guarda sus propiedades favoritas)
 -- ----------------------------------------------------------------------------
 create table if not exists public.favorites (
-    user_id     uuid not null references auth.users(id) on delete cascade,
+    user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
     property_id uuid not null references public.properties(id) on delete cascade,
     created_at  timestamptz not null default now(),
     primary key (user_id, property_id)

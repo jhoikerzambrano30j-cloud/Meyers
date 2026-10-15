@@ -97,7 +97,7 @@
             await window.db.from('favorites').delete().eq('property_id', propertyId);
             return false;
         }
-        await window.db.from('favorites').insert({ property_id: propertyId });
+        await window.db.from('favorites').insert({ user_id: user.id, property_id: propertyId });
         return true;
     };
 

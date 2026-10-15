@@ -146,6 +146,17 @@ async function init() {
     initContactForm();
     initSmoothScroll();
     initBackToTop();
+    updateFavFloat();
+}
+
+/** Muestra/oculta el botón flotante de favoritos y su contador. */
+function updateFavFloat() {
+    const el = $('#favoritesFloat');
+    const count = $('#favCount');
+    if (!el) return;
+    if (!catalogoPermitido) { el.hidden = true; return; }
+    el.hidden = false;
+    if (count) count.textContent = favoritos.size;
 }
 
 /** Aplica los datos de CONFIG a los enlaces del documento. */
@@ -282,6 +293,7 @@ async function onToggleFavorito(btn) {
         if (marcado) favoritos.add(btn.dataset.fav);
         else favoritos.delete(btn.dataset.fav);
         btn.classList.toggle('active', marcado);
+        updateFavFloat();
     } catch (err) {
         if (err && err.needLogin) {
             window.location.href = 'login.html';
