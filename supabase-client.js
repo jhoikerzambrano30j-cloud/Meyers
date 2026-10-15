@@ -95,4 +95,12 @@
         const { data } = window.db.storage.from(cfg.bucket).getPublicUrl(nombre);
         return { url: data.publicUrl, path: nombre };
     };
+    // ------------------------------------------------------------
+    // PWA: registrar el Service Worker (permite INSTALAR la app)
+    // ------------------------------------------------------------
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+    }
 })();

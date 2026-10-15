@@ -1730,6 +1730,64 @@ table.compare-table tr:hover td {
     }
 }
 
+/* ============================================================
+   MÓVIL / TABLET — pulido y app instalable
+   ============================================================ */
+a, button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Botones flotantes respetando el "notch" / barra inferior */
+.whatsapp-float {
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    right: calc(30px + env(safe-area-inset-right, 0px));
+}
+
+.back-to-top {
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+.favorites-float {
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    left: calc(30px + env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 720px) {
+    .admin-topbar {
+        padding: 12px 14px;
+    }
+
+    .admin-topbar .admin-brand img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-tab {
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+
+    .admin-wrap {
+        padding: 20px 14px 80px;
+    }
+
+    .panel-card {
+        padding: 20px 16px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .confirm-modal {
+        padding: 26px 20px 22px;
+    }
+
+    .modal-content {
+        padding: 24px 20px;
+    }
+}
+
 .btn-sm:disabled,
 .btn-gold:disabled {
     opacity: 0.5;
