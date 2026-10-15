@@ -116,10 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     Auth.initIdleLogout(10);
 
     const nameEl = $('#adminName');
-    if (nameEl) {
-        nameEl.textContent = (currentProfile.full_name || currentUser.email) +
-            (currentProfile.role === 'master' ? ' · Master' : ' · Admin');
-    }
+    if (nameEl) nameEl.textContent = currentProfile.full_name || currentUser.email;
 
     $('#logoutBtnAdmin')?.addEventListener('click', () => Auth.signOut());
 

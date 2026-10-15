@@ -1720,3 +1720,128 @@ table.compare-table tr:hover td {
         animation: none;
     }
 }
+
+/* ============================================================
+   PANEL DE ADMINISTRACIÓN — ACABADO DE MARCA (dorado, no B/N)
+   ============================================================ */
+.admin-body {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f3ea 100%);
+}
+
+.admin-topbar {
+    background: linear-gradient(135deg, #171717 0%, #2f2b22 100%);
+    border-bottom: 3px solid var(--gold);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+}
+
+.admin-topbar .admin-brand small { color: var(--gold); }
+
+.admin-actions .btn-edit {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+.admin-actions .btn-edit:hover {
+    background: var(--gold);
+    color: #1a1a1a;
+    border-color: var(--gold);
+}
+
+.admin-topbar .btn-danger {
+    background: rgba(231, 76, 60, 0.16);
+    color: #ff9b8f;
+    border-color: rgba(231, 76, 60, 0.45);
+}
+
+.admin-topbar .btn-danger:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+/* Pestañas tipo "pill" con dorado */
+.admin-tabs {
+    border-bottom: none;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.admin-tab {
+    border: 1px solid rgba(225, 189, 69, 0.4);
+    border-bottom: 1px solid rgba(225, 189, 69, 0.4);
+    border-radius: 30px;
+    padding: 10px 18px;
+    margin-bottom: 0;
+    background: var(--white);
+    color: var(--gray-text);
+}
+
+.admin-tab:hover {
+    color: var(--gold-dark);
+    border-color: var(--gold);
+    background: rgba(225, 189, 69, 0.1);
+}
+
+.admin-tab.active {
+    background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(225, 189, 69, 0.35);
+}
+
+/* Tarjetas de panel con franja dorada */
+.panel-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(225, 189, 69, 0.22);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+.panel-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--chrome-gold);
+}
+
+.panel-card h3 {
+    border-bottom: 1px solid rgba(225, 189, 69, 0.28);
+}
+
+/* Título de cada sección con subrayado dorado */
+.admin-panel-head h2 {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+.admin-panel-head h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 46px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--chrome-gold);
+}
+
+/* Tablas con encabezado dorado */
+table.data thead th {
+    background: linear-gradient(135deg, #171717 0%, #333029 100%);
+    color: var(--gold-light);
+    border-bottom: 2px solid var(--gold);
+}
+
+table.data tbody tr:hover {
+    background: #fffaf0;
+}
+
+.table-wrap {
+    border: 1px solid rgba(225, 189, 69, 0.18);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
