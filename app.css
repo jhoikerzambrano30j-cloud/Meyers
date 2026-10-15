@@ -1730,28 +1730,6 @@ table.compare-table tr:hover td {
     }
 }
 
-/* ============================================================
-   MÓVIL / TABLET — pulido y app instalable
-   ============================================================ */
-a, button {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Botones flotantes respetando el "notch" / barra inferior */
-.whatsapp-float {
-    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
-    right: calc(30px + env(safe-area-inset-right, 0px));
-}
-
-.back-to-top {
-    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
-}
-
-.favorites-float {
-    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
-    left: calc(30px + env(safe-area-inset-left, 0px));
-}
-
 @media (max-width: 720px) {
     .admin-topbar {
         padding: 12px 14px;
@@ -1924,4 +1902,85 @@ table.data tbody tr:hover {
 .table-wrap {
     border: 1px solid rgba(225, 189, 69, 0.18);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   ZONA DE RIESGO (eliminar mi cuenta)
+   ============================================================ */
+.danger-zone {
+    border-color: rgba(231, 76, 60, 0.35);
+}
+
+.danger-zone::before {
+    background: linear-gradient(90deg, #e74c3c 0%, #ff9b8f 100%);
+}
+
+.danger-text {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.danger-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   MÓVIL / TABLET — pulido y app instalable
+   ============================================================ */
+a, button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.whatsapp-float {
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    right: calc(30px + env(safe-area-inset-right, 0px));
+}
+
+.back-to-top {
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+.favorites-float {
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    left: calc(30px + env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 720px) {
+    .admin-topbar {
+        padding: 12px 14px;
+    }
+
+    .admin-topbar .admin-brand img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-tab {
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+
+    .admin-wrap {
+        padding: 20px 14px 80px;
+    }
+
+    .panel-card {
+        padding: 20px 16px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .confirm-modal {
+        padding: 26px 20px 22px;
+    }
+
+    .modal-content {
+        padding: 24px 20px;
+    }
 }
