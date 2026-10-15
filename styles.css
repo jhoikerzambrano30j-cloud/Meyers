@@ -326,20 +326,6 @@ h1, h2, h3, h4 {
     gap: 28px;
 }
 
-.nav-phone {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--gold);
-    white-space: nowrap;
-    padding-right: 28px;
-    border-right: 1px solid rgba(255, 255, 255, 0.28);
-}
-
-.navbar.scrolled .nav-phone {
-    color: var(--gold-dark);
-    border-right-color: rgba(0, 0, 0, 0.15);
-}
-
 .hamburger {
     display: none;
     flex-direction: column;
@@ -1512,17 +1498,11 @@ h1, h2, h3, h4 {
     .nav-actions {
         gap: 20px;
     }
-    .nav-phone {
-        padding-right: 20px;
-    }
 }
 
 @media (max-width: 1250px) {
     .nav-menu {
         gap: 15px;
-    }
-    .nav-phone {
-        display: none;
     }
 }
 
@@ -1572,9 +1552,6 @@ h1, h2, h3, h4 {
     .hamburger {
         display: flex;
         z-index: 1001;
-    }
-    .nav-phone {
-        display: none;
     }
 }
 
