@@ -383,7 +383,7 @@ async function cargarImagenesDePropiedad(propertyId, portada) {
     const { data } = await window.db.from('property_images')
         .select('*').eq('property_id', propertyId).order('sort_order', { ascending: true });
 
-    imagenes = (data || []).map((i) => ({ url: i.url, path: i.path }));
+    imagenes = (data || []).map((i) => ({ url: i.url, path: i.path, thumb: i.thumb, thumb_path: i.thumb_path }));
 
     // Si no hay galería pero sí portada, la mostramos
     if (!imagenes.length && portada) imagenes = [{ url: portada, path: null }];
@@ -413,7 +413,7 @@ function renderThumbs() {
     if (!cont) return;
     cont.innerHTML = imagenes.map((img, i) => `
         <div class="thumb">
-            <img src="${esc(img.url)}" alt="">
+            <img src="${esc(img.thumb || img.url)}" alt="">
             <button type="button" class="thumb-remove" data-remove="${i}" title="Quitar">&times;</button>
             ${i === 0 ? '<span class="thumb-main">Portada</span>' : ''}
         </div>
@@ -456,14 +456,21 @@ async function guardarPropiedad(e) {
             await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zonaVal });
         }
 
-        // 1) Subir las imágenes nuevas (convertidas a WebP)
+        // 1) Subir las imágenes nuevas (WebP grande + miniatura)
         for (const img of imagenes) {
             if (img.esNueva && img.blob) {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
-                const optim = await window.optimizarImagen(img.blob);
-                const subida = await window.subirImagen(optim);
+                // Grande (para el detalle)
+                const grande = await window.optimizarImagen(img.blob, { maxWidth: 1200, quality: 0.82 });
+                const subida = await window.subirImagen(grande);
+                // Miniatura (para galería y tarjetas) — mucho más liviana
+                const mini = await window.optimizarImagen(img.blob, { maxWidth: 420, quality: 0.7 });
+                const subidaMini = await window.subirImagen(mini);
+
                 img.url = subida.url;
                 img.path = subida.path;
+                img.thumb = subidaMini.url;
+                img.thumb_path = subidaMini.path;
                 img.esNueva = false;
                 img.blob = null;
             }
@@ -486,6 +493,7 @@ async function guardarPropiedad(e) {
             badge: $('#badge').value.trim().toUpperCase() || null,
             badge_class: $('#badgeClass').value.trim() || null,
             imagen: portada,
+            imagen_thumb: imagenes.length ? (imagenes[0].thumb || imagenes[0].url) : null,
             destacada: $('#destacada').checked
         };
 
@@ -506,21 +514,22 @@ async function guardarPropiedad(e) {
         // 2) Reguardar la galería
         //    Recogemos las rutas actuales ANTES de reemplazarlas, para poder
         //    borrar del almacenamiento las fotos que ya no se usan (evita basura).
-        const { data: previas } = await window.db.from('property_images').select('path').eq('property_id', propertyId);
-        const rutasPrevias = (previas || []).map((i) => i.path).filter(Boolean);
+        const { data: previas } = await window.db.from('property_images').select('path, thumb_path').eq('property_id', propertyId);
+        const rutasPrevias = [...new Set((previas || []).flatMap((i) => [i.path, i.thumb_path]).filter(Boolean))];
 
         await window.db.from('property_images').delete().eq('property_id', propertyId);
 
         const filas = imagenes.map((img, i) => ({
-            property_id: propertyId, url: img.url, path: img.path, sort_order: i
+            property_id: propertyId, url: img.url, path: img.path,
+            thumb: img.thumb || null, thumb_path: img.thumb_path || null, sort_order: i
         }));
         if (filas.length) {
             const { error } = await window.db.from('property_images').insert(filas);
             if (error) throw error;
         }
 
-        // Borrar del almacenamiento las fotos huérfanas
-        const rutasNuevas = filas.map((f) => f.path).filter(Boolean);
+        // Borrar del almacenamiento las fotos huérfanas (grandes y miniaturas)
+        const rutasNuevas = filas.flatMap((f) => [f.path, f.thumb_path]).filter(Boolean);
         const sobrantes = rutasPrevias.filter((p) => !rutasNuevas.includes(p));
         if (sobrantes.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(sobrantes);
 
@@ -539,8 +548,8 @@ async function borrarPropiedad(id) {
     if (!confirm('¿Seguro que quieres borrar esta propiedad? Se borrarán también sus fotos. No se puede deshacer.')) return;
 
     // Recoger las rutas de las fotos ANTES de borrar la propiedad
-    const { data: imgs } = await window.db.from('property_images').select('path').eq('property_id', id);
-    const rutas = (imgs || []).map((i) => i.path).filter(Boolean);
+    const { data: imgs } = await window.db.from('property_images').select('path, thumb_path').eq('property_id', id);
+    const rutas = [...new Set((imgs || []).flatMap((i) => [i.path, i.thumb_path]).filter(Boolean))];
 
     // Borrar la propiedad (sus filas de property_images se borran en cascada)
     const { error } = await window.db.from('properties').delete().eq('id', id);

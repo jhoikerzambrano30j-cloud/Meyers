@@ -255,7 +255,8 @@ create table if not exists public.properties (
     caracteristicas text[] not null default '{}',
     badge           text,
     badge_class     text,
-    imagen          text,                 -- portada (URL)
+    imagen          text,                 -- portada (URL grande)
+    imagen_thumb    text,                 -- portada (URL miniatura)
     destacada       boolean not null default false,
     created_at      timestamptz not null default now(),
     updated_at      timestamptz not null default now()
@@ -405,6 +406,8 @@ create table if not exists public.property_images (
     property_id uuid not null references public.properties(id) on delete cascade,
     url         text not null,
     path        text,
+    thumb       text,
+    thumb_path  text,
     sort_order  int not null default 0,
     created_at  timestamptz not null default now()
 );

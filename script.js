@@ -180,6 +180,7 @@ function mapPropiedad(p) {
         banos: p.banos,
         area: p.area,
         imagen: p.imagen,
+        imagenThumb: p.imagen_thumb || p.imagen,
         badge: p.badge,
         badgeClass: p.badge_class || '',
         destacada: p.destacada,
@@ -289,7 +290,7 @@ function cardTemplate(prop, i = 0) {
                 <button type="button" class="fav-btn ${activo}" data-fav="${escapeHtml(prop.id)}" aria-label="Guardar en favoritos">
                     <i class="fas fa-heart" aria-hidden="true"></i>
                 </button>
-                <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
+                <img src="${escapeHtml(prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div class="property-price">${formatPrice(prop.precio)}</div>
             </div>
@@ -488,14 +489,21 @@ async function cargarGaleria(prop) {
     if (!window.isSupabaseReady || !window.isSupabaseReady()) { cont.remove(); return; }
     try {
         const { data } = await window.db.from('property_images')
-            .select('url').eq('property_id', prop.id).order('sort_order', { ascending: true });
-        const urls = [prop.imagen, ...((data || []).map((i) => i.url))].filter(Boolean);
-        const unicas = [...new Set(urls)];
+            .select('url, thumb').eq('property_id', prop.id).order('sort_order', { ascending: true });
+
+        // Cada foto: grande (detalle) + mini (galería)
+        const fotos = (data || []).map((i) => ({ grande: i.url, mini: i.thumb || i.url }));
+        if (!fotos.length && prop.imagen) fotos.push({ grande: prop.imagen, mini: prop.imagenThumb || prop.imagen });
+
+        // Quitar duplicados (por la foto grande)
+        const vistos = new Set();
+        const unicas = [];
+        fotos.forEach((f) => { if (f.grande && !vistos.has(f.grande)) { vistos.add(f.grande); unicas.push(f); } });
         if (unicas.length <= 1) { cont.remove(); return; }
 
-        cont.innerHTML = unicas.map((u, i) => `
-            <button type="button" class="gallery-thumb${i === 0 ? ' active' : ''}" data-img="${escapeHtml(u)}" aria-label="Ver foto ${i + 1}">
-                <img src="${escapeHtml(u)}" alt="" loading="lazy" decoding="async"
+        cont.innerHTML = unicas.map((f, i) => `
+            <button type="button" class="gallery-thumb${i === 0 ? ' active' : ''}" data-img="${escapeHtml(f.grande)}" aria-label="Ver foto ${i + 1}">
+                <img src="${escapeHtml(f.mini)}" alt="" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             </button>`).join('');
 

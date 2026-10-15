@@ -36,10 +36,10 @@
     // ------------------------------------------------------------
 
     /** Convierte un archivo de imagen a WebP optimizado. */
-    window.optimizarImagen = async function (file) {
+    window.optimizarImagen = async function (file, options) {
         const opts = (window.APP_CONFIG && window.APP_CONFIG.image) || {};
-        const maxWidth = opts.maxWidth || 1600;
-        const quality = opts.quality || 0.8;
+        const maxWidth = (options && options.maxWidth) || opts.maxWidth || 1600;
+        const quality = (options && options.quality) || opts.quality || 0.8;
 
         if (!file || !file.type.startsWith('image/')) return file;
 

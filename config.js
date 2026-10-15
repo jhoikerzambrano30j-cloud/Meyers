@@ -17,9 +17,11 @@ window.APP_CONFIG = {
 
     // Optimización automática de imágenes
     image: {
-        maxWidth: 1600,         // ancho máximo en px
-        quality: 0.8,           // 0 = más comprimido / 1 = más calidad
-        format: 'image/webp'    // formato web (más liviano)
+        maxWidth: 1200,         // ancho máximo de la foto grande (px)
+        quality: 0.82,          // 0 = más comprimido / 1 = más calidad
+        format: 'image/webp',   // formato web (más liviano)
+        thumbWidth: 420,        // ancho de la miniatura (galería/tarjetas)
+        thumbQuality: 0.7       // calidad de la miniatura
     },
 
     // Datos de contacto (se usan en la web y en WhatsApp)
