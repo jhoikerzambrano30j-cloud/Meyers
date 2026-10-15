@@ -21,10 +21,6 @@ let editandoId = null;
 let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheLeads = [];
-let cierreImagen = null;
-let cierreEditandoId = null;
-let cacheCierres = [];
-let cierrePathsViejos = [];
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -99,11 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
     $('#btnExportLeads')?.addEventListener('click', () => exportLeads());
-    $('#btnNewCierre')?.addEventListener('click', () => openCierreForm(null));
-    $('#btnCancelCierre')?.addEventListener('click', closeCierreForm);
-    initCierreForm();
-
-    await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), loadCierres()]);
+    await Promise.all([loadProperties(), loadUsuarios(), loadLeads()]);
 });
 
 /* ============================================================
@@ -792,182 +784,6 @@ document.addEventListener('change', (e) => {
 });
 
 /* ============================================================
-   CIERRES REALIZADOS (subir, editar, borrar fotos de cierres)
-   ============================================================ */
-function initCierreForm() {
-    const form = $('#cierreForm');
-    if (!form) return;
-    form.addEventListener('submit', guardarCierre);
-
-    const input = $('#cierreInput');
-    const uploader = $('#cierreUploader');
-    if (uploader && input) {
-        uploader.addEventListener('click', () => input.click());
-        input.addEventListener('change', (e) => agregarFotoCierre(e.target.files));
-        ['dragenter', 'dragover'].forEach((ev) => uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.add('dragover'); }));
-        ['dragleave', 'drop'].forEach((ev) => uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.remove('dragover'); }));
-        uploader.addEventListener('drop', (e) => agregarFotoCierre(e.dataTransfer.files));
-    }
-}
-
-function agregarFotoCierre(fileList) {
-    const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
-    if (!file) return;
-    if (cierreImagen && cierreImagen.esNueva && cierreImagen.url) URL.revokeObjectURL(cierreImagen.url);
-    cierreImagen = { url: URL.createObjectURL(file), path: null, thumb: null, thumb_path: null, blob: file, esNueva: true };
-    renderCierreThumb();
-}
-
-function renderCierreThumb() {
-    const cont = $('#cierreThumbs');
-    if (!cont) return;
-    cont.innerHTML = cierreImagen ? `
-        <div class="thumb">
-            <img src="${esc(cierreImagen.thumb || cierreImagen.url)}" alt="">
-            <button type="button" class="thumb-remove" data-remove-cierre title="Quitar">&times;</button>
-        </div>` : '';
-    const btn = cont.querySelector('[data-remove-cierre]');
-    if (btn) btn.addEventListener('click', () => { cierreImagen = null; renderCierreThumb(); });
-}
-
-async function loadCierres() {
-    const cont = $('#cierresList');
-    if (!cont) return;
-    cont.innerHTML = '<div class="spinner"></div>';
-
-    const { data, error } = await window.db.from('cierres').select('*').order('created_at', { ascending: false });
-    if (error) { cont.innerHTML = '<p>Error: ' + esc(error.message) + '</p>'; return; }
-
-    cacheCierres = data || [];
-    const countEl = $('#cierresCount');
-    if (countEl) countEl.textContent = cacheCierres.length + (cacheCierres.length === 1 ? ' cierre' : ' cierres');
-
-    if (!cacheCierres.length) {
-        cont.innerHTML = '<div class="empty"><i class="fas fa-handshake"></i><p>Aún no hay cierres. Agrega el primero.</p></div>';
-        return;
-    }
-
-    cont.innerHTML = cacheCierres.map((c) => `
-        <article class="cierre-admin-card">
-            <div class="cierre-admin-img"><img src="${esc(c.imagen_thumb || c.imagen)}" alt="" loading="lazy"></div>
-            <div class="cierre-admin-body">
-                <strong>${esc(c.titulo || 'Cierre')}</strong>
-                <small>${esc(c.descripcion || '')}</small>
-                <div class="cell-actions" style="margin-top:10px">
-                    <button class="btn-sm btn-edit" data-cierre-edit="${esc(c.id)}"><i class="fas fa-pen"></i> Editar</button>
-                    <button class="btn-sm btn-danger" data-cierre-del="${esc(c.id)}"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-        </article>
-    `).join('');
-
-    cont.querySelectorAll('[data-cierre-edit]').forEach((b) => b.addEventListener('click', () => {
-        const c = cacheCierres.find((x) => x.id === b.dataset.cierreEdit);
-        if (c) openCierreForm(c);
-    }));
-    cont.querySelectorAll('[data-cierre-del]').forEach((b) => b.addEventListener('click', () => borrarCierre(b.dataset.cierreDel)));
-}
-
-function openCierreForm(c) {
-    cierreEditandoId = c ? c.id : null;
-    $('#cierreForm').reset();
-    $('#cierreFormCard').style.display = 'block';
-    $('#cierreFormTitle').textContent = c ? 'Editar cierre' : 'Nuevo cierre';
-    setStatus($('#cierreStatus'), '', '');
-
-    if (c) {
-        $('#cierreId').value = c.id;
-        $('#cierreTitulo').value = c.titulo || '';
-        $('#cierreDesc').value = c.descripcion || '';
-        cierreImagen = { url: c.imagen, path: c.path, thumb: c.imagen_thumb, thumb_path: c.thumb_path };
-        cierrePathsViejos = [c.path, c.thumb_path].filter(Boolean);
-    } else {
-        $('#cierreId').value = '';
-        cierreImagen = null;
-        cierrePathsViejos = [];
-    }
-    renderCierreThumb();
-    $('#cierreFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-async function guardarCierre(e) {
-    e.preventDefault();
-    const status = $('#cierreStatus');
-    if (!cierreImagen) { setStatus(status, 'Sube una foto del cierre.', 'error'); return; }
-
-    const btn = $('#cierreForm button[type="submit"]');
-    const original = btn.innerHTML;
-    const reemplazo = cierreImagen.esNueva;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-
-    try {
-        if (reemplazo && cierreImagen.blob) {
-            const grande = await window.optimizarImagen(cierreImagen.blob, { maxWidth: 1200, quality: 0.82 });
-            const subida = await window.subirImagen(grande);
-            const mini = await window.optimizarImagen(cierreImagen.blob, { maxWidth: 420, quality: 0.7 });
-            const subidaMini = await window.subirImagen(mini);
-            cierreImagen.url = subida.url;
-            cierreImagen.path = subida.path;
-            cierreImagen.thumb = subidaMini.url;
-            cierreImagen.thumb_path = subidaMini.path;
-            cierreImagen.esNueva = false;
-            cierreImagen.blob = null;
-        }
-
-        const payload = {
-            titulo: $('#cierreTitulo').value.trim().toUpperCase() || null,
-            descripcion: $('#cierreDesc').value.trim() || null,
-            imagen: cierreImagen.url,
-            imagen_thumb: cierreImagen.thumb || cierreImagen.url,
-            path: cierreImagen.path || null,
-            thumb_path: cierreImagen.thumb_path || null
-        };
-
-        if (cierreEditandoId) {
-            const { error } = await window.db.from('cierres').update(payload).eq('id', cierreEditandoId);
-            if (error) throw error;
-        } else {
-            const { error } = await window.db.from('cierres').insert(payload);
-            if (error) throw error;
-        }
-
-        // Si se reemplazó la foto, borrar la anterior del almacenamiento
-        if (reemplazo && cierrePathsViejos.length) {
-            await window.db.storage.from(window.APP_CONFIG.bucket).remove(cierrePathsViejos);
-        }
-
-        setStatus(status, '¡Cierre guardado!', 'success');
-        await loadCierres();
-        setTimeout(closeCierreForm, 800);
-    } catch (err) {
-        setStatus(status, 'Error: ' + (err.message || err), 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = original;
-    }
-}
-
-async function borrarCierre(id) {
-    if (!confirm('¿Eliminar este cierre? Se borrará también su foto.')) return;
-    const c = cacheCierres.find((x) => x.id === id);
-    const rutas = c ? [c.path, c.thumb_path].filter(Boolean) : [];
-    const { error } = await window.db.from('cierres').delete().eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
-    if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
-    await loadCierres();
-}
-
-function closeCierreForm() {
-    const card = $('#cierreFormCard');
-    if (card) card.style.display = 'none';
-    if (cierreImagen && cierreImagen.esNueva && cierreImagen.url) URL.revokeObjectURL(cierreImagen.url);
-    cierreImagen = null;
-    cierreEditandoId = null;
-    cierrePathsViejos = [];
-}
-
-/* ============================================================
    AYUDAS — botones "?" que explican cada campo
    ============================================================ */
 const AYUDAS = [
@@ -985,10 +801,7 @@ const AYUDAS = [
     ['badge', 'Cartelito de color sobre la foto (ej. DESTACADA, NUEVA). Opcional.'],
     ['badgeClass', 'Color del cartelito: Dorado = elegante (ideal para destacadas). Verde = resalta novedades.'],
     ['destacada', 'Las destacadas aparecen primero y en la sección "Propiedades Destacadas".'],
-    ['uploader', 'Sube una o varias fotos. Se optimizan solas (quedan rápidas) y se guardan en la nube.'],
-    ['cierreTitulo', 'Un título corto para el cierre (ej. FAMILIA GONZÁLEZ — CASA CHARALLAVE).'],
-    ['cierreDesc', 'Detalle opcional. Puedes usar ENTER para separar en líneas.'],
-    ['cierreUploader', 'Sube la foto del cierre. Se optimiza sola.']
+    ['uploader', 'Sube una o varias fotos. Se optimizan solas (quedan rápidas) y se guardan en la nube.']
 ];
 
 function initAyudas() {

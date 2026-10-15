@@ -85,7 +85,6 @@ async function init() {
 
     await cargarTestimonios();
     await cargarUbicacionesFiltro();
-    await cargarCierres();
     if (catalogoPermitido) {
         await cargarPropiedades();
         await cargarFavoritos();
@@ -148,28 +147,6 @@ async function cargarTestimonios() {    if (!window.isSupabaseReady || !window.i
         }
     } catch (e) {
         console.warn('[Meyer\'s] No se pudieron cargar los testimonios:', e);
-    }
-}
-
-async function cargarCierres() {
-    const grid = document.getElementById('cierresGrid');
-    if (!grid) return;
-    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
-    try {
-        const { data } = await window.db.from('cierres').select('*').order('created_at', { ascending: false });
-        const lista = data || [];
-        if (!lista.length) { grid.closest('section')?.remove(); return; } // sin cierres, ocultamos la sección
-        grid.innerHTML = lista.map((c) => `
-            <figure class="cierre-card">
-                <img src="${escapeHtml(c.imagen_thumb || c.imagen)}" alt="${escapeHtml(c.titulo || 'Cierre realizado')}" loading="lazy" decoding="async"
-                     onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                <figcaption>
-                    <strong>${escapeHtml(c.titulo || 'Cierre realizado')}</strong>
-                    ${c.descripcion ? `<span class="cierre-desc">${escapeHtml(c.descripcion)}</span>` : ''}
-                </figcaption>
-            </figure>`).join('');
-    } catch (e) {
-        console.warn('[Meyer\'s] No se pudieron cargar los cierres:', e);
     }
 }
 
