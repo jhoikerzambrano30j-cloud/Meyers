@@ -57,6 +57,7 @@ const state = { visibles: [], filtrosActivos: false, mostrarTodas: false };
 let favoritos = new Set();
 let currentUser = null;
 let catalogoPermitido = false;
+let currentUserEsAdmin = false;
 
 /* ============================================================
    INICIALIZACIÓN
@@ -77,6 +78,8 @@ async function init() {
             if (perfil && perfil.bloqueado) {
                 await window.db.auth.signOut();
                 currentUser = null;
+            } else {
+                currentUserEsAdmin = Boolean(perfil && (perfil.role === 'admin' || perfil.role === 'master'));
             }
         }
         window.Auth.renderAuthArea('#authArea');
@@ -452,6 +455,9 @@ function openModal(id) {
     body.innerHTML = modalTemplate(prop);
     cargarGaleria(prop);
     prepararDescripcion();
+
+    const btnAcordado = document.getElementById('btnAcordado');
+    if (btnAcordado) btnAcordado.addEventListener('click', () => marcarAcordado(prop.id));
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
 
     overlay.hidden = false;
@@ -481,6 +487,18 @@ function trapFocus(event, container) {
     const last = focusables[focusables.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+}
+
+/** (Solo admin) Marca la propiedad como Acordada desde el detalle público. */
+async function marcarAcordado(id) {
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
+    if (!window.confirm('¿Marcar esta propiedad como ACORDADA? Saldrá del catálogo público.')) return;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const { error } = await window.db.from('properties').update({ estado: 'Acordado', fecha_cierre: hoy }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    closeModal();
+    await cargarPropiedades();
+    renderFeatured();
 }
 
 function modalTemplate(prop) {
@@ -516,10 +534,14 @@ function modalTemplate(prop) {
             <div class="modal-features">${features}</div>
             ${extras ? '<h3 style="margin:15px 0">Características</h3><div class="modal-features">' + extras + '</div>' : ''}
             <div class="modal-cta">
-                <a href="https://wa.me/${CONFIG.whatsapp}?text=${waText}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-whatsapp" aria-hidden="true"></i> Consultar por WhatsApp
-                </a>
-                <a href="#contacto" class="btn btn-outline" data-close-modal>Agendar visita</a>
+                ${currentUserEsAdmin
+                    ? `<button type="button" class="btn btn-primary" id="btnAcordado">
+                           <i class="fas fa-handshake" aria-hidden="true"></i> Marcar como Acordado
+                       </button>`
+                    : `<a href="https://wa.me/${CONFIG.whatsapp}?text=${waText}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                           <i class="fab fa-whatsapp" aria-hidden="true"></i> Consultar por WhatsApp
+                       </a>
+                       <a href="#contacto" class="btn btn-outline" data-close-modal>Agendar visita</a>`}
             </div>
         </div>`;
 }
