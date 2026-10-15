@@ -166,6 +166,14 @@
     color: var(--gold);
 }
 
+.field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--gray-text);
+    line-height: 1.4;
+}
+
 /* ---------- Mensajes de estado ---------- */
 .alert {
     border-radius: 10px;
