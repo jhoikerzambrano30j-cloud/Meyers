@@ -18,6 +18,7 @@ let currentUser = null;
 let currentProfile = null;
 let imagenes = [];       // [{ url, path, blob? }]
 let editandoId = null;
+let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheLeads = [];
 let cierreImagen = null;
@@ -437,6 +438,8 @@ function renderThumbs() {
 
 async function guardarPropiedad(e) {
     e.preventDefault();
+    if (guardandoPropiedad) return;   // evita guardados dobles
+
     const status = $('#formStatus');
     const btn = $('#propertyForm button[type="submit"]');
     const original = btn.innerHTML;
@@ -449,6 +452,7 @@ async function guardarPropiedad(e) {
     $('#ubicacion').value = ubicacionVal;
     $('#zona').value = zonaVal;
 
+    guardandoPropiedad = true;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
@@ -513,9 +517,24 @@ async function guardarPropiedad(e) {
             const { error } = await window.db.from('properties').update(payload).eq('id', propertyId);
             if (error) throw error;
         } else {
+            // Aviso anti-duplicados: si ya existe una igual, preguntar
+            const { data: repetidas } = await window.db.from('properties')
+                .select('id')
+                .ilike('titulo', payload.titulo)
+                .eq('precio', payload.precio)
+                .eq('ubicacion', payload.ubicacion)
+                .limit(1);
+
+            if (repetidas && repetidas.length) {
+                const continuar = confirm('Ya existe una propiedad con el mismo título, precio y ubicación.\n\n¿Crear otra de todas formas?');
+                if (!continuar) { setStatus(status, 'Guardado cancelado: ya existía una propiedad igual.', 'info'); return; }
+            }
+
             const { data, error } = await window.db.from('properties').insert(payload).select('id').single();
             if (error) throw error;
             propertyId = data.id;
+            // Guardamos el id en el formulario: si algo falla después, ya NO se crea otra
+            $('#propId').value = propertyId;
         }
 
         // 2) Reguardar la galería
@@ -546,6 +565,7 @@ async function guardarPropiedad(e) {
     } catch (err) {
         setStatus(status, 'Error: ' + (err.message || err), 'error');
     } finally {
+        guardandoPropiedad = false;
         btn.disabled = false;
         btn.innerHTML = original;
     }
