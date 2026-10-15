@@ -1282,14 +1282,14 @@ table.compare-table tr:hover td {
     padding: 0;
     overflow: hidden;
     cursor: pointer;
-    background: #eee;
+    background: #111;
     transition: var(--transition);
 }
 
 .gallery-thumb img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 

@@ -1373,16 +1373,21 @@ h1, h2, h3, h4 {
 
 .modal-hero {
     position: relative;
-    aspect-ratio: 16 / 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
     border-radius: 18px 18px 0 0;
-    background: #eaeaea;
+    background: #111;
+    max-height: 68vh;
 }
 
 .modal-hero img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    max-height: 68vh;
+    object-fit: contain;
+    display: block;
 }
 
 .modal-hero .property-price {
