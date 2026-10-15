@@ -181,11 +181,104 @@ function initPropertyForm() {
     }
 }
 
-/* ---------- Ubicaciones ---------- */
+/* ---------- Ciudades y Zonas ---------- */
+let ciudadesPorNombre = new Map();   // nombre -> id
+let zonasCiudadActual = [];          // zonas de la ciudad elegida
+let ultimaCiudad = null;
+
 function initUbicaciones() {
-    const btn = $('#btnAddUbicacion');
-    if (btn) btn.addEventListener('click', agregarUbicacion);
-    cargarUbicaciones();
+    const btnCiudad = $('#btnAddCiudad');
+    const btnZona = $('#btnAddZona');
+    const inputCiudad = $('#ubicacion');
+
+    if (btnCiudad) btnCiudad.addEventListener('click', agregarCiudad);
+    if (btnZona) btnZona.addEventListener('click', agregarZona);
+    if (inputCiudad) ['input', 'change'].forEach((evt) => inputCiudad.addEventListener(evt, onCiudadCambia));
+
+    cargarCiudades();
+}
+
+async function cargarCiudades() {
+    const list = $('#ciudadesList');
+    const { data, error } = await window.db.from('locations').select('id, nombre').order('nombre');
+    if (error) { alert('No se pudieron cargar las ciudades: ' + error.message); return; }
+    ciudadesPorNombre = new Map((data || []).map((c) => [c.nombre, c.id]));
+    if (list) list.innerHTML = (data || []).map((c) => `<option value="${esc(c.nombre)}"></option>`).join('');
+}
+
+async function onCiudadCambia() {
+    const nombre = ($('#ubicacion').value || '').trim().toUpperCase();
+    if (nombre === ultimaCiudad) return;
+    ultimaCiudad = nombre;
+    await cargarZonas(nombre);
+}
+
+async function cargarZonas(nombreCiudad) {
+    const list = $('#zonasList');
+    const inputZona = $('#zona');
+    zonasCiudadActual = [];
+
+    const ciudadId = ciudadesPorNombre.get(nombreCiudad);
+    if (!ciudadId) {
+        if (list) list.innerHTML = '';
+        if (inputZona) inputZona.placeholder = nombreCiudad ? 'PRIMERO AGREGA LA CIUDAD (botón +)' : 'ELIGE UNA CIUDAD PRIMERO';
+        return;
+    }
+
+    const { data } = await window.db.from('zonas').select('nombre').eq('ciudad_id', ciudadId).order('nombre');
+    zonasCiudadActual = (data || []).map((z) => z.nombre);
+    if (list) list.innerHTML = zonasCiudadActual.map((z) => `<option value="${esc(z)}"></option>`).join('');
+    if (inputZona) inputZona.placeholder = zonasCiudadActual.length ? 'ESCRIBE O ELIGE…' : 'ESCRIBE LA PRIMERA ZONA';
+}
+
+async function agregarCiudad() {
+    const input = $('#ubicacion');
+    const nombre = (input.value || '').trim().toUpperCase();
+    if (!nombre) { alert('Escribe una ciudad primero.'); return; }
+    if (ciudadesPorNombre.has(nombre)) {
+        input.value = nombre;
+        alert('La ciudad "' + nombre + '" ya existe.');
+        return;
+    }
+    const { error } = await window.db.from('locations').insert({ nombre });
+    if (error) { alert('No se pudo agregar la ciudad: ' + error.message); return; }
+    await cargarCiudades();
+    input.value = nombre;
+    ultimaCiudad = null;
+    await onCiudadCambia();
+    alert('Ciudad "' + nombre + '" agregada. Ahora agrega sus zonas.');
+}
+
+async function agregarZona() {
+    const inputCiudad = $('#ubicacion');
+    const inputZona = $('#zona');
+    const ciudad = (inputCiudad.value || '').trim().toUpperCase();
+    const zona = (inputZona.value || '').trim().toUpperCase();
+
+    if (!ciudad) { alert('Primero escribe la ciudad.'); return; }
+    if (!zona) { alert('Escribe la zona que quieres agregar.'); return; }
+
+    let ciudadId = ciudadesPorNombre.get(ciudad);
+    if (!ciudadId) {
+        const { data, error } = await window.db.from('locations').insert({ nombre: ciudad }).select('id').single();
+        if (error) { alert('No se pudo crear la ciudad: ' + error.message); return; }
+        ciudadId = data.id;
+        await cargarCiudades();
+    }
+
+    if (zonasCiudadActual.includes(zona)) {
+        inputZona.value = zona;
+        alert('La zona "' + zona + '" ya existe en ' + ciudad + '.');
+        return;
+    }
+
+    const { error } = await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zona });
+    if (error) { alert('No se pudo agregar la zona: ' + error.message); return; }
+
+    ultimaCiudad = null;
+    await cargarZonas(ciudad);
+    inputZona.value = zona;
+    alert('Zona "' + zona + '" agregada a ' + ciudad + '.');
 }
 
 /** Pone en MAYÚSCULAS todos los campos marcados con data-upper. */
@@ -238,35 +331,13 @@ function initCaracteristicas() {
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); agregar(); } });
 }
 
-async function cargarUbicaciones() {
-    const list = $('#ubicacionesList');
-    const { data, error } = await window.db.from('locations').select('nombre').order('nombre');
-    if (error) return;
-    ubicaciones = new Set((data || []).map((l) => l.nombre));
-    if (list) list.innerHTML = (data || []).map((l) => `<option value="${esc(l.nombre)}"></option>`).join('');
-}
-
-async function agregarUbicacion() {
-    const input = $('#ubicacion');
-    const nombre = (input.value || '').trim().toUpperCase();
-    if (!nombre) { alert('Escribe una ubicación primero.'); return; }
-    if (ubicaciones.has(nombre)) {
-        input.value = nombre;
-        alert('La ubicación "' + nombre + '" ya existe.');
-        return;
-    }
-    const { error } = await window.db.from('locations').insert({ nombre });
-    if (error) { alert('No se pudo agregar: ' + error.message); return; }
-    await cargarUbicaciones();
-    input.value = nombre;
-    alert('Ubicación "' + nombre + '" agregada.');
-}
-
-function openForm(id, lista) {
+async function openForm(id, lista) {
     editandoId = id || null;
     const form = $('#propertyForm');
     form.reset();
     imagenes = [];
+    ultimaCiudad = null;
+    await cargarZonas('');
 
     const card = $('#formCard');
     card.style.display = 'block';
@@ -285,6 +356,9 @@ function openForm(id, lista) {
         $('#titulo').value = p.titulo || '';
         $('#tipo').value = p.tipo || '';
         $('#ubicacion').value = p.ubicacion || '';
+        ultimaCiudad = null;
+        await cargarZonas((p.ubicacion || '').toUpperCase());
+        $('#zona').value = p.zona || '';
         $('#precio').value = p.precio || '';
         $('#habitaciones').value = p.habitaciones || 0;
         $('#banos').value = p.banos || 0;
@@ -366,15 +440,22 @@ async function guardarPropiedad(e) {
     if (!titulo) { setStatus(status, 'El título es obligatorio.', 'error'); return; }
 
     const ubicacionVal = ($('#ubicacion').value || '').trim().toUpperCase();
+    const zonaVal = ($('#zona').value || '').trim().toUpperCase();
     $('#ubicacion').value = ubicacionVal;
+    $('#zona').value = zonaVal;
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
     try {
-        // Registrar la ubicación si es nueva (siempre en MAYÚSCULAS)
-        if (ubicacionVal && !ubicaciones.has(ubicacionVal)) {
-            await window.db.from('locations').insert({ nombre: ubicacionVal });
+        // Asegurar la ciudad y la zona (siempre en MAYÚSCULAS)
+        let ciudadId = ciudadesPorNombre.get(ubicacionVal);
+        if (ubicacionVal && !ciudadId) {
+            const { data } = await window.db.from('locations').insert({ nombre: ubicacionVal }).select('id').single();
+            if (data) { ciudadId = data.id; ciudadesPorNombre.set(ubicacionVal, data.id); }
+        }
+        if (ciudadId && zonaVal && !zonasCiudadActual.includes(zonaVal)) {
+            await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zonaVal });
         }
 
         // 1) Subir las imágenes nuevas (convertidas a WebP)
@@ -397,6 +478,7 @@ async function guardarPropiedad(e) {
             titulo: titulo.toUpperCase(),
             tipo: $('#tipo').value,
             ubicacion: ubicacionVal,
+            zona: zonaVal,
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),

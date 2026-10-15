@@ -246,6 +246,7 @@ create table if not exists public.properties (
     titulo          text not null,
     tipo            text not null,
     ubicacion       text not null,
+    zona            text,
     precio          numeric not null default 0,
     habitaciones    int not null default 0,
     banos           int not null default 0,
@@ -351,6 +352,50 @@ insert into public.locations (nombre) values
     ('CUA'), ('CARACAS'), ('CHARALLAVE'), ('SANTA TERESA'),
     ('SANTA LUCIA'), ('OCUMARE'), ('SAN CASIMIRO')
 on conflict (nombre) do nothing;
+
+-- ----------------------------------------------------------------------------
+-- ZONAS / SECTORES (cada zona pertenece a UNA ciudad)
+-- ----------------------------------------------------------------------------
+create table if not exists public.zonas (
+    id         uuid primary key default gen_random_uuid(),
+    ciudad_id  uuid not null references public.locations(id) on delete cascade,
+    nombre     text not null check (nombre = upper(nombre)),
+    created_at timestamptz not null default now(),
+    unique (ciudad_id, nombre)
+);
+
+alter table public.zonas enable row level security;
+
+drop policy if exists "zonas_read" on public.zonas;
+create policy "zonas_read" on public.zonas for select using (true);
+
+drop policy if exists "zonas_admin_write" on public.zonas;
+create policy "zonas_admin_write" on public.zonas
+    for all using (public.is_admin()) with check (public.is_admin());
+
+-- Zonas más comunes por ciudad (editables desde el panel)
+insert into public.zonas (ciudad_id, nombre)
+select c.id, z.nombre
+from public.locations c
+join (values
+    ('CARACAS','CATEDRAL'), ('CARACAS','ALTAGRACIA'), ('CARACAS','LA CANDELARIA'),
+    ('CARACAS','SAN BERNARDINO'), ('CARACAS','SANTA ROSALÍA'), ('CARACAS','SAN PEDRO'),
+    ('CARACAS','EL RECREO'), ('CARACAS','EL VALLE'), ('CARACAS','LA VEGA'),
+    ('CARACAS','ANTÍMANO'), ('CARACAS','CARICUAO'), ('CARACAS','MACARAO'),
+    ('CARACAS','PETARE'), ('CARACAS','CATIA'), ('CARACAS','CHACAO'),
+    ('CARACAS','BARUTA'), ('CARACAS','EL HATILLO'), ('CARACAS','LA CALIFORNIA'),
+    ('CARACAS','LAS MERCEDES'), ('CARACAS','LOS CHAGUARAMOS'), ('CARACAS','SABANA GRANDE'),
+    ('CUA','CENTRO'), ('CUA','LA MAGDALENA'), ('CUA','EL PORTACHUELO'), ('CUA','SAN JOSÉ'),
+    ('CHARALLAVE','CENTRO'), ('CHARALLAVE','LA ESTRELLA'), ('CHARALLAVE','EL PINAR'),
+    ('CHARALLAVE','LAS BRISAS'), ('CHARALLAVE','SANTA BÁRBARA'),
+    ('SANTA TERESA','CENTRO'), ('SANTA TERESA','EL PLACER'), ('SANTA TERESA','LA FUNDACIÓN'),
+    ('SANTA LUCIA','CENTRO'), ('SANTA LUCIA','EL CALVARIO'), ('SANTA LUCIA','EL CARMEN'),
+    ('OCUMARE','CENTRO'), ('OCUMARE','LA DEMOCRACIA'), ('OCUMARE','LOS OLIVOS'),
+    ('SAN CASIMIRO','CENTRO'), ('SAN CASIMIRO','LA COLONIA'), ('SAN CASIMIRO','SAN RAFAEL')
+) as z(ciudad, nombre) on c.nombre = z.ciudad
+where not exists (
+    select 1 from public.zonas x where x.ciudad_id = c.id and x.nombre = z.nombre
+);
 
 -- ----------------------------------------------------------------------------
 -- 3. GALERÍA DE PROPIEDADES (varias fotos por propiedad)

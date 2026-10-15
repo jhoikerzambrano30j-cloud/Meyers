@@ -77,12 +77,23 @@
                             </select>
                         </div>
                         <div class="field">
-                            <label for="ubicacion">Ubicación *</label>
+                            <label for="ubicacion">Ciudad *</label>
                             <div class="combo">
-                                <input type="text" id="ubicacion" list="ubicacionesList" required
+                                <input type="text" id="ubicacion" list="ciudadesList" required
                                        placeholder="ESCRIBE O ELIGE…" autocomplete="off" data-upper>
-                                <datalist id="ubicacionesList"></datalist>
-                                <button type="button" class="btn-sm btn-gold" id="btnAddUbicacion" title="Agregar ubicación">
+                                <datalist id="ciudadesList"></datalist>
+                                <button type="button" class="btn-sm btn-gold" id="btnAddCiudad" title="Agregar ciudad">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="zona">Zona / Sector *</label>
+                            <div class="combo">
+                                <input type="text" id="zona" list="zonasList" required
+                                       placeholder="ELIGE UNA CIUDAD PRIMERO" autocomplete="off" data-upper>
+                                <datalist id="zonasList"></datalist>
+                                <button type="button" class="btn-sm btn-gold" id="btnAddZona" title="Agregar zona">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>

@@ -227,6 +227,7 @@ function mapPropiedad(p) {
         titulo: p.titulo,
         tipo: p.tipo,
         ubicacion: p.ubicacion,
+        zona: p.zona,
         precio: p.precio,
         habitaciones: p.habitaciones,
         banos: p.banos,
@@ -347,7 +348,7 @@ function cardTemplate(prop) {
             <div class="property-content">
                 <p class="property-type">${escapeHtml(prop.tipo)}</p>
                 <h3 class="property-title">${escapeHtml(prop.titulo)}</h3>
-                <p class="property-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ${escapeHtml(prop.ubicacion)}</p>
+                <p class="property-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</p>
                 <div class="property-features">${features}</div>
                 <span class="property-more">Ver detalle <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
             </div>
@@ -517,7 +518,7 @@ function modalTemplate(prop) {
         <div class="modal-content">
             <p class="property-type">${escapeHtml(prop.tipo)}</p>
             <h2 id="modalTitle">${escapeHtml(prop.titulo)}</h2>
-            <div class="modal-meta"><span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}</span></div>
+            <div class="modal-meta"><span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</span></div>
             <p class="modal-description">${escapeHtml(prop.descripcion || '')}</p>
             <div class="modal-features">${features}</div>
             ${extras ? '<h3 style="margin:15px 0">Características</h3><div class="modal-features">' + extras + '</div>' : ''}
