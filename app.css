@@ -1258,4 +1258,61 @@ table.compare-table tr:hover td {
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--gold-dark);
+    margin-bottom: 10px;
+}
+
+.brand-tag.on-dark {
+    color: var(--gold);
+}
+
+/* Galería del detalle de propiedad */
+.modal-gallery {
+    display: flex;
+    gap: 10px;
+    padding: 16px 35px 0;
+    overflow-x: auto;
+}
+
+.gallery-thumb {
+    flex: 0 0 auto;
+    width: 86px;
+    height: 64px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    background: #eee;
+    transition: var(--transition);
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-thumb:hover {
+    border-color: rgba(225, 189, 69, 0.6);
+}
+
+.gallery-thumb.active {
+    border-color: var(--gold);
+}
+
+/* Aparición escalonada de las tarjetas */
+.property-card {
+    animation: cardIn 0.5s ease backwards;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .property-card {
+        animation: none;
+    }
 }

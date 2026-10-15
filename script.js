@@ -320,7 +320,7 @@ async function onToggleFavorito(btn) {
     }
 }
 
-function cardTemplate(prop) {
+function cardTemplate(prop, i = 0) {
     const features = [
         prop.habitaciones > 0 ? `<span class="property-feature"><i class="fas fa-bed" aria-hidden="true"></i> ${escapeHtml(prop.habitaciones)} Hab.</span>` : '',
         prop.banos > 0 ? `<span class="property-feature"><i class="fas fa-bath" aria-hidden="true"></i> ${escapeHtml(prop.banos)} Baños</span>` : '',
@@ -334,6 +334,7 @@ function cardTemplate(prop) {
 
     return `
         <article class="property-card" data-id="${escapeHtml(prop.id)}" role="button" tabindex="0"
+                 style="animation-delay: ${Math.min(i, 8) * 70}ms"
                  aria-label="Ver detalle de ${escapeHtml(prop.titulo)}">
             <div class="property-image">
                 ${badge}
@@ -368,7 +369,7 @@ function renderProperties(lista) {
             </div>`;
         return;
     }
-    grid.innerHTML = lista.map(cardTemplate).join('');
+    grid.innerHTML = lista.map((prop, i) => cardTemplate(prop, i)).join('');
 }
 
 function renderFeatured() {
@@ -464,6 +465,7 @@ function openModal(id) {
 
     lastFocusedElement = document.activeElement;
     body.innerHTML = modalTemplate(prop);
+    cargarGaleria(prop);
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
 
     overlay.hidden = false;
@@ -510,10 +512,11 @@ function modalTemplate(prop) {
 
     return `
         <div class="modal-hero">
-            <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
+            <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price">${formatPrice(prop.precio)}</div>
         </div>
+        <div class="modal-gallery" id="modalGallery"></div>
         <div class="modal-content">
             <p class="property-type">${escapeHtml(prop.tipo)}</p>
             <h2 id="modalTitle">${escapeHtml(prop.titulo)}</h2>
@@ -528,6 +531,35 @@ function modalTemplate(prop) {
                 <a href="#contacto" class="btn btn-outline" data-close-modal>Agendar visita</a>
             </div>
         </div>`;
+}
+
+/** Carga las fotos de la galería dentro del modal de detalle. */
+async function cargarGaleria(prop) {
+    const cont = document.getElementById('modalGallery');
+    if (!cont) return;
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) { cont.remove(); return; }
+    try {
+        const { data } = await window.db.from('property_images')
+            .select('url').eq('property_id', prop.id).order('sort_order', { ascending: true });
+        const urls = [prop.imagen, ...((data || []).map((i) => i.url))].filter(Boolean);
+        const unicas = [...new Set(urls)];
+        if (unicas.length <= 1) { cont.remove(); return; }
+
+        cont.innerHTML = unicas.map((u, i) => `
+            <button type="button" class="gallery-thumb${i === 0 ? ' active' : ''}" data-img="${escapeHtml(u)}" aria-label="Ver foto ${i + 1}">
+                <img src="${escapeHtml(u)}" alt="" loading="lazy" decoding="async"
+                     onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+            </button>`).join('');
+
+        cont.querySelectorAll('[data-img]').forEach((b) => b.addEventListener('click', () => {
+            const main = document.getElementById('modalMainImg');
+            if (main) main.src = b.dataset.img;
+            cont.querySelectorAll('.gallery-thumb').forEach((x) => x.classList.remove('active'));
+            b.classList.add('active');
+        }));
+    } catch (e) {
+        cont.remove();
+    }
 }
 
 /* ============================================================
