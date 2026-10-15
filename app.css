@@ -1180,3 +1180,84 @@ table.compare-table tr:hover td {
         font-size: 0.72rem;
     }
 }
+
+/* ============================================================
+   ACABADO PREMIUM — detalles de la marca Meyer's
+   ============================================================ */
+
+/* Hilo dorado sutil en la barra al hacer scroll */
+.navbar.scrolled {
+    border-bottom: 1px solid rgba(225, 189, 69, 0.45);
+}
+
+/* Línea dorada superior en el pie de página */
+.footer {
+    border-top: 3px solid var(--gold);
+}
+
+/* Franja cromada arriba del detalle de propiedad */
+.modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--chrome-gold);
+    border-radius: 18px 18px 0 0;
+    z-index: 3;
+}
+
+/* Tarjetas de propiedad con borde y sombra premium */
+.property-card {
+    border: 1px solid rgba(225, 189, 69, 0.2);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.07);
+}
+
+.property-card:hover {
+    border-color: rgba(225, 189, 69, 0.6);
+    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.14);
+}
+
+/* Botón principal con brillo metálico al pasar el mouse */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+
+.btn-primary:hover::before {
+    left: 130%;
+}
+
+/* Tarjetas de login/registro con franja dorada */
+.auth-card {
+    border-top: 5px solid var(--gold);
+}
+
+/* Anillo dorado en los iconos de servicios */
+.service-icon {
+    border: 1px solid rgba(225, 189, 69, 0.45);
+}
+
+/* Etiqueta de marca (reutilizable) */
+.brand-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+}
