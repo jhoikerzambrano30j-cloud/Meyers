@@ -136,6 +136,7 @@ async function init() {
     catalogoPermitido = Boolean(currentUser);
 
     await cargarTestimonios();
+    await cargarUbicacionesFiltro();
     if (catalogoPermitido) {
         await cargarPropiedades();
         await cargarFavoritos();
@@ -187,8 +188,7 @@ async function cargarPropiedades() {
     }
 }
 
-async function cargarTestimonios() {
-    if (!window.isSupabaseReady || !window.isSupabaseReady()) {
+async function cargarTestimonios() {    if (!window.isSupabaseReady || !window.isSupabaseReady()) {
         window.warnSupabaseMissing && window.warnSupabaseMissing();
         return;
     }
@@ -200,6 +200,23 @@ async function cargarTestimonios() {
         }
     } catch (e) {
         console.warn('[Meyer\'s] No se pudieron cargar los testimonios:', e);
+    }
+}
+
+async function cargarUbicacionesFiltro() {
+    const sel = document.getElementById('ubicacion');
+    if (!sel || !window.isSupabaseReady || !window.isSupabaseReady()) return;
+    try {
+        const { data } = await window.db.from('locations').select('nombre').order('nombre', { ascending: true });
+        if (!data || !data.length) return;
+        data.forEach((l) => {
+            const opt = document.createElement('option');
+            opt.value = slug(l.nombre);
+            opt.textContent = l.nombre;
+            sel.appendChild(opt);
+        });
+    } catch (e) {
+        console.warn('[Meyer\'s] No se pudieron cargar las ubicaciones:', e);
     }
 }
 

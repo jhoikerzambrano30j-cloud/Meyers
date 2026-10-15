@@ -78,12 +78,14 @@
                         </div>
                         <div class="field">
                             <label for="ubicacion">Ubicación *</label>
-                            <select id="ubicacion" required>
-                                <option value="">Selecciona…</option>
-                                <option value="Zona Norte">Zona Norte</option>
-                                <option value="Zona Sur">Zona Sur</option>
-                                <option value="Centro">Centro</option>
-                            </select>
+                            <div class="combo">
+                                <input type="text" id="ubicacion" list="ubicacionesList" required
+                                       placeholder="Escribe o elige…" autocomplete="off">
+                                <datalist id="ubicacionesList"></datalist>
+                                <button type="button" class="btn-sm btn-gold" id="btnAddUbicacion" title="Agregar ubicación">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="field">
                             <label for="precio">Precio (USD) *</label>

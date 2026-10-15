@@ -329,6 +329,30 @@ create trigger properties_set_codigo
 alter table public.properties alter column codigo set default public.next_property_codigo();
 
 -- ----------------------------------------------------------------------------
+-- UBICACIONES (lista editable desde el panel — siempre en MAYÚSCULAS)
+-- ----------------------------------------------------------------------------
+create table if not exists public.locations (
+    id         uuid primary key default gen_random_uuid(),
+    nombre     text not null unique check (nombre = upper(nombre)),
+    created_at timestamptz not null default now()
+);
+
+alter table public.locations enable row level security;
+
+drop policy if exists "locations_read" on public.locations;
+create policy "locations_read" on public.locations
+    for select using (true);
+
+drop policy if exists "locations_admin_write" on public.locations;
+create policy "locations_admin_write" on public.locations
+    for all using (public.is_admin()) with check (public.is_admin());
+
+insert into public.locations (nombre) values
+    ('CUA'), ('CARACAS'), ('CHARALLAVE'), ('SANTA TERESA'),
+    ('SANTA LUCIA'), ('OCUMARE'), ('SAN CASIMIRO')
+on conflict (nombre) do nothing;
+
+-- ----------------------------------------------------------------------------
 -- 3. GALERÍA DE PROPIEDADES (varias fotos por propiedad)
 -- ----------------------------------------------------------------------------
 create table if not exists public.property_images (

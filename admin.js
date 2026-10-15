@@ -15,6 +15,7 @@ let imagenes = [];       // [{ url, path, blob? }]
 let editandoId = null;
 let cacheUsuarios = [];
 let cacheLeads = [];
+let ubicaciones = new Set();
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initTabs();
     initPropertyForm();
+    initUbicaciones();
     $('#btnNewProperty')?.addEventListener('click', () => openForm(null));
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
@@ -158,7 +160,6 @@ function initPropertyForm() {
     if (!form) return;
 
     form.addEventListener('submit', guardarPropiedad);
-
     const input = $('#imagenInput');
     const uploader = $('#uploader');
     if (uploader && input) {
@@ -170,6 +171,45 @@ function initPropertyForm() {
             uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.remove('dragover'); }));
         uploader.addEventListener('drop', (e) => agregarArchivos(e.dataTransfer.files));
     }
+}
+
+/* ---------- Ubicaciones ---------- */
+function initUbicaciones() {
+    const input = $('#ubicacion');
+    const btn = $('#btnAddUbicacion');
+    if (input) {
+        input.addEventListener('input', () => {
+            const pos = input.selectionStart;
+            input.value = input.value.toUpperCase();
+            try { input.setSelectionRange(pos, pos); } catch (e) { /* ignorar */ }
+        });
+    }
+    if (btn) btn.addEventListener('click', agregarUbicacion);
+    cargarUbicaciones();
+}
+
+async function cargarUbicaciones() {
+    const list = $('#ubicacionesList');
+    const { data, error } = await window.db.from('locations').select('nombre').order('nombre');
+    if (error) return;
+    ubicaciones = new Set((data || []).map((l) => l.nombre));
+    if (list) list.innerHTML = (data || []).map((l) => `<option value="${esc(l.nombre)}"></option>`).join('');
+}
+
+async function agregarUbicacion() {
+    const input = $('#ubicacion');
+    const nombre = (input.value || '').trim().toUpperCase();
+    if (!nombre) { alert('Escribe una ubicación primero.'); return; }
+    if (ubicaciones.has(nombre)) {
+        input.value = nombre;
+        alert('La ubicación "' + nombre + '" ya existe.');
+        return;
+    }
+    const { error } = await window.db.from('locations').insert({ nombre });
+    if (error) { alert('No se pudo agregar: ' + error.message); return; }
+    await cargarUbicaciones();
+    input.value = nombre;
+    alert('Ubicación "' + nombre + '" agregada.');
 }
 
 function openForm(id, lista) {
@@ -274,10 +314,18 @@ async function guardarPropiedad(e) {
     const titulo = $('#titulo').value.trim();
     if (!titulo) { setStatus(status, 'El título es obligatorio.', 'error'); return; }
 
+    const ubicacionVal = ($('#ubicacion').value || '').trim().toUpperCase();
+    $('#ubicacion').value = ubicacionVal;
+
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
     try {
+        // Registrar la ubicación si es nueva (siempre en MAYÚSCULAS)
+        if (ubicacionVal && !ubicaciones.has(ubicacionVal)) {
+            await window.db.from('locations').insert({ nombre: ubicacionVal });
+        }
+
         // 1) Subir las imágenes nuevas (convertidas a WebP)
         for (const img of imagenes) {
             if (img.esNueva && img.blob) {
@@ -297,7 +345,7 @@ async function guardarPropiedad(e) {
             codigo: $('#codigo').value.trim() || null,
             titulo,
             tipo: $('#tipo').value,
-            ubicacion: $('#ubicacion').value,
+            ubicacion: ubicacionVal,
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),

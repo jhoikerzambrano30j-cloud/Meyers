@@ -843,6 +843,24 @@ table.data .cell-actions {
     font-family: var(--font-body);
 }
 
+/* ---------- Ubicaciones (combo con agregar) ---------- */
+.combo {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.combo input {
+    flex: 1;
+    text-transform: uppercase;
+}
+
+.combo .btn-sm {
+    flex: 0 0 auto;
+    padding: 0 16px;
+    border-radius: 10px;
+}
+
 /* ---------- Comparador de propiedades ---------- */
 .compare-bar {
     display: flex;
