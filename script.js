@@ -9,7 +9,6 @@
    CONFIGURACIÓN GLOBAL (edita aquí los datos de contacto)
    ============================================================ */
 const CONFIG = {
-    telefonoDisplay: '0414-1338254',
     telefono: '+584141338254',
     whatsapp: '584141338254',
     email: 'inmb.mimeyerhouse@gmail.com',
@@ -17,65 +16,14 @@ const CONFIG = {
 };
 
 /* ============================================================
-   DATOS DE EJEMPLO (respaldo si Supabase no está configurado)
+   DATOS
+   Las propiedades y testimonios se cargan SIEMPRE desde Supabase
+   (ver cargarPropiedades() y cargarTestimonios()).
+   Si la carga falla, quedan vacíos y la web muestra un estado
+   vacío elegante. NO se guardan datos de ejemplo aquí.
    ============================================================ */
-let PROPIEDADES = [
-    {
-        id: 'demo-1', codigo: 'MY-001', titulo: 'Villa Moderna con Vista al Mar',
-        tipo: 'Casa', ubicacion: 'Zona Norte', precio: 250000, habitaciones: 4, banos: 3, area: 350,
-        imagen: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=80',
-        badge: 'Destacada', badgeClass: 'new', destacada: true,
-        descripcion: 'Espectacular villa de líneas contemporáneas con amplios espacios, acabados de lujo y una terraza panorámica ideal para disfrutar del atardecer frente al mar.',
-        caracteristicas: ['Piscina privada', 'Jardín', 'Estacionamiento para 2 autos', 'Cocina integral', 'Seguridad 24/7']
-    },
-    {
-        id: 'demo-2', codigo: 'MY-002', titulo: 'Apartamento de Lujo en el Centro',
-        tipo: 'Apartamento', ubicacion: 'Centro', precio: 120000, habitaciones: 2, banos: 2, area: 120,
-        imagen: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-        badge: 'Nueva', badgeClass: 'new', destacada: true,
-        descripcion: 'Moderno apartamento en el corazón de la ciudad, a pasos de comercios, restaurantes y transporte.',
-        caracteristicas: ['Ascensor', 'Balcón', 'Gimnasio', 'Área social', 'Planta eléctrica']
-    },
-    {
-        id: 'demo-3', codigo: 'MY-003', titulo: 'Casa Familiar en Zona Residencial',
-        tipo: 'Casa', ubicacion: 'Zona Sur', precio: 180000, habitaciones: 3, banos: 2, area: 220,
-        imagen: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80',
-        badge: 'Bajó de Precio', badgeClass: '', destacada: false,
-        descripcion: 'Acogedora casa familiar en una tranquila zona residencial, con jardín amplio.',
-        caracteristicas: ['Jardín amplio', 'Family room', 'Lavandería', 'Estacionamiento techado', 'Cerca de colegios']
-    },
-    {
-        id: 'demo-4', codigo: 'MY-004', titulo: 'Terreno con Excelente Ubicación',
-        tipo: 'Terreno', ubicacion: 'Zona Norte', precio: 85000, habitaciones: 0, banos: 0, area: 500,
-        imagen: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-        badge: 'Oportunidad', badgeClass: '', destacada: true,
-        descripcion: 'Terreno plano y listo para construir, con todos los servicios básicos disponibles.',
-        caracteristicas: ['Servicios básicos', 'Acceso pavimentado', 'Zonificación residencial', 'Título de propiedad']
-    },
-    {
-        id: 'demo-5', codigo: 'MY-005', titulo: 'Penthouse con Terraza Panorámica',
-        tipo: 'Apartamento', ubicacion: 'Centro', precio: 320000, habitaciones: 3, banos: 3, area: 180,
-        imagen: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-        badge: 'Exclusiva', badgeClass: '', destacada: false,
-        descripcion: 'Exclusivo penthouse con vistas de 360°, terraza privada y acabados premium.',
-        caracteristicas: ['Terraza privada', 'Jacuzzi', 'Dos puestos de estacionamiento', 'Domótica', 'Concierge']
-    },
-    {
-        id: 'demo-6', codigo: 'MY-006', titulo: 'Local Comercial en Avenida Principal',
-        tipo: 'Local Comercial', ubicacion: 'Centro', precio: 95000, habitaciones: 0, banos: 1, area: 80,
-        imagen: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80',
-        badge: 'Inversión', badgeClass: '', destacada: false,
-        descripcion: 'Local comercial con vitrina a avenida principal y alto tráfico peatonal.',
-        caracteristicas: ['Vitrina a la calle', 'Alto tráfico', 'Baño privado', 'Aire acondicionado', 'Listo para operar']
-    }
-];
-
-let TESTIMONIOS = [
-    { nombre: 'María González', rol: 'Compradora', texto: 'Meyer\'s hizo que el proceso de compra de mi primera casa fuera increíblemente fácil. Mayerlyn y su equipo estuvieron pendientes de cada detalle.', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80' },
-    { nombre: 'Carlos Rodríguez', rol: 'Vendedor', texto: 'Vendí mi propiedad en tiempo récord y al mejor precio del mercado. La valoración que hicieron fue precisa y profesional.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80' },
-    { nombre: 'Ana Martínez', rol: 'Inversionista', texto: 'He realizado varias inversiones con Meyer\'s y siempre superan mis expectativas. Su conocimiento del mercado es invaluable.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80' },
-    { nombre: 'Pedro Sánchez', rol: 'Comprador', texto: 'Excelente atención. Me ayudaron a encontrar exactamente lo que buscaba, dentro de mi presupuesto. 100% recomendados.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80' }
-];
+let PROPIEDADES = [];   // Se llena desde la tabla "properties"
+let TESTIMONIOS = [];   // Se llena desde la tabla "testimonials"
 
 /* Sin comillas simples dentro: se inserta dentro de un atributo onerror. */
 const PLACEHOLDER_IMG = 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22400%22%20height=%22300%22%3E%3Crect%20width=%22400%22%20height=%22300%22%20fill=%22%23eaeaea%22/%3E%3Ctext%20x=%22200%22%20y=%22155%22%20text-anchor=%22middle%22%20fill=%22%239D9D9C%22%20font-family=%22sans-serif%22%20font-size=%2220%22%3ESin%20imagen%3C/text%3E%3C/svg%3E';

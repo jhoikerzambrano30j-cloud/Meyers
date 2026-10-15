@@ -16,22 +16,16 @@
     --gold-light: #F7EA9E;
     --gold-dark: #A8851C;
 
-    /* Tonos derivados del plateado */
-    --silver-light: #EDEDEC;
-    --silver-dark: #6F6F6E;
-
     /* Neutros base */
     --white: #FFFFFF;
     --dark: #1A1A1A;           /* Casi negro para textos */
     --gray-text: #555555;      /* Gris para párrafos */
 
-    /* Estados */
+    /* Estado */
     --green: #2ecc71;
-    --red: #e74c3c;
 
-    /* ===== Efecto cromado (Manual de Identidad) ===== */
+    /* ===== Efecto cromado dorado (Manual de Identidad) ===== */
     --chrome-gold: linear-gradient(135deg, #A8851C 0%, #E1BD45 22%, #FFF7CE 45%, #F3D978 52%, #E1BD45 70%, #A8851C 100%);
-    --chrome-silver: linear-gradient(135deg, #6F6F6E 0%, #9D9D9C 25%, #F4F4F3 50%, #C9C9C8 65%, #9D9D9C 82%, #6F6F6E 100%);
 
     /* ===== Tipografías (Manual: Master Of Break + Montserrat) ===== */
     --font-script: 'Master Of Break', cursive; /* Principal */

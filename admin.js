@@ -7,7 +7,6 @@
 'use strict';
 
 const TIPOS = ['Casa', 'Apartamento', 'Terreno', 'Local Comercial'];
-const UBICACIONES = ['Zona Norte', 'Zona Sur', 'Centro'];
 const CARACTERISTICAS_DEFAULT = [
     'PISCINA', 'JARDÍN', 'ESTACIONAMIENTO', 'AIRE ACONDICIONADO', 'SEGURIDAD 24/7',
     'ASCENSOR', 'BALCÓN', 'TERRAZA', 'PLANTA ELÉCTRICA', 'AMOBLADO',
@@ -21,7 +20,6 @@ let imagenes = [];       // [{ url, path, blob? }]
 let editandoId = null;
 let cacheUsuarios = [];
 let cacheLeads = [];
-let ubicaciones = new Set();
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -506,14 +504,25 @@ async function guardarPropiedad(e) {
         }
 
         // 2) Reguardar la galería
+        //    Recogemos las rutas actuales ANTES de reemplazarlas, para poder
+        //    borrar del almacenamiento las fotos que ya no se usan (evita basura).
+        const { data: previas } = await window.db.from('property_images').select('path').eq('property_id', propertyId);
+        const rutasPrevias = (previas || []).map((i) => i.path).filter(Boolean);
+
         await window.db.from('property_images').delete().eq('property_id', propertyId);
-        if (imagenes.length) {
-            const filas = imagenes.map((img, i) => ({
-                property_id: propertyId, url: img.url, path: img.path, sort_order: i
-            }));
+
+        const filas = imagenes.map((img, i) => ({
+            property_id: propertyId, url: img.url, path: img.path, sort_order: i
+        }));
+        if (filas.length) {
             const { error } = await window.db.from('property_images').insert(filas);
             if (error) throw error;
         }
+
+        // Borrar del almacenamiento las fotos huérfanas
+        const rutasNuevas = filas.map((f) => f.path).filter(Boolean);
+        const sobrantes = rutasPrevias.filter((p) => !rutasNuevas.includes(p));
+        if (sobrantes.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(sobrantes);
 
         setStatus(status, '¡Propiedad guardada correctamente!', 'success');
         await loadProperties();
@@ -527,9 +536,19 @@ async function guardarPropiedad(e) {
 }
 
 async function borrarPropiedad(id) {
-    if (!confirm('¿Seguro que quieres borrar esta propiedad? Esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Seguro que quieres borrar esta propiedad? Se borrarán también sus fotos. No se puede deshacer.')) return;
+
+    // Recoger las rutas de las fotos ANTES de borrar la propiedad
+    const { data: imgs } = await window.db.from('property_images').select('path').eq('property_id', id);
+    const rutas = (imgs || []).map((i) => i.path).filter(Boolean);
+
+    // Borrar la propiedad (sus filas de property_images se borran en cascada)
     const { error } = await window.db.from('properties').delete().eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
+
+    // Borrar las fotos del almacenamiento (evita archivos huérfanos)
+    if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
+
     await loadProperties();
 }
 
