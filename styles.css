@@ -604,6 +604,7 @@ h1, h2, h3, h4 {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 30px;
     margin-bottom: 50px;
+    min-height: 300px;   /* reserva espacio mientras cargan (evita saltos) */
 }
 
 .property-card {
@@ -945,6 +946,7 @@ h1, h2, h3, h4 {
     padding-bottom: 20px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    min-height: 240px;   /* reserva espacio mientras cargan (evita saltos) */
 }
 
 .testimonials-slider::-webkit-scrollbar {

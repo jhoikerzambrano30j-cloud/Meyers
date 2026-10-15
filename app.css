@@ -7,7 +7,15 @@
 #authArea {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 24px;
+}
+
+/* En escritorio reservamos el ancho del área de sesión para que el menú no se mueva */
+@media (min-width: 993px) {
+    #authArea {
+        min-width: 272px;
+    }
 }
 
 .nav-auth-link {
@@ -1173,6 +1181,7 @@ table.compare-table tr:hover td {
     }
     #authArea {
         gap: 8px;
+        min-width: 0;
     }
     .nav-auth-link {
         font-size: 0.72rem;
