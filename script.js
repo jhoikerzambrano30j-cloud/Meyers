@@ -207,6 +207,7 @@ function mapPropiedad(p) {
         ubicacion: p.ubicacion,
         zona: p.zona,
         asesor: p.asesores ? p.asesores.nombre : null,
+        estado: p.estado || 'Disponible',
         precio: p.precio,
         habitaciones: p.habitaciones,
         banos: p.banos,
@@ -325,6 +326,7 @@ function cardTemplate(prop, i = 0) {
                 <img src="${escapeHtml(prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div class="property-price">${formatPrice(prop.precio)}</div>
+                ${prop.estado && prop.estado !== 'Disponible' ? `<span class="estado-stamp${prop.estado === 'Alquilada' ? ' alquilada' : ''}">${escapeHtml(prop.estado)}</span>` : ''}
             </div>
             <div class="property-content">
                 <p class="property-type">${escapeHtml(prop.tipo)}</p>
@@ -498,6 +500,7 @@ function modalTemplate(prop) {
             <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price">${formatPrice(prop.precio)}</div>
+            ${prop.estado && prop.estado !== 'Disponible' ? `<span class="estado-stamp${prop.estado === 'Alquilada' ? ' alquilada' : ''}">${escapeHtml(prop.estado)}</span>` : ''}
         </div>
         <div class="modal-gallery" id="modalGallery"></div>
         <div class="modal-content">

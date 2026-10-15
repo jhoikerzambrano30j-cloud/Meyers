@@ -38,6 +38,7 @@
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
+            <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
         </div>
 
         <!-- ============ PROPIEDADES ============ -->
@@ -104,6 +105,26 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div class="field">
+                            <label for="operacion">Operación *</label>
+                            <select id="operacion">
+                                <option value="Venta">Venta</option>
+                                <option value="Alquiler">Alquiler</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="estado">Estado *</label>
+                            <select id="estado">
+                                <option value="Disponible">Disponible</option>
+                                <option value="Vendida">Vendida</option>
+                                <option value="Alquilada">Alquilada</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="fechaCierre">Fecha de cierre</label>
+                            <input type="date" id="fechaCierre">
+                            <small class="field-hint">Solo si está vendida o alquilada (para las métricas del mes).</small>
                         </div>
                         <div class="field">
                             <label for="precio">Precio (USD) *</label>
@@ -316,6 +337,38 @@
                     </thead>
                     <tbody id="asesoresTableBody"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- ============ METRICAS ============ -->
+        <section class="admin-panel" id="tab-metricas">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Métricas</h2>
+                    <p id="metricasMes">—</p>
+                </div>
+            </div>
+
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <div class="panel-card">
+                <h3><i class="fas fa-trophy" style="color:#B8931F"></i> Mejores asesores del mes</h3>
+                <div id="topAsesores"></div>
+            </div>
+
+            <div class="panel-card">
+                <h3><i class="fas fa-user-tie" style="color:#B8931F"></i> Resumen por asesor</h3>
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th>Asesor</th><th>Captaciones</th><th>Disponibles</th>
+                                <th>Vendidas</th><th>Alquiladas</th><th>Cierres del mes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asesoresMetricsBody"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 

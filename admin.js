@@ -22,6 +22,7 @@ let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheLeads = [];
 let cacheAsesores = [];
+let cachePropiedades = [];
 let asesorFoto = null;
 let asesorPathsViejos = [];
 
@@ -117,6 +118,7 @@ function initTabs() {
             tab.classList.add('active');
             const panel = document.getElementById('tab-' + tab.dataset.tab);
             if (panel) panel.classList.add('active');
+            if (tab.dataset.tab === 'metricas') renderMetricas();
         });
     });
 }
@@ -139,6 +141,8 @@ async function loadProperties() {
         return;
     }
 
+    cachePropiedades = data || [];
+
     const total = $('#propertiesCount');
     if (total) total.textContent = data.length + (data.length === 1 ? ' propiedad' : ' propiedades');
 
@@ -151,7 +155,10 @@ async function loadProperties() {
         <tr>
             <td>${p.imagen ? `<img class="table-thumb" src="${esc(p.imagen)}" alt="">` : '<div class="table-thumb"></div>'}</td>
             <td><strong>${esc(p.codigo || '—')}</strong></td>
-            <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
+            <td>${esc(p.titulo)}
+                ${p.estado === 'Vendida' ? '<span class="badge-sold" style="margin-left:6px">Vendida</span>' : ''}
+                ${p.estado === 'Alquilada' ? '<span class="badge-rented" style="margin-left:6px">Alquilada</span>' : ''}
+                <br><small style="color:#888">${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
             <td>${money(p.precio)}</td>
             <td>${p.destacada ? '<span style="color:#1e8e4e;font-weight:700">Sí</span>' : 'No'}</td>
             <td>${fecha(p.created_at)}</td>
@@ -368,6 +375,9 @@ async function openForm(id, lista) {
         await cargarZonas((p.ubicacion || '').toUpperCase());
         $('#zona').value = p.zona || '';
         $('#precio').value = p.precio || '';
+        $('#operacion').value = p.operacion || 'Venta';
+        $('#estado').value = p.estado || 'Disponible';
+        $('#fechaCierre').value = p.fecha_cierre || '';
         $('#habitaciones').value = p.habitaciones || 0;
         $('#banos').value = p.banos || 0;
         $('#area').value = p.area || 0;
@@ -497,6 +507,9 @@ async function guardarPropiedad(e) {
             ubicacion: ubicacionVal,
             zona: zonaVal,
             asesor_id: $('#asesor').value || null,
+            operacion: $('#operacion').value,
+            estado: $('#estado').value,
+            fecha_cierre: $('#estado').value === 'Disponible' ? null : ($('#fechaCierre').value || new Date().toISOString().slice(0, 10)),
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
@@ -1064,4 +1077,95 @@ async function borrarAsesor(id) {
     if (error) { alert('Error: ' + error.message); return; }
     if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
     await cargarAsesores();
+}
+
+/* ============================================================
+   MÉTRICAS (dashboard de ventas y alquileres)
+   ============================================================ */
+function renderMetricas() {
+    const grid = $('#metricsGrid');
+    if (!grid) return;
+
+    const props = cachePropiedades || [];
+    const ahora = new Date();
+    const mismoMes = (fecha) => {
+        if (!fecha) return false;
+        const d = new Date(fecha);
+        return d.getMonth() === ahora.getMonth() && d.getFullYear() === ahora.getFullYear();
+    };
+
+    const disponibles = props.filter((p) => !p.estado || p.estado === 'Disponible');
+    const vendidas = props.filter((p) => p.estado === 'Vendida');
+    const alquiladas = props.filter((p) => p.estado === 'Alquilada');
+    const ventasMes = vendidas.filter((p) => mismoMes(p.fecha_cierre));
+    const alquileresMes = alquiladas.filter((p) => mismoMes(p.fecha_cierre));
+
+    const tarjetas = [
+        ['Total captaciones', props.length, 'fa-house'],
+        ['Disponibles', disponibles.length, 'fa-circle-check'],
+        ['Vendidas', vendidas.length, 'fa-handshake'],
+        ['Alquiladas', alquiladas.length, 'fa-key'],
+        ['Ventas del mes', ventasMes.length, 'fa-chart-line'],
+        ['Alquileres del mes', alquileresMes.length, 'fa-file-signature']
+    ];
+    grid.innerHTML = tarjetas.map(([label, valor, icono]) => `
+        <div class="metric-card">
+            <i class="fas ${icono}" aria-hidden="true"></i>
+            <span class="metric-value">${valor}</span>
+            <span class="metric-label">${label}</span>
+        </div>`).join('');
+
+    // Top de asesores del mes (por cierres del mes)
+    const porAsesor = new Map();
+    cacheAsesores.forEach((a) => porAsesor.set(a.id, { nombre: a.nombre, cierres: 0, monto: 0 }));
+    [...ventasMes, ...alquileresMes].forEach((p) => {
+        if (!p.asesor_id) return;
+        const e = porAsesor.get(p.asesor_id);
+        if (e) { e.cierres += 1; e.monto += Number(p.precio || 0); }
+    });
+    const top = [...porAsesor.values()].filter((x) => x.cierres > 0)
+        .sort((a, b) => b.cierres - a.cierres).slice(0, 3);
+
+    const topEl = $('#topAsesores');
+    if (topEl) {
+        if (!top.length) {
+            topEl.innerHTML = '<div class="empty"><i class="fas fa-trophy"></i><p>Aún no hay cierres este mes.</p></div>';
+        } else {
+            const medallas = ['🥇', '🥈', '🥉'];
+            topEl.innerHTML = top.map((t, i) => `
+                <div class="top-row">
+                    <span class="top-pos">${medallas[i] || (i + 1)}</span>
+                    <strong>${esc(t.nombre)}</strong>
+                    <span>${t.cierres} cierre${t.cierres === 1 ? '' : 's'}</span>
+                    <span class="top-monto">$${t.monto.toLocaleString('en-US')}</span>
+                </div>`).join('');
+        }
+    }
+
+    // Resumen por asesor
+    const tbody = $('#asesoresMetricsBody');
+    if (tbody) {
+        if (!cacheAsesores.length) {
+            tbody.innerHTML = '<tr><td colspan="6">Sin asesores.</td></tr>';
+        } else {
+            tbody.innerHTML = cacheAsesores.map((a) => {
+                const mias = props.filter((p) => p.asesor_id === a.id);
+                const disp = mias.filter((p) => !p.estado || p.estado === 'Disponible').length;
+                const v = mias.filter((p) => p.estado === 'Vendida').length;
+                const al = mias.filter((p) => p.estado === 'Alquilada').length;
+                const cierresMes = mias.filter((p) => (p.estado === 'Vendida' || p.estado === 'Alquilada') && mismoMes(p.fecha_cierre)).length;
+                return `<tr>
+                    <td>${esc(a.nombre)} <small style="color:#888">(${esc(a.codigo)})</small></td>
+                    <td>${a.contador || mias.length}</td>
+                    <td>${disp}</td>
+                    <td>${v}</td>
+                    <td>${al}</td>
+                    <td><strong>${cierresMes}</strong></td>
+                </tr>`;
+            }).join('');
+        }
+    }
+
+    const mesEl = $('#metricasMes');
+    if (mesEl) mesEl.textContent = 'Resumen de ' + ahora.toLocaleDateString('es-VE', { month: 'long', year: 'numeric' });
 }
