@@ -260,13 +260,42 @@
                     <input type="hidden" id="asesorId">
                     <div class="form-grid">
                         <div class="field">
-                            <label for="asesorNombre">Nombre</label>
+                            <label for="asesorNombre">Nombre completo</label>
                             <input type="text" id="asesorNombre" required placeholder="Ej: Belkis Prada">
                         </div>
                         <div class="field">
                             <label for="asesorCodigo">Nomenclatura</label>
                             <input type="text" id="asesorCodigo" required maxlength="4" placeholder="Ej: BP" data-upper>
                             <small class="field-hint">2 a 4 letras. Se usa para el código de captación (ej. <b>BP-0007</b>).</small>
+                        </div>
+                        <div class="field">
+                            <label for="asesorCargo">Cargo</label>
+                            <input type="text" id="asesorCargo" placeholder="Ej: Broker, Asesor Inmobiliario">
+                        </div>
+                        <div class="field">
+                            <label for="asesorTelefono">Teléfono / WhatsApp</label>
+                            <input type="tel" id="asesorTelefono" placeholder="0414-0000000">
+                        </div>
+                        <div class="field">
+                            <label for="asesorEmail">Correo</label>
+                            <input type="email" id="asesorEmail" placeholder="correo@meyers.com">
+                        </div>
+                        <div class="field">
+                            <label for="asesorInstagram">Instagram</label>
+                            <input type="text" id="asesorInstagram" placeholder="@usuario">
+                        </div>
+                        <div class="field full">
+                            <label for="asesorBio">Información / Biografía</label>
+                            <textarea id="asesorBio" rows="4" placeholder="Breve descripción del asesor. Puedes usar ENTER para separar líneas."></textarea>
+                        </div>
+                        <div class="field full">
+                            <label>Foto</label>
+                            <div class="uploader" id="asesorUploader">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Haz clic o arrastra la foto aquí</strong><br>JPG, PNG o WebP</p>
+                                <input type="file" id="asesorInput" accept="image/*" hidden>
+                            </div>
+                            <div class="thumbs" id="asesorThumbs"></div>
                         </div>
                     </div>
                     <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
@@ -281,8 +310,8 @@
                 <table class="data">
                     <thead>
                         <tr>
-                            <th>Nombre</th><th>Nomenclatura</th><th>Captaciones</th>
-                            <th>Estado</th><th>Acciones</th>
+                            <th>Asesor</th><th>Nomenclatura</th><th>Cargo</th>
+                            <th>Captaciones</th><th>Estado</th><th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="asesoresTableBody"></tbody>

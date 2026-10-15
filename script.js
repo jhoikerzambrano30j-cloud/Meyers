@@ -85,6 +85,7 @@ async function init() {
 
     await cargarTestimonios();
     await cargarUbicacionesFiltro();
+    await cargarEquipo();
     if (catalogoPermitido) {
         await cargarPropiedades();
         await cargarFavoritos();
@@ -147,6 +148,36 @@ async function cargarTestimonios() {    if (!window.isSupabaseReady || !window.i
         }
     } catch (e) {
         console.warn('[Meyer\'s] No se pudieron cargar los testimonios:', e);
+    }
+}
+
+async function cargarEquipo() {
+    const grid = document.getElementById('equipoGrid');
+    if (!grid) return;
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
+    try {
+        const { data } = await window.db.from('asesores').select('*')
+            .eq('activo', true).order('orden', { ascending: true }).order('nombre', { ascending: true });
+        const lista = data || [];
+        if (!lista.length) { grid.closest('section')?.remove(); return; }
+        grid.innerHTML = lista.map((a) => `
+            <article class="team-card">
+                <div class="team-photo">
+                    ${(a.foto_thumb || a.foto) ? `<img src="${escapeHtml(a.foto_thumb || a.foto)}" alt="${escapeHtml(a.nombre)}" loading="lazy" decoding="async"
+                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">` : ''}
+                </div>
+                <div class="team-body">
+                    <h3>${escapeHtml(a.nombre)}</h3>
+                    ${a.cargo ? `<p class="team-cargo">${escapeHtml(a.cargo)}</p>` : ''}
+                    ${a.bio ? `<p class="team-bio">${escapeHtml(a.bio)}</p>` : ''}
+                    <div class="team-contact">
+                        ${a.telefono ? `<a href="tel:${escapeHtml(a.telefono)}"><i class="fas fa-phone" aria-hidden="true"></i>${escapeHtml(a.telefono)}</a>` : ''}
+                        ${a.email ? `<a href="mailto:${escapeHtml(a.email)}"><i class="fas fa-envelope" aria-hidden="true"></i>${escapeHtml(a.email)}</a>` : ''}
+                    </div>
+                </div>
+            </article>`).join('');
+    } catch (e) {
+        console.warn('[Meyer\'s] No se pudo cargar el equipo:', e);
     }
 }
 

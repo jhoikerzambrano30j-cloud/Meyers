@@ -241,12 +241,22 @@ grant execute on function public.admin_set_blocked(uuid, boolean) to authenticat
 -- 1b. ASESORES (nomenclatura de captaciones)
 -- ----------------------------------------------------------------------------
 create table if not exists public.asesores (
-    id         uuid primary key default gen_random_uuid(),
-    nombre     text not null,
-    codigo     text not null unique check (codigo = upper(codigo)),
-    contador   int not null default 0,
-    activo     boolean not null default true,
-    created_at timestamptz not null default now()
+    id                uuid primary key default gen_random_uuid(),
+    nombre            text not null,
+    codigo            text not null unique check (codigo = upper(codigo)),
+    cargo             text,
+    bio               text,
+    telefono          text,
+    email             text,
+    instagram         text,
+    foto              text,
+    foto_thumb        text,
+    foto_path         text,
+    foto_thumb_path   text,
+    contador          int not null default 0,
+    activo            boolean not null default true,
+    orden             int not null default 0,
+    created_at        timestamptz not null default now()
 );
 
 alter table public.asesores enable row level security;

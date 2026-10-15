@@ -22,6 +22,8 @@ let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheLeads = [];
 let cacheAsesores = [];
+let asesorFoto = null;
+let asesorPathsViejos = [];
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -793,6 +795,13 @@ document.addEventListener('change', (e) => {
 const AYUDAS = [
     ['codigo', 'Se genera solo al guardar, usando la nomenclatura del asesor (ej. BP-0007). No se cambia a mano.'],
     ['asesor', 'Elige el asesor que hizo la captación. Su nomenclatura se usará en el código de la propiedad.'],
+    ['asesorNombre', 'Nombre completo del asesor (ej. Belkis Prada).'],
+    ['asesorCodigo', 'Nomenclatura de 2 a 4 letras. Se usa en el código de captación (ej. BP-0007).'],
+    ['asesorCargo', 'Su rol (ej. Broker, Asesor Inmobiliario).'],
+    ['asesorTelefono', 'Teléfono o WhatsApp de contacto.'],
+    ['asesorEmail', 'Correo del asesor.'],
+    ['asesorInstagram', 'Usuario de Instagram (ej. @meyers.inmobiliaria).'],
+    ['asesorBio', 'Breve descripción. Puedes usar ENTER para separar líneas.'],
     ['titulo', 'Nombre corto y claro de la propiedad. Se guarda en MAYÚSCULAS.'],
     ['tipo', 'Categoría: Casa, Apartamento, Terreno o Local Comercial.'],
     ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
@@ -839,6 +848,36 @@ document.addEventListener('click', (e) => {
 function initAsesorForm() {
     const form = $('#asesorForm');
     if (form) form.addEventListener('submit', guardarAsesor);
+
+    const input = $('#asesorInput');
+    const uploader = $('#asesorUploader');
+    if (uploader && input) {
+        uploader.addEventListener('click', () => input.click());
+        input.addEventListener('change', (e) => agregarFotoAsesor(e.target.files));
+        ['dragenter', 'dragover'].forEach((ev) => uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach((ev) => uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.remove('dragover'); }));
+        uploader.addEventListener('drop', (e) => agregarFotoAsesor(e.dataTransfer.files));
+    }
+}
+
+function agregarFotoAsesor(fileList) {
+    const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
+    if (!file) return;
+    if (asesorFoto && asesorFoto.esNueva && asesorFoto.url) URL.revokeObjectURL(asesorFoto.url);
+    asesorFoto = { url: URL.createObjectURL(file), path: null, thumb: null, thumb_path: null, blob: file, esNueva: true };
+    renderAsesorThumb();
+}
+
+function renderAsesorThumb() {
+    const cont = $('#asesorThumbs');
+    if (!cont) return;
+    cont.innerHTML = asesorFoto ? `
+        <div class="thumb">
+            <img src="${esc(asesorFoto.thumb || asesorFoto.url)}" alt="">
+            <button type="button" class="thumb-remove" data-remove-asesor title="Quitar">&times;</button>
+        </div>` : '';
+    const btn = cont.querySelector('[data-remove-asesor]');
+    if (btn) btn.addEventListener('click', () => { asesorFoto = null; renderAsesorThumb(); });
 }
 
 /** Muestra el código que se asignará según el asesor elegido. */
@@ -860,7 +899,7 @@ async function cargarAsesores() {
     const tbody = $('#asesoresTableBody');
     const { data, error } = await window.db.from('asesores').select('*').order('nombre');
     if (error) {
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5">Error: ' + esc(error.message) + '</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Error: ' + esc(error.message) + '</td></tr>';
         return;
     }
     cacheAsesores = data || [];
@@ -877,12 +916,18 @@ async function cargarAsesores() {
         if (countEl) countEl.textContent = cacheAsesores.length + (cacheAsesores.length === 1 ? ' asesor' : ' asesores');
 
         if (!cacheAsesores.length) {
-            tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><i class="fas fa-user-tie"></i><p>No hay asesores.</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-user-tie"></i><p>No hay asesores.</p></div></td></tr>';
         } else {
             tbody.innerHTML = cacheAsesores.map((a) => `
                 <tr>
-                    <td>${esc(a.nombre)}</td>
+                    <td>
+                        <div class="asesor-cell">
+                            ${a.foto_thumb || a.foto ? `<img class="asesor-mini" src="${esc(a.foto_thumb || a.foto)}" alt="">` : '<div class="asesor-mini"></div>'}
+                            <span>${esc(a.nombre)}</span>
+                        </div>
+                    </td>
                     <td><strong>${esc(a.codigo)}</strong></td>
+                    <td>${esc(a.cargo || '—')}</td>
                     <td>${a.contador || 0}</td>
                     <td>${a.activo ? '<span class="badge-active">Activo</span>' : '<span class="badge-blocked">Inactivo</span>'}</td>
                     <td>
@@ -917,12 +962,29 @@ function openAsesorForm(a) {
     $('#asesorId').value = a ? a.id : '';
     $('#asesorNombre').value = a ? a.nombre : '';
     $('#asesorCodigo').value = a ? a.codigo : '';
+    $('#asesorCargo').value = a ? (a.cargo || '') : '';
+    $('#asesorTelefono').value = a ? (a.telefono || '') : '';
+    $('#asesorEmail').value = a ? (a.email || '') : '';
+    $('#asesorInstagram').value = a ? (a.instagram || '') : '';
+    $('#asesorBio').value = a ? (a.bio || '') : '';
+
+    if (a && (a.foto || a.foto_path)) {
+        asesorFoto = { url: a.foto, path: a.foto_path, thumb: a.foto_thumb, thumb_path: a.foto_thumb_path };
+        asesorPathsViejos = [a.foto_path, a.foto_thumb_path].filter(Boolean);
+    } else {
+        asesorFoto = null;
+        asesorPathsViejos = [];
+    }
+    renderAsesorThumb();
     $('#asesorFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function closeAsesorForm() {
     const card = $('#asesorFormCard');
     if (card) card.style.display = 'none';
+    if (asesorFoto && asesorFoto.esNueva && asesorFoto.url) URL.revokeObjectURL(asesorFoto.url);
+    asesorFoto = null;
+    asesorPathsViejos = [];
 }
 
 async function guardarAsesor(e) {
@@ -935,15 +997,47 @@ async function guardarAsesor(e) {
 
     const btn = $('#asesorForm button[type="submit"]');
     const original = btn.innerHTML;
+    const reemplazo = asesorFoto && asesorFoto.esNueva;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
     try {
-        const payload = { nombre, codigo };
+        if (reemplazo && asesorFoto.blob) {
+            const grande = await window.optimizarImagen(asesorFoto.blob, { maxWidth: 800, quality: 0.82 });
+            const subida = await window.subirImagen(grande);
+            const mini = await window.optimizarImagen(asesorFoto.blob, { maxWidth: 400, quality: 0.7 });
+            const subidaMini = await window.subirImagen(mini);
+            asesorFoto.url = subida.url;
+            asesorFoto.path = subida.path;
+            asesorFoto.thumb = subidaMini.url;
+            asesorFoto.thumb_path = subidaMini.path;
+            asesorFoto.esNueva = false;
+            asesorFoto.blob = null;
+        }
+
+        const payload = {
+            nombre,
+            codigo,
+            cargo: $('#asesorCargo').value.trim() || null,
+            telefono: $('#asesorTelefono').value.trim() || null,
+            email: $('#asesorEmail').value.trim() || null,
+            instagram: $('#asesorInstagram').value.trim() || null,
+            bio: $('#asesorBio').value.trim() || null,
+            foto: asesorFoto ? asesorFoto.url : null,
+            foto_thumb: asesorFoto ? (asesorFoto.thumb || asesorFoto.url) : null,
+            foto_path: asesorFoto ? (asesorFoto.path || null) : null,
+            foto_thumb_path: asesorFoto ? (asesorFoto.thumb_path || null) : null
+        };
+
         const { error } = id
             ? await window.db.from('asesores').update(payload).eq('id', id)
             : await window.db.from('asesores').insert(payload);
         if (error) throw error;
+
+        if (reemplazo && asesorPathsViejos.length) {
+            await window.db.storage.from(window.APP_CONFIG.bucket).remove(asesorPathsViejos);
+        }
+
         setStatus(status, '¡Asesor guardado!', 'success');
         await cargarAsesores();
         setTimeout(closeAsesorForm, 800);
@@ -964,7 +1058,10 @@ async function toggleAsesor(id, activo) {
 
 async function borrarAsesor(id) {
     if (!confirm('¿Eliminar este asesor? Sus captaciones se conservan, pero quedarán sin asesor asignado.')) return;
+    const a = cacheAsesores.find((x) => x.id === id);
+    const rutas = a ? [a.foto_path, a.foto_thumb_path].filter(Boolean) : [];
     const { error } = await window.db.from('asesores').delete().eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
+    if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
     await cargarAsesores();
 }
