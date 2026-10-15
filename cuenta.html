@@ -58,7 +58,34 @@
 
             <div class="panel-card">
                 <h3><i class="fas fa-heart" style="color:#B8931F"></i> Mis favoritos</h3>
+
+                <div class="compare-bar">
+                    <span class="compare-hint" id="compareHint">Marca el corazón en las propiedades que te gusten.</span>
+                    <button type="button" class="btn-sm btn-dark" id="btnCompareMode">
+                        <i class="fas fa-columns"></i> Comparar propiedades
+                    </button>
+                </div>
+
                 <div id="favWrap"><div class="spinner"></div></div>
+
+                <div class="compare-actions" id="compareActions">
+                    <span id="compareCount">Selecciona hasta 4 propiedades</span>
+                    <button type="button" class="btn-sm btn-gold" id="btnDoCompare" disabled>
+                        <i class="fas fa-columns"></i> Comparar (0)
+                    </button>
+                    <button type="button" class="btn-sm btn-edit" id="btnCancelCompare">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal comparador -->
+    <div class="compare-overlay" id="compareOverlay" hidden>
+        <div class="compare-modal" role="dialog" aria-modal="true" aria-labelledby="compareTitle">
+            <button type="button" class="modal-close" id="compareClose" aria-label="Cerrar comparación"><i class="fas fa-times"></i></button>
+            <h2 id="compareTitle">Comparar propiedades</h2>
+            <div class="compare-table-wrap">
+                <table class="compare-table" id="compareTable"></table>
             </div>
         </div>
     </div>
@@ -69,6 +96,11 @@
     <script src="auth.js"></script>
     <script>
         let user = null;
+        let favoritosProps = [];
+        let compareMode = false;
+        let seleccion = new Set();
+        const MAX_COMPARE = 4;
+
         const $ = (s) => document.querySelector(s);
         const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
@@ -98,9 +130,17 @@
                 show(error ? 'Error: ' + error.message : 'Datos actualizados correctamente.', error ? 'error' : 'success');
             });
 
+            $('#btnCompareMode').addEventListener('click', () => setCompareMode(!compareMode));
+            $('#btnCancelCompare').addEventListener('click', () => setCompareMode(false));
+            $('#btnDoCompare').addEventListener('click', abrirComparador);
+            $('#compareClose').addEventListener('click', cerrarComparador);
+            $('#compareOverlay').addEventListener('click', (e) => { if (e.target.id === 'compareOverlay') cerrarComparador(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarComparador(); });
+
             cargarFavoritos();
         });
 
+        /* ---------- Favoritos ---------- */
         async function cargarFavoritos() {
             const wrap = $('#favWrap');
             const { data, error } = await window.db
@@ -110,34 +150,141 @@
 
             if (error) { wrap.innerHTML = '<p style="color:#c0392b">Error: ' + esc(error.message) + '</p>'; return; }
 
-            const props = (data || []).map((r) => r.properties).filter(Boolean);
-            if (!props.length) {
-                wrap.innerHTML = '<div class="empty"><i class="fas fa-heart-broken"></i><p>Aún no has guardado favoritos.<br>Explora las propiedades y toca el corazón 🤍</p><a href="index.html#propiedades" class="btn-sm btn-gold" style="margin-top:14px;display:inline-flex">Ver propiedades</a></div>';
+            favoritosProps = (data || []).map((r) => r.properties).filter(Boolean);
+            renderFavoritos();
+        }
+
+        function renderFavoritos() {
+            const wrap = $('#favWrap');
+
+            if (!favoritosProps.length) {
+                wrap.innerHTML = '<div class="empty"><i class="fas fa-heart-broken"></i><p>Aún no has guardado favoritos.<br>Explora las propiedades y toca el corazón 🤍</p>' +
+                    '<a href="index.html#propiedades" class="btn-sm btn-gold" style="margin-top:14px;display:inline-flex">Ver propiedades</a></div>';
+                $('#btnCompareMode').style.display = 'none';
                 return;
             }
+            $('#btnCompareMode').style.display = '';
 
-            wrap.innerHTML = '<div class="fav-grid">' + props.map((p) => `
-                <article class="property-card" style="cursor:default">
-                    <div class="property-image">
-                        ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy">` : ''}
-                        <div class="property-price">${money(p.precio)}</div>
-                        <button class="fav-btn active" data-quitar="${p.id}" title="Quitar de favoritos">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="property-content">
-                        <p class="property-type">${esc(p.tipo)}</p>
-                        <h3 class="property-title">${esc(p.titulo)}</h3>
-                        <p class="property-location"><i class="fas fa-map-marker-alt"></i> ${esc(p.ubicacion)}</p>
-                    </div>
-                </article>
-            `).join('') + '</div>';
+            wrap.innerHTML = '<div class="fav-grid' + (compareMode ? ' compare-mode' : '') + '">' +
+                favoritosProps.map((p) => `
+                    <article class="property-card${seleccion.has(p.id) ? ' selected' : ''}" data-card="${esc(p.id)}">
+                        <div class="property-image">
+                            <input type="checkbox" class="fav-select" data-select="${esc(p.id)}" ${seleccion.has(p.id) ? 'checked' : ''} aria-label="Seleccionar para comparar">
+                            ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy">` : ''}
+                            <div class="property-price">${money(p.precio)}</div>
+                            <button class="fav-btn active" data-quitar="${esc(p.id)}" title="Quitar de favoritos"><i class="fas fa-heart"></i></button>
+                        </div>
+                        <div class="property-content">
+                            <p class="property-type">${esc(p.tipo)}</p>
+                            <h3 class="property-title">${esc(p.titulo)}</h3>
+                            <p class="property-location"><i class="fas fa-map-marker-alt"></i> ${esc(p.ubicacion)}</p>
+                        </div>
+                    </article>
+                `).join('') + '</div>';
 
             wrap.querySelectorAll('[data-quitar]').forEach((b) =>
-                b.addEventListener('click', async () => {
+                b.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     await Auth.toggleFavorite(b.dataset.quitar);
+                    seleccion.delete(b.dataset.quitar);
                     cargarFavoritos();
                 }));
+
+            wrap.querySelectorAll('[data-select]').forEach((chk) =>
+                chk.addEventListener('change', () => seleccionar(chk)));
+
+            wrap.querySelectorAll('[data-card]').forEach((card) =>
+                card.addEventListener('click', (e) => {
+                    if (!compareMode) return;
+                    if (e.target.closest('[data-quitar]') || e.target.closest('[data-select]')) return;
+                    const chk = card.querySelector('[data-select]');
+                    chk.checked = !chk.checked;
+                    seleccionar(chk);
+                }));
+
+            actualizarBarra();
+        }
+
+        function seleccionar(chk) {
+            const id = chk.dataset.select;
+            if (chk.checked) {
+                if (seleccion.size >= MAX_COMPARE) {
+                    chk.checked = false;
+                    alert('Puedes comparar hasta ' + MAX_COMPARE + ' propiedades.');
+                    return;
+                }
+                seleccion.add(id);
+                chk.closest('.property-card')?.classList.add('selected');
+            } else {
+                seleccion.delete(id);
+                chk.closest('.property-card')?.classList.remove('selected');
+            }
+            actualizarBarra();
+        }
+
+        function setCompareMode(activo) {
+            compareMode = activo;
+            if (!activo) seleccion.clear();
+            $('#compareActions').classList.toggle('visible', activo);
+            $('#btnCompareMode').innerHTML = activo
+                ? '<i class="fas fa-times"></i> Cancelar'
+                : '<i class="fas fa-columns"></i> Comparar propiedades';
+            $('#compareHint').textContent = activo
+                ? 'Elige de 2 a 4 propiedades para comparar.'
+                : 'Marca el corazón en las propiedades que te gusten.';
+            renderFavoritos();
+            if (activo) $('#favWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function actualizarBarra() {
+            const btn = $('#btnDoCompare');
+            const n = seleccion.size;
+            $('#compareCount').textContent = n < 2
+                ? 'Selecciona hasta ' + MAX_COMPARE + ' propiedades (mínimo 2)'
+                : n + ' de ' + MAX_COMPARE + ' seleccionadas';
+            btn.disabled = n < 2;
+            btn.innerHTML = '<i class="fas fa-columns"></i> Comparar (' + n + ')';
+        }
+
+        /* ---------- Comparador ---------- */
+        function abrirComparador() {
+            const elegidas = favoritosProps.filter((p) => seleccion.has(p.id));
+            if (elegidas.length < 2) return;
+
+            const filas = [
+                ['Precio', (p) => money(p.precio)],
+                ['Tipo', (p) => esc(p.tipo)],
+                ['Ubicación', (p) => esc(p.ubicacion)],
+                ['Habitaciones', (p) => p.habitaciones > 0 ? esc(p.habitaciones) : '—'],
+                ['Baños', (p) => p.banos > 0 ? esc(p.banos) : '—'],
+                ['Área', (p) => p.area ? esc(p.area) + ' m²' : '—'],
+                ['Características', (p) => (p.caracteristicas && p.caracteristicas.length) ? p.caracteristicas.map(esc).join('<br>') : '—']
+            ];
+
+            const head = '<tr><th class="compare-row-label"></th>' + elegidas.map((p) => `
+                <th class="compare-head">
+                    ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}">` : ''}
+                    <strong>${esc(p.titulo)}</strong>
+                </th>`).join('') + '</tr>';
+
+            const body = filas.map(([label, fn]) =>
+                `<tr><td class="compare-row-label">${label}</td>` +
+                elegidas.map((p) => `<td>${fn(p)}</td>`).join('') + '</tr>').join('');
+
+            $('#compareTable').innerHTML = head + body;
+
+            const overlay = $('#compareOverlay');
+            overlay.hidden = false;
+            document.body.classList.add('no-scroll');
+            requestAnimationFrame(() => overlay.classList.add('active'));
+        }
+
+        function cerrarComparador() {
+            const overlay = $('#compareOverlay');
+            if (!overlay || overlay.hidden) return;
+            overlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+            setTimeout(() => { overlay.hidden = true; }, 250);
         }
     </script>
 </body>
