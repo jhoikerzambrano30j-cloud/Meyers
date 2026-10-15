@@ -354,7 +354,7 @@ async function guardarPropiedad(e) {
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
             area: Number($('#area').value || 0),
-            descripcion: $('#descripcion').value.trim().toUpperCase(),
+            descripcion: $('#descripcion').value.trim(),
             caracteristicas: $('#caracteristicas').value
                 .split(',').map((s) => s.trim().toUpperCase()).filter(Boolean),
             badge: $('#badge').value.trim().toUpperCase() || null,
