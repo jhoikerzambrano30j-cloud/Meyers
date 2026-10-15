@@ -465,6 +465,30 @@ create policy "testimonials_admin_write" on public.testimonials
     for all using (public.is_admin()) with check (public.is_admin());
 
 -- ----------------------------------------------------------------------------
+-- CIERRES REALIZADOS (galería de operaciones cerradas)
+-- ----------------------------------------------------------------------------
+create table if not exists public.cierres (
+    id           uuid primary key default gen_random_uuid(),
+    titulo       text,
+    descripcion  text,
+    imagen       text not null,
+    imagen_thumb text,
+    path         text,
+    thumb_path   text,
+    created_at   timestamptz not null default now()
+);
+
+alter table public.cierres enable row level security;
+
+drop policy if exists "cierres_read" on public.cierres;
+create policy "cierres_read" on public.cierres
+    for select using (true);
+
+drop policy if exists "cierres_admin_write" on public.cierres;
+create policy "cierres_admin_write" on public.cierres
+    for all using (public.is_admin()) with check (public.is_admin());
+
+-- ----------------------------------------------------------------------------
 -- 6. MENSAJES DEL FORMULARIO DE CONTACTO (leads)
 -- ----------------------------------------------------------------------------
 create table if not exists public.leads (

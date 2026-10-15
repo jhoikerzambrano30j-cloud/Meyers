@@ -37,6 +37,7 @@
             <button class="admin-tab active" data-tab="propiedades"><i class="fas fa-house"></i> Propiedades</button>
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
+            <button class="admin-tab" data-tab="cierres"><i class="fas fa-handshake"></i> Cierres</button>
         </div>
 
         <!-- ============ PROPIEDADES ============ -->
@@ -232,6 +233,52 @@
                     <tbody id="leadsTableBody"></tbody>
                 </table>
             </div>
+        </section>
+
+        <!-- ============ CIERRES ============ -->
+        <section class="admin-panel" id="tab-cierres">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Cierres realizados</h2>
+                    <p id="cierresCount">Cargando…</p>
+                </div>
+                <button type="button" class="btn-sm btn-gold" id="btnNewCierre">
+                    <i class="fas fa-plus"></i> Nuevo cierre
+                </button>
+            </div>
+
+            <div class="panel-card" id="cierreFormCard" style="display:none">
+                <h3 id="cierreFormTitle">Nuevo cierre</h3>
+                <form id="cierreForm">
+                    <input type="hidden" id="cierreId">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="cierreTitulo">Título</label>
+                            <input type="text" id="cierreTitulo" data-upper placeholder="EJ: FAMILIA GONZÁLEZ — CASA CHARALLAVE">
+                        </div>
+                        <div class="field">
+                            <label for="cierreDesc">Detalle (opcional)</label>
+                            <input type="text" id="cierreDesc" placeholder="Ej: Venta cerrada en 15 días">
+                        </div>
+                        <div class="field full">
+                            <label>Foto del cierre *</label>
+                            <div class="uploader" id="cierreUploader">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Haz clic o arrastra la foto aquí</strong><br>JPG, PNG o WebP</p>
+                                <input type="file" id="cierreInput" accept="image/*" hidden>
+                            </div>
+                            <div class="thumbs" id="cierreThumbs"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar cierre</button>
+                        <button type="button" class="btn-sm btn-edit" id="btnCancelCierre">Cancelar</button>
+                    </div>
+                    <div class="alert" id="cierreStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+
+            <div class="cierres-admin" id="cierresList"></div>
         </section>
 
     </div>
