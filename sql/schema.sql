@@ -237,27 +237,6 @@ revoke all on function public.admin_set_blocked(uuid, boolean) from public;
 grant execute on function public.admin_delete_user(uuid) to authenticated;
 grant execute on function public.admin_set_blocked(uuid, boolean) to authenticated;
 
--- El propio usuario puede eliminar su cuenta y TODOS sus datos (correo, teléfono, favoritos)
-create or replace function public.delete_my_account()
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-    if auth.uid() is null then
-        raise exception 'No autenticado';
-    end if;
-    if exists (select 1 from public.profiles where id = auth.uid() and role = 'master') then
-        raise exception 'La cuenta master no se puede eliminar';
-    end if;
-    delete from auth.users where id = auth.uid();
-end;
-$$;
-
-revoke all on function public.delete_my_account() from public;
-grant execute on function public.delete_my_account() to authenticated;
-
 -- ----------------------------------------------------------------------------
 -- 1b. ASESORES (nomenclatura de captaciones)
 -- ----------------------------------------------------------------------------

@@ -1905,30 +1905,6 @@ table.data tbody tr:hover {
 }
 
 /* ============================================================
-   ZONA DE RIESGO (eliminar mi cuenta)
-   ============================================================ */
-.danger-zone {
-    border-color: rgba(231, 76, 60, 0.35);
-}
-
-.danger-zone::before {
-    background: linear-gradient(90deg, #e74c3c 0%, #ff9b8f 100%);
-}
-
-.danger-text {
-    color: var(--gray-text);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 18px;
-}
-
-.danger-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-/* ============================================================
    MÓVIL / TABLET — pulido y app instalable
    ============================================================ */
 a, button {

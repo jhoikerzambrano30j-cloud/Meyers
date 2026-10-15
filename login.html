@@ -69,9 +69,6 @@
             if (new URLSearchParams(location.search).get('expirado')) {
                 show('Tu sesión se cerró por inactividad. Vuelve a ingresar.', 'error');
             }
-            if (new URLSearchParams(location.search).get('eliminada')) {
-                show('Tu cuenta y todos tus datos fueron eliminados. ¡Gracias por habernos usado!', 'success');
-            }
 
             // Si ya hay sesión, redirige
             const user = await Auth.getUser();
