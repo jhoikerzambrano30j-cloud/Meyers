@@ -165,7 +165,7 @@ async function cargarCierres() {
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <figcaption>
                     <strong>${escapeHtml(c.titulo || 'Cierre realizado')}</strong>
-                    ${c.descripcion ? `<span>${escapeHtml(c.descripcion)}</span>` : ''}
+                    ${c.descripcion ? `<span class="cierre-desc">${escapeHtml(c.descripcion)}</span>` : ''}
                 </figcaption>
             </figure>`).join('');
     } catch (e) {

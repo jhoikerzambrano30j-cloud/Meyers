@@ -118,7 +118,8 @@
 
                         <div class="field full">
                             <label for="descripcion">Descripción</label>
-                            <textarea id="descripcion" placeholder="Describe la propiedad…"></textarea>
+                            <textarea id="descripcion" rows="6" placeholder="Escribe un resumen y luego cada detalle en una línea nueva (usa ENTER).&#10;Ejemplo:&#10;Apartamento en venta en Casa Real, Charallave.&#10;1 baño completo.&#10;Cocina integral con granito.&#10;Estacionamiento para 2 puestos."></textarea>
+                            <small class="field-hint">Puedes usar <b>ENTER</b> para separar en líneas. Cada línea se mostrará ordenada (párrafos y viñetas) automáticamente.</small>
                         </div>
                         <div class="field full">
                             <label>Características</label>
@@ -252,13 +253,14 @@
                 <form id="cierreForm">
                     <input type="hidden" id="cierreId">
                     <div class="form-grid">
-                        <div class="field">
+                        <div class="field full">
                             <label for="cierreTitulo">Título</label>
                             <input type="text" id="cierreTitulo" data-upper placeholder="EJ: FAMILIA GONZÁLEZ — CASA CHARALLAVE">
                         </div>
-                        <div class="field">
+                        <div class="field full">
                             <label for="cierreDesc">Detalle (opcional)</label>
-                            <input type="text" id="cierreDesc" placeholder="Ej: Venta cerrada en 15 días">
+                            <textarea id="cierreDesc" rows="3" placeholder="Ejemplo:&#10;Venta cerrada en 15 días.&#10;Familia muy contenta con la atención."></textarea>
+                            <small class="field-hint">Usa <b>ENTER</b> para separar en líneas.</small>
                         </div>
                         <div class="field full">
                             <label>Foto del cierre *</label>

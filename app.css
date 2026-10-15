@@ -1231,6 +1231,11 @@ table.compare-table tr:hover td {
     margin-top: 4px;
 }
 
+/* Las líneas escritas con ENTER se respetan */
+.cierre-desc {
+    white-space: pre-line;
+}
+
 /* Tarjetas de cierres en el panel de admin */
 .cierres-admin {
     display: grid;
