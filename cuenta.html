@@ -82,8 +82,12 @@
     <!-- Modal comparador -->
     <div class="compare-overlay" id="compareOverlay" hidden>
         <div class="compare-modal" role="dialog" aria-modal="true" aria-labelledby="compareTitle">
-            <button type="button" class="modal-close" id="compareClose" aria-label="Cerrar comparación"><i class="fas fa-times"></i></button>
-            <h2 id="compareTitle">Comparar propiedades</h2>
+            <button type="button" class="compare-close" id="compareClose" aria-label="Cerrar comparación"><i class="fas fa-times"></i></button>
+            <div class="compare-header">
+                <span class="compare-tag">Meyer's Inmobiliaria</span>
+                <h2 id="compareTitle">Comparar propiedades</h2>
+                <p class="compare-sub">Analiza hasta 4 propiedades lado a lado.</p>
+            </div>
             <div class="compare-table-wrap">
                 <table class="compare-table" id="compareTable"></table>
             </div>
