@@ -37,6 +37,7 @@
             <button class="admin-tab active" data-tab="propiedades"><i class="fas fa-house"></i> Propiedades</button>
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
+            <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
         </div>
 
         <!-- ============ PROPIEDADES ============ -->
@@ -59,10 +60,16 @@
 
                     <div class="form-grid">
                         <div class="field">
-                            <label for="codigo">Código (opcional)</label>
-                            <input type="text" id="codigo" placeholder="Automático (ej. MY-00007)" data-upper>
+                            <label for="asesor">Asesor *</label>
+                            <select id="asesor" required>
+                                <option value="">Selecciona…</option>
+                            </select>
                         </div>
                         <div class="field">
+                            <label for="codigo">Código de captación</label>
+                            <input type="text" id="codigo" placeholder="Se asigna al guardar" readonly>
+                        </div>
+                        <div class="field full">
                             <label for="titulo">Título *</label>
                             <input type="text" id="titulo" required placeholder="Ej: CASA CON JARDÍN" data-upper>
                         </div>
@@ -231,6 +238,54 @@
                         </tr>
                     </thead>
                     <tbody id="leadsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============ ASESORES ============ -->
+        <section class="admin-panel" id="tab-asesores">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Asesores y nomenclatura</h2>
+                    <p id="asesoresCount">Cargando…</p>
+                </div>
+                <button type="button" class="btn-sm btn-gold" id="btnNewAsesor">
+                    <i class="fas fa-plus"></i> Nuevo asesor
+                </button>
+            </div>
+
+            <div class="panel-card" id="asesorFormCard" style="display:none">
+                <h3 id="asesorFormTitle">Nuevo asesor</h3>
+                <form id="asesorForm">
+                    <input type="hidden" id="asesorId">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="asesorNombre">Nombre</label>
+                            <input type="text" id="asesorNombre" required placeholder="Ej: Belkis Prada">
+                        </div>
+                        <div class="field">
+                            <label for="asesorCodigo">Nomenclatura</label>
+                            <input type="text" id="asesorCodigo" required maxlength="4" placeholder="Ej: BP" data-upper>
+                            <small class="field-hint">2 a 4 letras. Se usa para el código de captación (ej. <b>BP-0007</b>).</small>
+                        </div>
+                    </div>
+                    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar asesor</button>
+                        <button type="button" class="btn-sm btn-edit" id="btnCancelAsesor">Cancelar</button>
+                    </div>
+                    <div class="alert" id="asesorStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th><th>Nomenclatura</th><th>Captaciones</th>
+                            <th>Estado</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asesoresTableBody"></tbody>
                 </table>
             </div>
         </section>

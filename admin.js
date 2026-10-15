@@ -21,6 +21,7 @@ let editandoId = null;
 let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheLeads = [];
+let cacheAsesores = [];
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -95,7 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
     $('#btnExportLeads')?.addEventListener('click', () => exportLeads());
-    await Promise.all([loadProperties(), loadUsuarios(), loadLeads()]);
+    $('#btnNewAsesor')?.addEventListener('click', () => openAsesorForm(null));
+    $('#btnCancelAsesor')?.addEventListener('click', closeAsesorForm);
+    initAsesorForm();
+    $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
+
+    await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), cargarAsesores()]);
 });
 
 /* ============================================================
@@ -351,6 +357,7 @@ async function openForm(id, lista) {
         if (!p.id) return cargarYEditar(editandoId);
 
         $('#propId').value = p.id || '';
+        $('#asesor').value = p.asesor_id || '';
         $('#codigo').value = p.codigo || '';
         $('#titulo').value = p.titulo || '';
         $('#tipo').value = p.tipo || '';
@@ -483,11 +490,11 @@ async function guardarPropiedad(e) {
         const portada = imagenes.length ? imagenes[0].url : null;
 
         const payload = {
-            codigo: $('#codigo').value.trim().toUpperCase() || null,
             titulo: titulo.toUpperCase(),
             tipo: $('#tipo').value,
             ubicacion: ubicacionVal,
             zona: zonaVal,
+            asesor_id: $('#asesor').value || null,
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
@@ -502,9 +509,6 @@ async function guardarPropiedad(e) {
         };
 
         let propertyId = $('#propId').value || null;
-
-        // Al editar, si dejan el código vacío, se conserva el que ya tenía
-        if (propertyId && !payload.codigo) delete payload.codigo;
 
         if (propertyId) {
             const { error } = await window.db.from('properties').update(payload).eq('id', propertyId);
@@ -787,7 +791,8 @@ document.addEventListener('change', (e) => {
    AYUDAS — botones "?" que explican cada campo
    ============================================================ */
 const AYUDAS = [
-    ['codigo', 'Si lo dejas vacío, el sistema asigna uno solo (ej. MY-00001) y nunca lo reutiliza.'],
+    ['codigo', 'Se genera solo al guardar, usando la nomenclatura del asesor (ej. BP-0007). No se cambia a mano.'],
+    ['asesor', 'Elige el asesor que hizo la captación. Su nomenclatura se usará en el código de la propiedad.'],
     ['titulo', 'Nombre corto y claro de la propiedad. Se guarda en MAYÚSCULAS.'],
     ['tipo', 'Categoría: Casa, Apartamento, Terreno o Local Comercial.'],
     ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
@@ -827,3 +832,139 @@ document.addEventListener('click', (e) => {
     });
     if (btn) btn.nextElementSibling.classList.toggle('show');
 });
+
+/* ============================================================
+   ASESORES (nomenclatura de captaciones)
+   ============================================================ */
+function initAsesorForm() {
+    const form = $('#asesorForm');
+    if (form) form.addEventListener('submit', guardarAsesor);
+}
+
+/** Muestra el código que se asignará según el asesor elegido. */
+function actualizarCodigoPreview() {
+    const sel = $('#asesor');
+    const codigo = $('#codigo');
+    if (!sel || !codigo) return;
+    const a = cacheAsesores.find((x) => x.id === sel.value);
+    if (a) {
+        codigo.value = a.codigo + '-' + String((a.contador || 0) + 1).padStart(4, '0');
+    } else {
+        codigo.value = '';
+        codigo.placeholder = 'Selecciona un asesor';
+    }
+}
+
+async function cargarAsesores() {
+    const sel = $('#asesor');
+    const tbody = $('#asesoresTableBody');
+    const { data, error } = await window.db.from('asesores').select('*').order('nombre');
+    if (error) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5">Error: ' + esc(error.message) + '</td></tr>';
+        return;
+    }
+    cacheAsesores = data || [];
+
+    if (sel) {
+        const actual = sel.value;
+        sel.innerHTML = '<option value="">Selecciona…</option>' +
+            cacheAsesores.filter((a) => a.activo).map((a) => `<option value="${esc(a.id)}">${esc(a.nombre)} (${esc(a.codigo)})</option>`).join('');
+        if (actual) sel.value = actual;
+    }
+
+    if (tbody) {
+        const countEl = $('#asesoresCount');
+        if (countEl) countEl.textContent = cacheAsesores.length + (cacheAsesores.length === 1 ? ' asesor' : ' asesores');
+
+        if (!cacheAsesores.length) {
+            tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><i class="fas fa-user-tie"></i><p>No hay asesores.</p></div></td></tr>';
+        } else {
+            tbody.innerHTML = cacheAsesores.map((a) => `
+                <tr>
+                    <td>${esc(a.nombre)}</td>
+                    <td><strong>${esc(a.codigo)}</strong></td>
+                    <td>${a.contador || 0}</td>
+                    <td>${a.activo ? '<span class="badge-active">Activo</span>' : '<span class="badge-blocked">Inactivo</span>'}</td>
+                    <td>
+                        <div class="cell-actions">
+                            <button class="btn-sm btn-edit" data-asesor-edit="${esc(a.id)}"><i class="fas fa-pen"></i> Editar</button>
+                            <button class="btn-sm ${a.activo ? 'btn-warn' : 'btn-edit'}" data-asesor-toggle="${esc(a.id)}" data-activo="${a.activo}">
+                                <i class="fas fa-${a.activo ? 'ban' : 'check'}"></i> ${a.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                            <button class="btn-sm btn-danger" data-asesor-del="${esc(a.id)}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.querySelectorAll('[data-asesor-edit]').forEach((b) =>
+                b.addEventListener('click', () => openAsesorForm(cacheAsesores.find((x) => x.id === b.dataset.asesorEdit))));
+            tbody.querySelectorAll('[data-asesor-toggle]').forEach((b) =>
+                b.addEventListener('click', () => toggleAsesor(b.dataset.asesorToggle, b.dataset.activo !== 'true')));
+            tbody.querySelectorAll('[data-asesor-del]').forEach((b) =>
+                b.addEventListener('click', () => borrarAsesor(b.dataset.asesorDel)));
+        }
+    }
+
+    actualizarCodigoPreview();
+}
+
+function openAsesorForm(a) {
+    $('#asesorForm').reset();
+    $('#asesorFormCard').style.display = 'block';
+    $('#asesorFormTitle').textContent = a ? 'Editar asesor' : 'Nuevo asesor';
+    setStatus($('#asesorStatus'), '', '');
+    $('#asesorId').value = a ? a.id : '';
+    $('#asesorNombre').value = a ? a.nombre : '';
+    $('#asesorCodigo').value = a ? a.codigo : '';
+    $('#asesorFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeAsesorForm() {
+    const card = $('#asesorFormCard');
+    if (card) card.style.display = 'none';
+}
+
+async function guardarAsesor(e) {
+    e.preventDefault();
+    const status = $('#asesorStatus');
+    const id = $('#asesorId').value || null;
+    const nombre = $('#asesorNombre').value.trim();
+    const codigo = ($('#asesorCodigo').value || '').trim().toUpperCase();
+    if (!nombre || !codigo) { setStatus(status, 'Completa el nombre y la nomenclatura.', 'error'); return; }
+
+    const btn = $('#asesorForm button[type="submit"]');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const payload = { nombre, codigo };
+        const { error } = id
+            ? await window.db.from('asesores').update(payload).eq('id', id)
+            : await window.db.from('asesores').insert(payload);
+        if (error) throw error;
+        setStatus(status, '¡Asesor guardado!', 'success');
+        await cargarAsesores();
+        setTimeout(closeAsesorForm, 800);
+    } catch (err) {
+        const msg = /duplicate|unique/i.test(err.message) ? 'Esa nomenclatura ya existe. Usa otra.' : err.message;
+        setStatus(status, 'Error: ' + msg, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+}
+
+async function toggleAsesor(id, activo) {
+    const { error } = await window.db.from('asesores').update({ activo }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await cargarAsesores();
+}
+
+async function borrarAsesor(id) {
+    if (!confirm('¿Eliminar este asesor? Sus captaciones se conservan, pero quedarán sin asesor asignado.')) return;
+    const { error } = await window.db.from('asesores').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await cargarAsesores();
+}

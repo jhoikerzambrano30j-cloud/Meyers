@@ -238,6 +238,41 @@ grant execute on function public.admin_delete_user(uuid) to authenticated;
 grant execute on function public.admin_set_blocked(uuid, boolean) to authenticated;
 
 -- ----------------------------------------------------------------------------
+-- 1b. ASESORES (nomenclatura de captaciones)
+-- ----------------------------------------------------------------------------
+create table if not exists public.asesores (
+    id         uuid primary key default gen_random_uuid(),
+    nombre     text not null,
+    codigo     text not null unique check (codigo = upper(codigo)),
+    contador   int not null default 0,
+    activo     boolean not null default true,
+    created_at timestamptz not null default now()
+);
+
+alter table public.asesores enable row level security;
+
+drop policy if exists "asesores_read" on public.asesores;
+create policy "asesores_read" on public.asesores for select using (true);
+
+drop policy if exists "asesores_admin_write" on public.asesores;
+create policy "asesores_admin_write" on public.asesores
+    for all using (public.is_admin()) with check (public.is_admin());
+
+insert into public.asesores (nombre, codigo) values
+    ('Mayerlyn Martínez', 'MY'),
+    ('Beatriz Teran', 'BT'),
+    ('Heizel Reyes', 'HR'),
+    ('Deisy Valldosera', 'DV'),
+    ('Juselia Martinez', 'JM'),
+    ('Yellisett Laya', 'YL'),
+    ('Belkis Prada', 'BP'),
+    ('Yalexi Gomez', 'YG'),
+    ('Luisa Vilchez', 'LV'),
+    ('Carolina Rada', 'CR'),
+    ('Ana Castro', 'AC')
+on conflict (codigo) do nothing;
+
+-- ----------------------------------------------------------------------------
 -- 2. PROPIEDADES
 -- ----------------------------------------------------------------------------
 create table if not exists public.properties (
@@ -247,6 +282,7 @@ create table if not exists public.properties (
     tipo            text not null,
     ubicacion       text not null,
     zona            text,
+    asesor_id       uuid references public.asesores(id) on delete set null,
     precio          numeric not null default 0,
     habitaciones    int not null default 0,
     banos           int not null default 0,
@@ -309,6 +345,31 @@ as $$
     select 'MY-' || lpad(nextval('public.property_codigo_seq')::text, 5, '0');
 $$;
 
+-- Código de captación del asesor: <CODIGO>-<numero> (ej. BP-0007).
+-- Cada asesor lleva su propio consecutivo y nunca se reutiliza.
+create or replace function public.next_codigo_asesor(p_asesor uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_codigo text;
+    v_num    int;
+begin
+    update public.asesores
+       set contador = contador + 1
+     where id = p_asesor
+     returning codigo, contador into v_codigo, v_num;
+
+    if v_codigo is null then
+        raise exception 'Asesor no encontrado';
+    end if;
+
+    return v_codigo || '-' || lpad(v_num::text, 4, '0');
+end;
+$$;
+
 create or replace function public.set_property_codigo()
 returns trigger
 language plpgsql
@@ -317,7 +378,11 @@ set search_path = public
 as $$
 begin
     if new.codigo is null or btrim(new.codigo) = '' then
-        new.codigo := public.next_property_codigo();
+        if new.asesor_id is not null then
+            new.codigo := public.next_codigo_asesor(new.asesor_id);
+        else
+            new.codigo := public.next_property_codigo();
+        end if;
     end if;
     return new;
 end;

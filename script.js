@@ -126,7 +126,7 @@ async function cargarPropiedades() {
     try {
         const { data, error } = await window.db
             .from('properties')
-            .select('*')
+            .select('*, asesores(nombre, codigo)')
             .order('destacada', { ascending: false })
             .order('created_at', { ascending: false });
         if (!error && data && data.length) PROPIEDADES = data.map(mapPropiedad);
@@ -175,6 +175,7 @@ function mapPropiedad(p) {
         tipo: p.tipo,
         ubicacion: p.ubicacion,
         zona: p.zona,
+        asesor: p.asesores ? p.asesores.nombre : null,
         precio: p.precio,
         habitaciones: p.habitaciones,
         banos: p.banos,
@@ -471,7 +472,10 @@ function modalTemplate(prop) {
         <div class="modal-content">
             <p class="property-type">${escapeHtml(prop.tipo)}</p>
             <h2 id="modalTitle">${escapeHtml(prop.titulo)}</h2>
-            <div class="modal-meta"><span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</span></div>
+            <div class="modal-meta">
+                <span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</span>
+                ${prop.asesor ? `<span><i class="fas fa-user-tie" aria-hidden="true"></i>Asesor: ${escapeHtml(prop.asesor)}</span>` : ''}
+            </div>
             <div class="modal-description" id="modalDesc">${descripcionHtml(prop.descripcion)}</div>
             <button type="button" class="desc-toggle" id="descToggle" style="display:none">Ver más</button>
             <div class="modal-features">${features}</div>
