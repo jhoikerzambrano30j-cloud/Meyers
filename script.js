@@ -485,6 +485,7 @@ function modalTemplate(prop) {
 
     return `
         <div class="modal-hero">
+            <img class="modal-hero-bg" id="modalBg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="" aria-hidden="true">
             <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price">${formatPrice(prop.precio)}</div>
@@ -573,7 +574,9 @@ async function cargarGaleria(prop) {
 
         cont.querySelectorAll('[data-img]').forEach((b) => b.addEventListener('click', () => {
             const main = document.getElementById('modalMainImg');
+            const bg = document.getElementById('modalBg');
             if (main) main.src = b.dataset.img;
+            if (bg) bg.src = b.dataset.img;
             cont.querySelectorAll('.gallery-thumb').forEach((x) => x.classList.remove('active'));
             b.classList.add('active');
         }));
