@@ -1242,6 +1242,74 @@ table.compare-table tr:hover td {
 }
 
 /* ============================================================
+   MODAL DE CONFIRMACIÓN (cerrar / reabrir / eliminar)
+   ============================================================ */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.7);
+    z-index: 1300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.confirm-overlay.active { opacity: 1; }
+
+.confirm-modal {
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+    border-radius: 16px;
+    width: min(430px, 100%);
+    padding: 32px 28px 26px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.2s ease;
+}
+
+.confirm-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--chrome-gold);
+}
+
+.confirm-overlay.active .confirm-modal { transform: translateY(0) scale(1); }
+
+.confirm-icon {
+    font-size: 2rem;
+    color: var(--gold-dark);
+    margin-bottom: 12px;
+}
+
+.confirm-modal h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.confirm-modal p {
+    color: var(--gray-text);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
    MÉTRICAS (dashboard)
    ============================================================ */
 .metrics-grid {

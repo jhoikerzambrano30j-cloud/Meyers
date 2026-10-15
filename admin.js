@@ -44,6 +44,39 @@ function setStatus(el, msg, tipo) {
     el.className = 'alert show ' + (tipo === 'error' ? 'alert-error' : tipo === 'success' ? 'alert-success' : 'alert-info');
 }
 
+/** Modal de confirmación con OK / Cancelar. Devuelve true si el usuario acepta. */
+function confirmar(titulo, mensaje, textoOk) {
+    return new Promise((resolve) => {
+        const overlay = $('#confirmOverlay');
+        if (!overlay) { resolve(window.confirm(mensaje)); return; }
+
+        $('#confirmTitle').textContent = titulo;
+        $('#confirmMsg').textContent = mensaje;
+        $('#confirmOk').textContent = textoOk || 'Sí, continuar';
+
+        overlay.hidden = false;
+        requestAnimationFrame(() => overlay.classList.add('active'));
+
+        const cerrar = () => {
+            overlay.classList.remove('active');
+            setTimeout(() => { overlay.hidden = true; }, 200);
+            $('#confirmOk').removeEventListener('click', onOk);
+            $('#confirmCancel').removeEventListener('click', onNo);
+            overlay.removeEventListener('click', onOverlay);
+            document.removeEventListener('keydown', onKey);
+        };
+        const onOk = () => { cerrar(); resolve(true); };
+        const onNo = () => { cerrar(); resolve(false); };
+        const onOverlay = (e) => { if (e.target === overlay) onNo(); };
+        const onKey = (e) => { if (e.key === 'Escape') onNo(); };
+
+        $('#confirmOk').addEventListener('click', onOk);
+        $('#confirmCancel').addEventListener('click', onNo);
+        overlay.addEventListener('click', onOverlay);
+        document.addEventListener('keydown', onKey);
+    });
+}
+
 function exportCSV(rows, filename) {
     if (!rows || !rows.length) { alert('No hay datos para exportar.'); return; }
     const headers = Object.keys(rows[0]);
@@ -587,6 +620,12 @@ async function guardarPropiedad(e) {
 }
 
 async function cambiarEstado(id, estado) {
+    if (estado !== 'Disponible') {
+        const ok = await confirmar('Cerrar propiedad',
+            `¿Marcar esta propiedad como "${estado}"? Saldrá del catálogo público y quedará en el historial.`,
+            `Sí, marcar ${estado}`);
+        if (!ok) { await loadProperties(); return; } // revertir el selector
+    }
     const fecha = estado === 'Disponible' ? null : new Date().toISOString().slice(0, 10);
     const { error } = await window.db.from('properties').update({ estado, fecha_cierre: fecha }).eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
@@ -596,7 +635,8 @@ async function cambiarEstado(id, estado) {
 }
 
 async function borrarPropiedad(id) {
-    if (!confirm('¿Seguro que quieres borrar esta propiedad? Se borrarán también sus fotos. No se puede deshacer.')) return;
+    const ok = await confirmar('Eliminar propiedad', 'Se borrará la propiedad y sus fotos. Esta acción no se puede deshacer.', 'Sí, eliminar');
+    if (!ok) return;
 
     // Recoger las rutas de las fotos ANTES de borrar la propiedad
     const { data: imgs } = await window.db.from('property_images').select('path, thumb_path').eq('property_id', id);
@@ -1082,7 +1122,8 @@ async function toggleAsesor(id, activo) {
 }
 
 async function borrarAsesor(id) {
-    if (!confirm('¿Eliminar este asesor? Sus captaciones se conservan, pero quedarán sin asesor asignado.')) return;
+    const ok = await confirmar('Eliminar asesor', 'Sus captaciones se conservan, pero quedarán sin asesor asignado.', 'Sí, eliminar');
+    if (!ok) return;
     const a = cacheAsesores.find((x) => x.id === id);
     const rutas = a ? [a.foto_path, a.foto_thumb_path].filter(Boolean) : [];
     const { error } = await window.db.from('asesores').delete().eq('id', id);
@@ -1230,7 +1271,8 @@ function renderHistorial() {
             </tr>`).join('');
 
     tbody.querySelectorAll('[data-reabrir]').forEach((b) => b.addEventListener('click', async () => {
-        if (!confirm('¿Reabrir? La propiedad volverá al catálogo público.')) return;
+        const ok = await confirmar('Reabrir propiedad', '¿Reabrir? La propiedad volverá al catálogo público.', 'Sí, reabrir');
+        if (!ok) return;
         const { error } = await window.db.from('properties').update({ estado: 'Disponible', fecha_cierre: null }).eq('id', b.dataset.reabrir);
         if (error) { alert('Error: ' + error.message); return; }
         await loadProperties();
