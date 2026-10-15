@@ -293,7 +293,6 @@ create table if not exists public.properties (
     ubicacion       text not null,
     zona            text,
     asesor_id       uuid references public.asesores(id) on delete set null,
-    operacion       text not null default 'Venta',
     estado          text not null default 'Disponible',
     fecha_cierre    date,
     precio          numeric not null default 0,

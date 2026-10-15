@@ -128,6 +128,7 @@ async function cargarPropiedades() {
         const { data, error } = await window.db
             .from('properties')
             .select('*, asesores(nombre, codigo)')
+            .eq('estado', 'Disponible')
             .order('destacada', { ascending: false })
             .order('created_at', { ascending: false });
         if (!error && data && data.length) PROPIEDADES = data.map(mapPropiedad);
@@ -326,7 +327,6 @@ function cardTemplate(prop, i = 0) {
                 <img src="${escapeHtml(prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div class="property-price">${formatPrice(prop.precio)}</div>
-                ${prop.estado && prop.estado !== 'Disponible' ? `<span class="estado-stamp${prop.estado === 'Alquilada' ? ' alquilada' : ''}">${escapeHtml(prop.estado)}</span>` : ''}
             </div>
             <div class="property-content">
                 <p class="property-type">${escapeHtml(prop.tipo)}</p>
@@ -500,7 +500,6 @@ function modalTemplate(prop) {
             <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price">${formatPrice(prop.precio)}</div>
-            ${prop.estado && prop.estado !== 'Disponible' ? `<span class="estado-stamp${prop.estado === 'Alquilada' ? ' alquilada' : ''}">${escapeHtml(prop.estado)}</span>` : ''}
         </div>
         <div class="modal-gallery" id="modalGallery"></div>
         <div class="modal-content">

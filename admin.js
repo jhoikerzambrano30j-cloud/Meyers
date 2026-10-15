@@ -155,15 +155,18 @@ async function loadProperties() {
         <tr>
             <td>${p.imagen ? `<img class="table-thumb" src="${esc(p.imagen)}" alt="">` : '<div class="table-thumb"></div>'}</td>
             <td><strong>${esc(p.codigo || '—')}</strong></td>
-            <td>${esc(p.titulo)}
-                ${p.estado === 'Vendida' ? '<span class="badge-sold" style="margin-left:6px">Vendida</span>' : ''}
-                ${p.estado === 'Alquilada' ? '<span class="badge-rented" style="margin-left:6px">Alquilada</span>' : ''}
-                <br><small style="color:#888">${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
+            <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
             <td>${money(p.precio)}</td>
             <td>${p.destacada ? '<span style="color:#1e8e4e;font-weight:700">Sí</span>' : 'No'}</td>
             <td>${fecha(p.created_at)}</td>
             <td>
                 <div class="cell-actions">
+                    <select class="estado-select" data-estado="${esc(p.id)}" title="Cambiar estado">
+                        <option value="Disponible" ${(!p.estado || p.estado === 'Disponible') ? 'selected' : ''}>Disponible</option>
+                        <option value="Vendida" ${p.estado === 'Vendida' ? 'selected' : ''}>Vendida</option>
+                        <option value="Alquilada" ${p.estado === 'Alquilada' ? 'selected' : ''}>Alquilada</option>
+                        <option value="Acordado" ${p.estado === 'Acordado' ? 'selected' : ''}>Acordado</option>
+                    </select>
                     <button class="btn-sm btn-edit" data-edit="${p.id}"><i class="fas fa-pen"></i> Editar</button>
                     <button class="btn-sm btn-danger" data-del="${p.id}"><i class="fas fa-trash"></i></button>
                 </div>
@@ -175,6 +178,8 @@ async function loadProperties() {
         b.addEventListener('click', () => openForm(b.dataset.edit, data)));
     tbody.querySelectorAll('[data-del]').forEach((b) =>
         b.addEventListener('click', () => borrarPropiedad(b.dataset.del)));
+    tbody.querySelectorAll('[data-estado]').forEach((sel) =>
+        sel.addEventListener('change', () => cambiarEstado(sel.dataset.estado, sel.value)));
 }
 
 function initPropertyForm() {
@@ -375,9 +380,6 @@ async function openForm(id, lista) {
         await cargarZonas((p.ubicacion || '').toUpperCase());
         $('#zona').value = p.zona || '';
         $('#precio').value = p.precio || '';
-        $('#operacion').value = p.operacion || 'Venta';
-        $('#estado').value = p.estado || 'Disponible';
-        $('#fechaCierre').value = p.fecha_cierre || '';
         $('#habitaciones').value = p.habitaciones || 0;
         $('#banos').value = p.banos || 0;
         $('#area').value = p.area || 0;
@@ -507,9 +509,6 @@ async function guardarPropiedad(e) {
             ubicacion: ubicacionVal,
             zona: zonaVal,
             asesor_id: $('#asesor').value || null,
-            operacion: $('#operacion').value,
-            estado: $('#estado').value,
-            fecha_cierre: $('#estado').value === 'Disponible' ? null : ($('#fechaCierre').value || new Date().toISOString().slice(0, 10)),
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
@@ -581,6 +580,14 @@ async function guardarPropiedad(e) {
         btn.disabled = false;
         btn.innerHTML = original;
     }
+}
+
+async function cambiarEstado(id, estado) {
+    const fecha = estado === 'Disponible' ? null : new Date().toISOString().slice(0, 10);
+    const { error } = await window.db.from('properties').update({ estado, fecha_cierre: fecha }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await loadProperties();
+    renderMetricas();
 }
 
 async function borrarPropiedad(id) {
@@ -819,9 +826,6 @@ const AYUDAS = [
     ['tipo', 'Categoría: Casa, Apartamento, Terreno o Local Comercial.'],
     ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
     ['zona', 'Sector o urbanización DENTRO de la ciudad. Solo aparecen las zonas de la ciudad elegida.'],
-    ['operacion', 'Si la captación es para Venta o Alquiler.'],
-    ['estado', 'Disponible, Vendida o Alquilada. Al marcarla como vendida/alquilada entra en las métricas.'],
-    ['fechaCierre', 'Fecha del cierre. Se usa para las métricas del mes.'],
     ['precio', 'Precio en dólares (USD). Solo números.'],
     ['area', 'Superficie en metros cuadrados (m²).'],
     ['habitaciones', 'Cantidad de habitaciones. Pon 0 si no aplica.'],
