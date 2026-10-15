@@ -1310,15 +1310,27 @@ table.compare-table tr:hover td {
     border: 1px solid rgba(225, 189, 69, 0.45);
 }
 
-/* Etiqueta de marca (reutilizable) */
+/* Etiqueta de marca (reutilizable) — va en su propia línea, elegante */
 .brand-tag {
-    display: inline-block;
+    display: block;
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-transform: uppercase;
     color: var(--gold-dark);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.brand-tag::before,
+.brand-tag::after {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+    vertical-align: middle;
+    opacity: 0.55;
+    margin: 0 12px;
 }
 
 .brand-tag.on-dark {
