@@ -1721,6 +1721,19 @@ table.compare-table tr:hover td {
     }
 }
 
+.btn-sm:disabled,
+.btn-gold:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Aparición suave reutilizable (paneles/formularios) */
+.anim-in {
+    animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* ============================================================
    PANEL DE ADMINISTRACIÓN — ACABADO DE MARCA (dorado, no B/N)
    ============================================================ */

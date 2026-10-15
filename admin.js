@@ -38,6 +38,15 @@ function esc(v) {
 const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
 const fecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '—';
 
+/** Muestra un elemento con una animación suave (y la reinicia cada vez). */
+function mostrarConAnimacion(el) {
+    if (!el) return;
+    el.style.display = 'block';
+    el.classList.remove('anim-in');
+    void el.offsetWidth; // reflow para reiniciar la animación
+    el.classList.add('anim-in');
+}
+
 function setStatus(el, msg, tipo) {
     if (!el) return;
     el.textContent = msg;
@@ -394,8 +403,10 @@ async function openForm(id, lista) {
     await cargarZonas('');
 
     const card = $('#formCard');
-    card.style.display = 'block';
+    mostrarConAnimacion(card);
     $('#formTitle').textContent = editandoId ? 'Editar propiedad' : 'Nueva propiedad';
+    const btnNueva = $('#btnNewProperty');
+    if (btnNueva) btnNueva.disabled = true;
     setStatus($('#formStatus'), '', '');
     renderThumbs();
     renderCaracteristicas([]);
@@ -653,6 +664,8 @@ async function borrarPropiedad(id) {
 function closeForm() {
     const card = $('#formCard');
     if (card) card.style.display = 'none';
+    const btnNueva = $('#btnNewProperty');
+    if (btnNueva) btnNueva.disabled = false;
     imagenes.forEach((i) => i.esNueva && URL.revokeObjectURL(i.url));
     imagenes = [];
     editandoId = null;
@@ -1019,7 +1032,9 @@ async function cargarAsesores() {
 
 function openAsesorForm(a) {
     $('#asesorForm').reset();
-    $('#asesorFormCard').style.display = 'block';
+    mostrarConAnimacion($('#asesorFormCard'));
+    const btnNuevo = $('#btnNewAsesor');
+    if (btnNuevo) btnNuevo.disabled = true;
     $('#asesorFormTitle').textContent = a ? 'Editar asesor' : 'Nuevo asesor';
     setStatus($('#asesorStatus'), '', '');
     $('#asesorId').value = a ? a.id : '';
@@ -1045,6 +1060,8 @@ function openAsesorForm(a) {
 function closeAsesorForm() {
     const card = $('#asesorFormCard');
     if (card) card.style.display = 'none';
+    const btnNuevo = $('#btnNewAsesor');
+    if (btnNuevo) btnNuevo.disabled = false;
     if (asesorFoto && asesorFoto.esNueva && asesorFoto.url) URL.revokeObjectURL(asesorFoto.url);
     asesorFoto = null;
     asesorPathsViejos = [];
