@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
     initPropertyForm();
     initUbicaciones();
+    initMayusculas();
     $('#btnNewProperty')?.addEventListener('click', () => openForm(null));
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
@@ -175,17 +176,20 @@ function initPropertyForm() {
 
 /* ---------- Ubicaciones ---------- */
 function initUbicaciones() {
-    const input = $('#ubicacion');
     const btn = $('#btnAddUbicacion');
-    if (input) {
-        input.addEventListener('input', () => {
-            const pos = input.selectionStart;
-            input.value = input.value.toUpperCase();
-            try { input.setSelectionRange(pos, pos); } catch (e) { /* ignorar */ }
-        });
-    }
     if (btn) btn.addEventListener('click', agregarUbicacion);
     cargarUbicaciones();
+}
+
+/** Pone en MAYÚSCULAS todos los campos marcados con data-upper. */
+function initMayusculas() {
+    $$('[data-upper]').forEach((el) => {
+        el.addEventListener('input', () => {
+            const pos = el.selectionStart;
+            el.value = el.value.toUpperCase();
+            try { el.setSelectionRange(pos, pos); } catch (e) { /* ignorar */ }
+        });
+    });
 }
 
 async function cargarUbicaciones() {
@@ -342,18 +346,18 @@ async function guardarPropiedad(e) {
         const portada = imagenes.length ? imagenes[0].url : null;
 
         const payload = {
-            codigo: $('#codigo').value.trim() || null,
-            titulo,
+            codigo: $('#codigo').value.trim().toUpperCase() || null,
+            titulo: titulo.toUpperCase(),
             tipo: $('#tipo').value,
             ubicacion: ubicacionVal,
             precio: Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
             area: Number($('#area').value || 0),
-            descripcion: $('#descripcion').value.trim(),
+            descripcion: $('#descripcion').value.trim().toUpperCase(),
             caracteristicas: $('#caracteristicas').value
-                .split(',').map((s) => s.trim()).filter(Boolean),
-            badge: $('#badge').value.trim() || null,
+                .split(',').map((s) => s.trim().toUpperCase()).filter(Boolean),
+            badge: $('#badge').value.trim().toUpperCase() || null,
             badge_class: $('#badgeClass').value.trim() || null,
             imagen: portada,
             destacada: $('#destacada').checked

@@ -60,11 +60,11 @@
                     <div class="form-grid">
                         <div class="field">
                             <label for="codigo">Código (opcional)</label>
-                            <input type="text" id="codigo" placeholder="Automático (ej. MY-00007)">
+                            <input type="text" id="codigo" placeholder="Automático (ej. MY-00007)" data-upper>
                         </div>
                         <div class="field">
                             <label for="titulo">Título *</label>
-                            <input type="text" id="titulo" required placeholder="Ej: Casa con jardín">
+                            <input type="text" id="titulo" required placeholder="Ej: CASA CON JARDÍN" data-upper>
                         </div>
                         <div class="field">
                             <label for="tipo">Tipo *</label>
@@ -80,7 +80,7 @@
                             <label for="ubicacion">Ubicación *</label>
                             <div class="combo">
                                 <input type="text" id="ubicacion" list="ubicacionesList" required
-                                       placeholder="Escribe o elige…" autocomplete="off">
+                                       placeholder="ESCRIBE O ELIGE…" autocomplete="off" data-upper>
                                 <datalist id="ubicacionesList"></datalist>
                                 <button type="button" class="btn-sm btn-gold" id="btnAddUbicacion" title="Agregar ubicación">
                                     <i class="fas fa-plus"></i>
@@ -106,15 +106,15 @@
 
                         <div class="field full">
                             <label for="descripcion">Descripción</label>
-                            <textarea id="descripcion" placeholder="Describe la propiedad…"></textarea>
+                            <textarea id="descripcion" placeholder="DESCRIBE LA PROPIEDAD…" data-upper></textarea>
                         </div>
                         <div class="field full">
                             <label for="caracteristicas">Características (separadas por coma)</label>
-                            <input type="text" id="caracteristicas" placeholder="Piscina, Jardín, Estacionamiento">
+                            <input type="text" id="caracteristicas" placeholder="PISCINA, JARDÍN, ESTACIONAMIENTO" data-upper>
                         </div>
                         <div class="field">
                             <label for="badge">Etiqueta (opcional)</label>
-                            <input type="text" id="badge" placeholder="Ej: Destacada">
+                            <input type="text" id="badge" placeholder="Ej: DESTACADA" data-upper>
                         </div>
                         <div class="field">
                             <label for="badgeClass">Color de etiqueta</label>
