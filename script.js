@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
     applyConfig();
     initReveal();
-    initNavbar();
+    initScrollEffects();
     initMobileMenu();
     initActiveNav();
 
@@ -146,7 +146,6 @@ async function init() {
     initTestimonials();
     initContactForm();
     initSmoothScroll();
-    initBackToTop();
     updateFavFloat();
 }
 
@@ -341,7 +340,7 @@ function cardTemplate(prop) {
                 <button type="button" class="fav-btn ${activo}" data-fav="${escapeHtml(prop.id)}" aria-label="Guardar en favoritos">
                     <i class="fas fa-heart" aria-hidden="true"></i>
                 </button>
-                <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy"
+                <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div class="property-price">${formatPrice(prop.precio)}</div>
             </div>
@@ -511,7 +510,7 @@ function modalTemplate(prop) {
 
     return `
         <div class="modal-hero">
-            <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}"
+            <img src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price">${formatPrice(prop.precio)}</div>
         </div>
@@ -544,7 +543,7 @@ function initTestimonials() {
             <div class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</div>
             <p class="testimonial-text">"${escapeHtml(t.texto)}"</p>
             <div class="testimonial-author">
-                <img src="${escapeHtml(t.avatar || PLACEHOLDER_IMG)}" alt="${escapeHtml(t.nombre)}" class="testimonial-avatar" loading="lazy"
+                <img src="${escapeHtml(t.avatar || PLACEHOLDER_IMG)}" alt="${escapeHtml(t.nombre)}" class="testimonial-avatar" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div>
                     <p class="testimonial-name">${escapeHtml(t.nombre)}</p>
@@ -605,12 +604,26 @@ function initTestimonials() {
 /* ============================================================
    NAVBAR / NAVEGACIÓN
    ============================================================ */
-function initNavbar() {
+function initScrollEffects() {
     const navbar = $('#navbar');
-    if (!navbar) return;
-    const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 50);
-    onScroll();
+    const button = $('#backToTop');
+    if (button) button.hidden = false;
+
+    let ticking = false;
+    const update = () => {
+        const y = window.scrollY;
+        if (navbar) navbar.classList.toggle('scrolled', y > 50);
+        if (button) button.classList.toggle('visible', y > 500);
+        ticking = false;
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
+
+    if (button) {
+        button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' }));
+    }
 }
 
 function initActiveNav() {
@@ -736,12 +749,4 @@ function initReveal() {
     elements.forEach((el) => observer.observe(el));
 }
 
-function initBackToTop() {
-    const button = $('#backToTop');
-    if (!button) return;
-    button.hidden = false;
-    const toggle = () => button.classList.toggle('visible', window.scrollY > 500);
-    toggle();
-    window.addEventListener('scroll', toggle, { passive: true });
-    button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' }));
-}
+/* (El scroll de la barra y "volver arriba" se manejan en initScrollEffects) */
