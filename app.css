@@ -1180,6 +1180,66 @@ table.compare-table tr:hover td {
 }
 
 /* ============================================================
+   DESCRIPCIÓN LEGIBLE (detalle de propiedad)
+   ============================================================ */
+.modal-description p {
+    margin-bottom: 10px;
+    color: var(--gray-text);
+    line-height: 1.7;
+}
+
+.modal-description ul {
+    list-style: none;
+    margin: 4px 0 14px;
+    display: grid;
+    gap: 7px;
+}
+
+.modal-description li {
+    position: relative;
+    padding-left: 24px;
+    color: var(--gray-text);
+    line-height: 1.5;
+    font-size: 0.93rem;
+}
+
+.modal-description li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--chrome-gold);
+}
+
+.modal-description.collapsed {
+    max-height: 300px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 68%, transparent 100%);
+}
+
+.desc-toggle {
+    display: inline-block;
+    margin: -12px 0 22px;
+    background: none;
+    border: none;
+    color: var(--gold-dark);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.desc-toggle:hover {
+    color: var(--dark);
+}
+
+/* ============================================================
    ACABADO PREMIUM — detalles de la marca Meyer's
    ============================================================ */
 

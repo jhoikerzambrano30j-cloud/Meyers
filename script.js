@@ -415,6 +415,7 @@ function openModal(id) {
     lastFocusedElement = document.activeElement;
     body.innerHTML = modalTemplate(prop);
     cargarGaleria(prop);
+    prepararDescripcion();
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
 
     overlay.hidden = false;
@@ -470,7 +471,8 @@ function modalTemplate(prop) {
             <p class="property-type">${escapeHtml(prop.tipo)}</p>
             <h2 id="modalTitle">${escapeHtml(prop.titulo)}</h2>
             <div class="modal-meta"><span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</span></div>
-            <p class="modal-description">${escapeHtml(prop.descripcion || '')}</p>
+            <div class="modal-description" id="modalDesc">${descripcionHtml(prop.descripcion)}</div>
+            <button type="button" class="desc-toggle" id="descToggle" style="display:none">Ver más</button>
             <div class="modal-features">${features}</div>
             ${extras ? '<h3 style="margin:15px 0">Características</h3><div class="modal-features">' + extras + '</div>' : ''}
             <div class="modal-cta">
@@ -480,6 +482,45 @@ function modalTemplate(prop) {
                 <a href="#contacto" class="btn btn-outline" data-close-modal>Agendar visita</a>
             </div>
         </div>`;
+}
+
+/** Convierte una descripción larga en algo legible: párrafos + lista con ✓. */
+function descripcionHtml(texto) {
+    let t = String(texto || '').trim();
+    if (!t) return '';
+    // Quitar hashtags de redes sociales (no aportan en la web)
+    t = t.replace(/#[^\s#]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    // Separar en ítems los textos que vienen con " - " o ":-"
+    t = t.replace(/(\s+|:)-{1,2}\s*/g, '\n- ');
+    const lineas = t.split('\n').map((l) => l.trim()).filter(Boolean);
+
+    let html = '';
+    let enLista = false;
+    lineas.forEach((l) => {
+        if (l.startsWith('-')) {
+            if (!enLista) { html += '<ul>'; enLista = true; }
+            html += '<li>' + escapeHtml(l.replace(/^-\s*/, '')) + '</li>';
+        } else {
+            if (enLista) { html += '</ul>'; enLista = false; }
+            html += '<p>' + escapeHtml(l) + '</p>';
+        }
+    });
+    if (enLista) html += '</ul>';
+    return html;
+}
+
+/** Muestra "Ver más" solo si la descripción es larga. */
+function prepararDescripcion() {
+    const desc = document.getElementById('modalDesc');
+    const btn = document.getElementById('descToggle');
+    if (!desc || !btn || !desc.textContent.trim()) { if (btn) btn.remove(); return; }
+    if (desc.scrollHeight <= 320) { btn.remove(); return; }
+    desc.classList.add('collapsed');
+    btn.style.display = 'inline-block';
+    btn.addEventListener('click', () => {
+        const colapsada = desc.classList.toggle('collapsed');
+        btn.textContent = colapsada ? 'Ver más' : 'Ver menos';
+    });
 }
 
 /** Carga las fotos de la galería dentro del modal de detalle. */
