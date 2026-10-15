@@ -105,6 +105,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
 
     await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), cargarAsesores()]);
+
+    // Limpieza automática del historial: se borran los tratos con más de 2 meses
+    if (await limpiarHistorial()) await loadProperties();
 });
 
 /* ============================================================
@@ -119,6 +122,7 @@ function initTabs() {
             const panel = document.getElementById('tab-' + tab.dataset.tab);
             if (panel) panel.classList.add('active');
             if (tab.dataset.tab === 'metricas') renderMetricas();
+            if (tab.dataset.tab === 'historial') renderHistorial();
         });
     });
 }
@@ -588,6 +592,7 @@ async function cambiarEstado(id, estado) {
     if (error) { alert('Error: ' + error.message); return; }
     await loadProperties();
     renderMetricas();
+    renderHistorial();
 }
 
 async function borrarPropiedad(id) {
@@ -1175,4 +1180,91 @@ function renderMetricas() {
 
     const mesEl = $('#metricasMes');
     if (mesEl) mesEl.textContent = 'Resumen de ' + ahora.toLocaleDateString('es-VE', { month: 'long', year: 'numeric' });
+}
+
+/* ============================================================
+   HISTORIAL DE TRATOS CERRADOS
+   ============================================================ */
+function estadoBadge(estado) {
+    const clase = estado === 'Vendida' ? 'badge-blocked'
+        : estado === 'Alquilada' ? 'badge-admin'
+            : estado === 'Acordado' ? 'badge-user'
+                : 'badge-active';
+    return `<span class="${clase}">${esc(estado)}</span>`;
+}
+
+function renderHistorial() {
+    const tbody = $('#historialTableBody');
+    if (!tbody) return;
+
+    const cerradas = (cachePropiedades || []).filter((p) => p.estado && p.estado !== 'Disponible');
+    const countEl = $('#historialCount');
+    if (countEl) countEl.textContent = cerradas.length + (cerradas.length === 1 ? ' trato cerrado' : ' tratos cerrados');
+
+    if (!cerradas.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><i class="fas fa-clock-rotate-left"></i><p>No hay tratos cerrados en los últimos 2 meses.</p></div></td></tr>';
+        return;
+    }
+
+    const nombreAsesor = (id) => {
+        const a = cacheAsesores.find((x) => x.id === id);
+        return a ? a.nombre : '—';
+    };
+
+    tbody.innerHTML = cerradas
+        .sort((a, b) => String(b.fecha_cierre || '').localeCompare(String(a.fecha_cierre || '')))
+        .map((p) => `
+            <tr>
+                <td>${fecha(p.fecha_cierre)}</td>
+                <td><strong>${esc(p.codigo || '—')}</strong></td>
+                <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.ubicacion || '')}</small></td>
+                <td>${esc(nombreAsesor(p.asesor_id))}</td>
+                <td>${estadoBadge(p.estado)}</td>
+                <td>${money(p.precio)}</td>
+                <td>
+                    <div class="cell-actions">
+                        <button class="btn-sm btn-edit" data-reabrir="${esc(p.id)}"><i class="fas fa-rotate-left"></i> Reabrir</button>
+                        <button class="btn-sm btn-danger" data-hist-del="${esc(p.id)}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>`).join('');
+
+    tbody.querySelectorAll('[data-reabrir]').forEach((b) => b.addEventListener('click', async () => {
+        if (!confirm('¿Reabrir? La propiedad volverá al catálogo público.')) return;
+        const { error } = await window.db.from('properties').update({ estado: 'Disponible', fecha_cierre: null }).eq('id', b.dataset.reabrir);
+        if (error) { alert('Error: ' + error.message); return; }
+        await loadProperties();
+        renderHistorial();
+        renderMetricas();
+    }));
+
+    tbody.querySelectorAll('[data-hist-del]').forEach((b) => b.addEventListener('click', async () => {
+        await borrarPropiedad(b.dataset.histDel);
+        renderHistorial();
+    }));
+}
+
+/** Borra del historial los tratos cerrados hace más de 2 meses. Devuelve true si borró algo. */
+async function limpiarHistorial() {
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return false;
+
+    const limite = new Date();
+    limite.setMonth(limite.getMonth() - 2);
+    const limiteStr = limite.toISOString().slice(0, 10);
+
+    const { data: viejas } = await window.db.from('properties')
+        .select('id').neq('estado', 'Disponible').lt('fecha_cierre', limiteStr);
+    if (!viejas || !viejas.length) return false;
+
+    const ids = viejas.map((p) => p.id);
+
+    // Recoger sus fotos para borrarlas del almacenamiento
+    const { data: imgs } = await window.db.from('property_images')
+        .select('path, thumb_path').in('property_id', ids);
+    const rutas = [...new Set((imgs || []).flatMap((i) => [i.path, i.thumb_path]).filter(Boolean))];
+
+    const { error } = await window.db.from('properties').delete().in('id', ids);
+    if (error) return false;
+    if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
+    return true;
 }

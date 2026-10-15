@@ -39,6 +39,7 @@
             <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
+            <button class="admin-tab" data-tab="historial"><i class="fas fa-clock-rotate-left"></i> Historial</button>
         </div>
 
         <!-- ============ PROPIEDADES ============ -->
@@ -349,6 +350,33 @@
                         <tbody id="asesoresMetricsBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </section>
+
+        <!-- ============ HISTORIAL DE TRATOS CERRADOS ============ -->
+        <section class="admin-panel" id="tab-historial">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Historial de tratos cerrados</h2>
+                    <p id="historialCount">Cargando…</p>
+                </div>
+            </div>
+
+            <div class="panel-card" style="padding:14px 20px;color:var(--gray-text);font-size:0.85rem">
+                <i class="fas fa-circle-info" style="color:#B8931F"></i>
+                Aquí se guardan las propiedades <b>vendidas, alquiladas o acordadas</b>. Se limpian automáticamente al pasar <b>2 meses</b> desde el cierre.
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Fecha cierre</th><th>Código</th><th>Propiedad</th>
+                            <th>Asesor</th><th>Estado</th><th>Precio</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialTableBody"></tbody>
+                </table>
             </div>
         </section>
 
