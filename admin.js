@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     currentUser = session.user;
     currentProfile = session.profile;
+    Auth.initIdleLogout(10);
 
     const nameEl = $('#adminName');
     if (nameEl) {

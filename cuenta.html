@@ -114,6 +114,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             user = await Auth.requireAuth('login.html');
             if (!user) return;
+            Auth.initIdleLogout(10);
 
             $('#logoutBtn').addEventListener('click', () => Auth.signOut());
             $('#email').value = user.email;

@@ -60,6 +60,15 @@
             </div>
         </div>
     </nav>
+    <script>
+        /* Evita el "pestañeo" del botón Crear cuenta si ya hay sesión iniciada */
+        try {
+            if (Object.keys(localStorage).some(function (k) { return k.indexOf('-auth-token') > -1; })) {
+                var _area = document.getElementById('authArea');
+                if (_area) _area.innerHTML = '';
+            }
+        } catch (e) { /* ignorar */ }
+    </script>
     <div class="nav-overlay" id="navOverlay" hidden></div>
 
     <!-- ==================== HERO SECTION ==================== -->

@@ -60,6 +60,10 @@
                 show('Supabase aún no está configurado. Pega tus claves en config.js.', 'error');
             }
 
+            if (new URLSearchParams(location.search).get('expirado')) {
+                show('Tu sesión se cerró por inactividad. Vuelve a ingresar.', 'error');
+            }
+
             // Si ya hay sesión, redirige
             const user = await Auth.getUser();
             if (user) {

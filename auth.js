@@ -53,6 +53,31 @@
         window.location.href = 'index.html';
     };
 
+    /**
+     * Cierra la sesión tras N minutos SIN actividad del usuario.
+     * Cualquier clic, tecla o scroll reinicia el contador.
+     */
+    Auth.initIdleLogout = function (minutos) {
+        if (!window.isSupabaseReady()) return;
+        const limite = (minutos || 10) * 60 * 1000;
+        let timer = null;
+
+        const reiniciar = () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(async () => {
+                const user = await Auth.getUser();
+                if (!user) return;
+                await window.db.auth.signOut();
+                window.location.href = 'login.html?expirado=1';
+            }, limite);
+        };
+
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'wheel']
+            .forEach((ev) => window.addEventListener(ev, reiniciar, { passive: true }));
+
+        reiniciar();
+    };
+
     // ------------------------------------------------------------
     // Protección de páginas
     // ------------------------------------------------------------

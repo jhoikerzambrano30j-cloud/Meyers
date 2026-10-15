@@ -96,6 +96,8 @@ async function init() {
     initContactForm();
     initSmoothScroll();
     updateFavFloat();
+
+    if (window.Auth) window.Auth.initIdleLogout(10);
 }
 
 /** Muestra/oculta el botón flotante de favoritos y su contador. */

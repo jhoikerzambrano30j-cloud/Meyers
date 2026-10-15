@@ -13,7 +13,14 @@
     const hasKeys = Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey);
 
     window.db = (hasLib && hasKeys)
-        ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey)
+        ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
+            auth: {
+                storage: window.sessionStorage, // la sesión termina al cerrar el navegador
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        })
         : null;
 
     /** ¿Está Supabase configurado y disponible? */
