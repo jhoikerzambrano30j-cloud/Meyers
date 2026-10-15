@@ -109,8 +109,14 @@
                             <textarea id="descripcion" placeholder="Describe la propiedad…"></textarea>
                         </div>
                         <div class="field full">
-                            <label for="caracteristicas">Características (separadas por coma)</label>
-                            <input type="text" id="caracteristicas" placeholder="PISCINA, JARDÍN, ESTACIONAMIENTO" data-upper>
+                            <label>Características</label>
+                            <div class="checks-grid" id="caracteristicasBox"></div>
+                            <div class="checks-add">
+                                <input type="text" id="nuevaCaracteristica" placeholder="AGREGAR OTRA…" data-upper>
+                                <button type="button" class="btn-sm btn-gold" id="btnAddCaracteristica" title="Agregar característica">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="field">
                             <label for="badge">Etiqueta (opcional)</label>

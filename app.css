@@ -869,6 +869,51 @@ table.data .cell-actions {
     border-radius: 10px;
 }
 
+/* ---------- Características (checks) ---------- */
+.checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 4px 14px;
+    margin-bottom: 12px;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark);
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.check-item:hover {
+    background: var(--off-white);
+}
+
+.check-item input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold-dark);
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.checks-add {
+    display: flex;
+    gap: 8px;
+    max-width: 460px;
+}
+
+.checks-add input {
+    flex: 1;
+    text-transform: uppercase;
+}
+
 /* ---------- Comparador de propiedades ---------- */
 .compare-bar {
     display: flex;

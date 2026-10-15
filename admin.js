@@ -8,6 +8,12 @@
 
 const TIPOS = ['Casa', 'Apartamento', 'Terreno', 'Local Comercial'];
 const UBICACIONES = ['Zona Norte', 'Zona Sur', 'Centro'];
+const CARACTERISTICAS_DEFAULT = [
+    'PISCINA', 'JARDÍN', 'ESTACIONAMIENTO', 'AIRE ACONDICIONADO', 'SEGURIDAD 24/7',
+    'ASCENSOR', 'BALCÓN', 'TERRAZA', 'PLANTA ELÉCTRICA', 'AMOBLADO',
+    'COCINA INTEGRAL', 'LAVANDERÍA', 'GIMNASIO', 'ÁREA SOCIAL', 'CÁMARAS DE SEGURIDAD',
+    'CISTERNA', 'JACUZZI', 'VISTA PANORÁMICA'
+];
 
 let currentUser = null;
 let currentProfile = null;
@@ -84,6 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPropertyForm();
     initUbicaciones();
     initMayusculas();
+    initCaracteristicas();
     $('#btnNewProperty')?.addEventListener('click', () => openForm(null));
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
@@ -192,6 +199,45 @@ function initMayusculas() {
     });
 }
 
+/* ---------- Características (checks) ---------- */
+function renderCaracteristicas(seleccionadas) {
+    const box = $('#caracteristicasBox');
+    if (!box) return;
+    const sel = (seleccionadas || []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
+    const extras = sel.filter((s) => !CARACTERISTICAS_DEFAULT.includes(s));
+    const opciones = CARACTERISTICAS_DEFAULT.concat(extras);
+    box.innerHTML = opciones.map((c) => `
+        <label class="check-item">
+            <input type="checkbox" value="${esc(c)}" ${sel.includes(c) ? 'checked' : ''}>
+            <span>${esc(c)}</span>
+        </label>`).join('');
+}
+
+function initCaracteristicas() {
+    const btn = $('#btnAddCaracteristica');
+    const input = $('#nuevaCaracteristica');
+    if (!btn || !input) return;
+
+    const agregar = () => {
+        const valor = (input.value || '').trim().toUpperCase();
+        if (!valor) return;
+        const box = $('#caracteristicasBox');
+        const existente = Array.from(box.querySelectorAll('input')).find((c) => c.value === valor);
+        if (existente) {
+            existente.checked = true;
+        } else {
+            const label = document.createElement('label');
+            label.className = 'check-item';
+            label.innerHTML = '<input type="checkbox" value="' + esc(valor) + '" checked><span>' + esc(valor) + '</span>';
+            box.appendChild(label);
+        }
+        input.value = '';
+    };
+
+    btn.addEventListener('click', agregar);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); agregar(); } });
+}
+
 async function cargarUbicaciones() {
     const list = $('#ubicacionesList');
     const { data, error } = await window.db.from('locations').select('nombre').order('nombre');
@@ -227,6 +273,7 @@ function openForm(id, lista) {
     $('#formTitle').textContent = editandoId ? 'Editar propiedad' : 'Nueva propiedad';
     setStatus($('#formStatus'), '', '');
     renderThumbs();
+    renderCaracteristicas([]);
 
     if (editandoId) {
         const p = (lista || []).find((x) => x.id === editandoId) || {};
@@ -243,7 +290,7 @@ function openForm(id, lista) {
         $('#banos').value = p.banos || 0;
         $('#area').value = p.area || 0;
         $('#descripcion').value = p.descripcion || '';
-        $('#caracteristicas').value = (p.caracteristicas || []).join(', ');
+        renderCaracteristicas(p.caracteristicas || []);
         $('#badge').value = p.badge || '';
         $('#badgeClass').value = p.badge_class || '';
         $('#destacada').checked = Boolean(p.destacada);
@@ -355,8 +402,7 @@ async function guardarPropiedad(e) {
             banos: Number($('#banos').value || 0),
             area: Number($('#area').value || 0),
             descripcion: $('#descripcion').value.trim(),
-            caracteristicas: $('#caracteristicas').value
-                .split(',').map((s) => s.trim().toUpperCase()).filter(Boolean),
+            caracteristicas: Array.from(document.querySelectorAll('#caracteristicasBox input[type="checkbox"]:checked')).map((c) => c.value),
             badge: $('#badge').value.trim().toUpperCase() || null,
             badge_class: $('#badgeClass').value.trim() || null,
             imagen: portada,
