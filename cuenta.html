@@ -181,7 +181,7 @@
                     <article class="property-card${seleccion.has(p.id) ? ' selected' : ''}" data-card="${esc(p.id)}">
                         <div class="property-image">
                             <input type="checkbox" class="fav-select" data-select="${esc(p.id)}" ${seleccion.has(p.id) ? 'checked' : ''} aria-label="Seleccionar para comparar">
-                            ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy">` : ''}
+                            ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy" decoding="async">` : ''}
                             <div class="property-price">${money(p.precio)}</div>
                             <button class="fav-btn active" data-quitar="${esc(p.id)}" title="Quitar de favoritos"><i class="fas fa-heart"></i></button>
                         </div>
@@ -274,7 +274,7 @@
 
             const head = '<tr><th class="compare-row-label"></th>' + elegidas.map((p) => `
                 <th class="compare-head">
-                    ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}">` : ''}
+                    ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy" decoding="async">` : ''}
                     <strong>${esc(p.titulo)}</strong>
                 </th>`).join('') + '</tr>';
 

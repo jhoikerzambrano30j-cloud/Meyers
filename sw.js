@@ -4,7 +4,7 @@
    Estrategia: "primero la red" (siempre trae lo último cuando hay
    internet) y si no hay conexión, usa lo guardado en caché.
    ============================================================ */
-const CACHE = 'meyers-v1';
+const CACHE = 'meyers-v2';
 
 const CORE = [
     './',

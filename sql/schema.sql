@@ -873,12 +873,32 @@ values
      'Inversión', '', 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', false)
 on conflict (codigo) do nothing;
 
-insert into public.testimonials (nombre, rol, texto, avatar, sort_order) values
+insert into public.testimonials (nombre, rol, texto, avatar, sort_order)
+select * from (values
     ('María González', 'Compradora', 'Meyer''s hizo que el proceso de compra de mi primera casa fuera increíblemente fácil.', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80', 1),
     ('Carlos Rodríguez', 'Vendedor', 'Vendí mi propiedad en tiempo récord y al mejor precio del mercado.', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80', 2),
     ('Ana Martínez', 'Inversionista', 'He realizado varias inversiones con Meyer''s y siempre superan mis expectativas.', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80', 3),
     ('Pedro Sánchez', 'Comprador', 'Excelente atención. Me ayudaron a encontrar exactamente lo que buscaba.', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80', 4)
-on conflict do nothing;
+) as v(nombre, rol, texto, avatar, sort_order)
+where not exists (select 1 from public.testimonials);
+
+-- ============================================================================
+-- 8b. ÍNDICES (rendimiento de las consultas más usadas)
+-- ============================================================================
+create index if not exists idx_properties_publicas on public.properties (estado, destacada desc, created_at desc);
+create index if not exists idx_properties_created_at on public.properties (created_at desc);
+create index if not exists idx_properties_asesor on public.properties (asesor_id);
+create index if not exists idx_properties_ubicacion on public.properties (ubicacion);
+create index if not exists idx_properties_zona on public.properties (zona);
+create index if not exists idx_properties_tipo on public.properties (tipo);
+create index if not exists idx_properties_operacion on public.properties (operacion);
+create index if not exists idx_property_images_property on public.property_images (property_id, sort_order);
+create index if not exists idx_favorites_property on public.favorites (property_id);
+create index if not exists idx_testimonials_estado on public.testimonials (estado, sort_order);
+create index if not exists idx_services_activo_orden on public.services (activo, orden);
+create index if not exists idx_profiles_role on public.profiles (role);
+create index if not exists idx_asesores_activo_orden on public.asesores (activo, orden);
+create index if not exists idx_zonas_ciudad on public.zonas (ciudad_id);
 
 -- ============================================================================
 -- 9. HAZTE ADMINISTRADOR

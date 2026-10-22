@@ -273,7 +273,7 @@ async function loadProperties() {
 
     tbody.innerHTML = data.map((p) => `
         <tr>
-            <td>${p.imagen ? `<img class="table-thumb" src="${esc(p.imagen)}" alt="">` : '<div class="table-thumb"></div>'}</td>
+            <td>${p.imagen ? `<img class="table-thumb" src="${esc(p.imagen)}" alt="" loading="lazy" decoding="async">` : '<div class="table-thumb"></div>'}</td>
             <td><strong>${esc(p.codigo || '—')}</strong></td>
             <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.operacion || 'Venta')} · ${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
             <td>${money(p.precio)}</td>
@@ -685,7 +685,11 @@ async function guardarPropiedad(e) {
                 .limit(1);
 
             if (repetidas && repetidas.length) {
-                const continuar = confirm('Ya existe una propiedad con el mismo título, precio y ubicación.\n\n¿Crear otra de todas formas?');
+                const continuar = await confirmar(
+                    'Propiedad parecida',
+                    'Ya existe una propiedad con el mismo título, precio y ubicación. ¿Quieres crearla de todas formas?',
+                    'Sí, crear'
+                );
                 if (!continuar) { setStatus(status, 'Guardado cancelado: ya existía una propiedad igual.', 'info'); return; }
             }
 
@@ -837,14 +841,24 @@ function accionesUsuario(u) {
 }
 
 async function bloquearUsuario(id, bloquear) {
-    if (!confirm(bloquear ? '¿Bloquear a este usuario? No podrá iniciar sesión.' : '¿Desbloquear a este usuario?')) return;
+    const ok = await confirmar(
+        bloquear ? 'Bloquear usuario' : 'Desbloquear usuario',
+        bloquear ? 'No podrá iniciar sesión hasta que lo desbloquees.' : 'Volverá a tener acceso al sistema.',
+        bloquear ? 'Sí, bloquear' : 'Sí, desbloquear'
+    );
+    if (!ok) return;
     const { error } = await window.db.rpc('admin_set_blocked', { target_id: id, blocked: bloquear });
     if (error) toast('No se pudo actualizar: ' + error.message);
     await loadUsuarios();
 }
 
 async function eliminarUsuario(id) {
-    if (!confirm('¿Eliminar definitivamente a este usuario? No se puede deshacer.')) return;
+    const ok = await confirmar(
+        'Eliminar usuario',
+        'Se borrará la cuenta definitivamente. Esta acción no se puede deshacer.',
+        'Sí, eliminar'
+    );
+    if (!ok) return;
     const { error } = await window.db.rpc('admin_delete_user', { target_id: id });
     if (error) toast('No se pudo eliminar: ' + error.message);
     await loadUsuarios();
@@ -898,7 +912,12 @@ async function cambiarRol(sel) {
             return;
         }
         const nombre = usuario ? (usuario.full_name || usuario.email || 'este usuario') : 'este usuario';
-        if (!confirm(`¿Dar permisos de master a ${nombre}? Podrá gestionar todo el sistema.`)) {
+        const ok = await confirmar(
+            'Dar permisos de master',
+            `¿Dar permisos de master a ${nombre}? Podrá gestionar todo el sistema.`,
+            'Sí, dar master'
+        );
+        if (!ok) {
             await loadUsuarios();
             return;
         }
@@ -1073,7 +1092,7 @@ async function cargarAsesores() {
                 <tr>
                     <td>
                         <div class="asesor-cell">
-                            ${a.foto_thumb || a.foto ? `<img class="asesor-mini" src="${esc(a.foto_thumb || a.foto)}" alt="">` : '<div class="asesor-mini"></div>'}
+                            ${a.foto_thumb || a.foto ? `<img class="asesor-mini" src="${esc(a.foto_thumb || a.foto)}" alt="" loading="lazy" decoding="async">` : '<div class="asesor-mini"></div>'}
                             <span>${esc(a.nombre)}</span>
                         </div>
                     </td>

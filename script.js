@@ -1002,7 +1002,7 @@ async function cargarGaleria(prop) {
 
         cont.innerHTML = unicas.map((f, i) => `
             <button type="button" class="gallery-thumb${i === 0 ? ' active' : ''}" data-img="${escapeHtml(f.grande)}" aria-label="Ver foto ${i + 1}">
-                <img src="${escapeHtml(f.mini)}" alt="" decoding="async"
+                <img src="${escapeHtml(f.mini)}" alt="" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             </button>`).join('');
 
