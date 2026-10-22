@@ -24,6 +24,29 @@ window.APP_CONFIG = {
         thumbQuality: 0.7       // calidad de la miniatura
     },
 
+    // Tipos de propiedad (lista única: la usan el catálogo y el panel)
+    tiposPropiedad: [
+        'Casa',
+        'Quinta',
+        'Apartamento',
+        'Penthouse',
+        'Suite',
+        'Loft',
+        'Townhouse',
+        'Habitación',
+        'Terreno',
+        'Finca',
+        'Local Comercial',
+        'Oficina',
+        'Consultorio',
+        'Galpón',
+        'Depósito',
+        'Estacionamiento',
+        'Edificio',
+        'Hotel',
+        'Posada'
+    ],
+
     // Datos de contacto (se usan en la web y en WhatsApp)
     contacto: {
         whatsapp: '584141338254'

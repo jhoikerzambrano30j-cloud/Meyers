@@ -6,7 +6,8 @@
    ============================================================ */
 'use strict';
 
-const TIPOS = ['Casa', 'Apartamento', 'Terreno', 'Local Comercial'];
+/* La lista de tipos vive en config.js (window.APP_CONFIG.tiposPropiedad)
+   para que el catálogo y el panel usen exactamente los mismos. */
 const CARACTERISTICAS_DEFAULT = [
     'PISCINA', 'JARDÍN', 'ESTACIONAMIENTO', 'AIRE ACONDICIONADO', 'SEGURIDAD 24/7',
     'ASCENSOR', 'BALCÓN', 'TERRAZA', 'PLANTA ELÉCTRICA', 'AMOBLADO',
@@ -130,6 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#logoutBtnAdmin')?.addEventListener('click', () => Auth.signOut());
 
     initTabs();
+    poblarTiposAdmin();
     initPropertyForm();
     initUbicaciones();
     initMayusculas();
@@ -234,6 +236,29 @@ async function loadProperties() {
         b.addEventListener('click', () => borrarPropiedad(b.dataset.del)));
     tbody.querySelectorAll('[data-estado]').forEach((sel) =>
         sel.addEventListener('change', () => cambiarEstado(sel.dataset.estado, sel.value)));
+}
+
+/** Llena el select de tipos con la lista predeterminada de config.js. */
+function poblarTiposAdmin() {
+    const sel = $('#tipo');
+    if (!sel) return;
+    const tipos = (window.APP_CONFIG && window.APP_CONFIG.tiposPropiedad) || [];
+    if (!tipos.length) return; // deja las opciones del HTML como respaldo
+
+    sel.innerHTML = '<option value="">Selecciona…</option>' +
+        tipos.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+}
+
+/** Conserva tipos antiguos que ya no estén en la lista. */
+function asegurarTipoOpcion(tipo) {
+    const sel = $('#tipo');
+    if (!sel || !tipo) return;
+    if (!Array.from(sel.options).some((o) => o.value === tipo)) {
+        const opt = document.createElement('option');
+        opt.value = tipo;
+        opt.textContent = tipo;
+        sel.appendChild(opt);
+    }
 }
 
 function initPropertyForm() {
@@ -430,6 +455,7 @@ async function openForm(id, lista) {
         $('#asesor').value = p.asesor_id || '';
         $('#codigo').value = p.codigo || '';
         $('#titulo').value = p.titulo || '';
+        asegurarTipoOpcion(p.tipo);
         $('#tipo').value = p.tipo || '';
         $('#ubicacion').value = p.ubicacion || '';
         ultimaCiudad = null;

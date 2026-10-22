@@ -71,6 +71,7 @@ async function init() {
     initMobileMenu();
     initActiveNav();
     initFiltersDrawer();
+    poblarTipos();
 
     if (window.Auth) {
         currentUser = await window.Auth.getUser();
@@ -98,6 +99,7 @@ async function init() {
 
     poblarZonas();
     poblarCaracteristicas();
+    poblarTipos();
 
     initProperties();
     initTestimonials();
@@ -458,6 +460,27 @@ function resetFilters() {
     poblarZonas();
     actualizarBadgeFiltros();
     showAll();
+}
+
+/** Llena el filtro de tipos con la lista predeterminada (+ tipos antiguos). */
+function poblarTipos() {
+    const sel = $('#tipo');
+    if (!sel) return;
+    const actual = sel.value;
+    const base = (window.APP_CONFIG && window.APP_CONFIG.tiposPropiedad) || [];
+
+    // Une la lista oficial con cualquier tipo que ya exista en el catálogo
+    const tipos = [...base];
+    PROPIEDADES.map((p) => p.tipo).filter(Boolean).forEach((t) => {
+        if (!tipos.includes(t)) tipos.push(t);
+    });
+
+    if (!tipos.length) return; // deja las opciones del HTML como respaldo
+
+    sel.innerHTML = '<option value="">Todos</option>' +
+        tipos.map((t) => `<option value="${slug(t)}">${escapeHtml(t)}</option>`).join('');
+
+    if (actual) sel.value = actual;
 }
 
 /** Limpia y repuebla las zonas según la ciudad elegida. */
