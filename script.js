@@ -629,9 +629,12 @@ function initProperties() {
         const el = $('#' + id);
         if (!el) return;
         el.addEventListener('input', () => {
-            el.value = el.value.replace(/[^0-9.,]/g, '');
+            if (window.formatearPrecioEnVivo) window.formatearPrecioEnVivo(el);
+            else el.value = el.value.replace(/[^0-9.,]/g, '');
         });
         el.addEventListener('blur', () => {
+            if (window.formatearPrecioEnVivo) window.formatearPrecioEnVivo(el);
+            if (el.value.endsWith(',')) el.value = el.value.slice(0, -1);
             const n = window.parsePrecio ? window.parsePrecio(el.value) : Number(el.value || 0);
             el.value = n ? (window.formatNumero ? window.formatNumero(n) : String(n)) : '';
         });

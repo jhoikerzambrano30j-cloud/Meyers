@@ -335,9 +335,12 @@ function initPropertyForm() {
     const precioInput = $('#precio');
     if (precioInput) {
         precioInput.addEventListener('input', () => {
-            precioInput.value = precioInput.value.replace(/[^0-9.,]/g, '');
+            if (window.formatearPrecioEnVivo) window.formatearPrecioEnVivo(precioInput);
+            else precioInput.value = precioInput.value.replace(/[^0-9.,]/g, '');
         });
         precioInput.addEventListener('blur', () => {
+            if (window.formatearPrecioEnVivo) window.formatearPrecioEnVivo(precioInput);
+            if (precioInput.value.endsWith(',')) precioInput.value = precioInput.value.slice(0, -1);
             const n = window.parsePrecio ? window.parsePrecio(precioInput.value) : Number(precioInput.value || 0);
             precioInput.value = n ? (window.formatNumero ? window.formatNumero(n) : String(n)) : '';
         });

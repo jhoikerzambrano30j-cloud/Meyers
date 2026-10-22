@@ -67,6 +67,48 @@
         return num.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     };
 
+    /** Formatea un input de precio en tiempo real mientras se escribe. */
+    window.formatearPrecioEnVivo = function (input) {
+        if (!input) return;
+
+        const pos = input.selectionStart == null ? input.value.length : input.selectionStart;
+        const antes = input.value.slice(0, pos);
+        const digitosAntes = (antes.match(/\d/g) || []).length;
+        const tieneComa = input.value.includes(',');
+
+        let [entera, decimal] = input.value.split(',');
+        entera = (entera || '').replace(/\D/g, '');
+        decimal = (decimal || '').replace(/\D/g, '').slice(0, 2);
+        entera = entera.replace(/^0+(?=\d)/, '');
+
+        const enteraFmt = entera
+            ? Number(entera).toLocaleString('es-VE', { maximumFractionDigits: 0 })
+            : '';
+
+        let nuevo = enteraFmt;
+        if (tieneComa) nuevo += ',' + decimal;
+        if (!nuevo && tieneComa) nuevo = '0,';
+
+        input.value = nuevo;
+
+        // Restaurar el cursor después de la misma cantidad de dígitos
+        let nuevoPos = 0;
+        let contados = 0;
+        if (digitosAntes === 0) {
+            nuevoPos = nuevo.startsWith('0,') ? 2 : 0;
+        } else {
+            for (let i = 0; i < nuevo.length; i++) {
+                if (/\d/.test(nuevo[i])) contados++;
+                if (contados >= digitosAntes) { nuevoPos = i + 1; break; }
+            }
+            if (!nuevoPos) nuevoPos = nuevo.length;
+        }
+
+        if (tieneComa && decimal === '' && antes.endsWith(',')) nuevoPos = nuevo.length;
+
+        try { input.setSelectionRange(nuevoPos, nuevoPos); } catch (e) { /* ignorar */ }
+    };
+
 
     /** Convierte un archivo de imagen a WebP optimizado. */
     window.optimizarImagen = async function (file, options) {
