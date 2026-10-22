@@ -85,6 +85,7 @@ async function init() {
         window.Auth.renderAuthArea('#authArea');
     }
     catalogoPermitido = Boolean(currentUser);
+    if (catalogoPermitido) renderSkeletons();
 
     await cargarTestimonios();
     await cargarUbicacionesFiltro();
@@ -290,6 +291,22 @@ function showCatalogGate() {
     if (viewAll) viewAll.hidden = true;
     if (grid) grid.hidden = true;
     if (gate) gate.hidden = false;
+}
+
+/** Tarjetas fantasma mientras cargan las propiedades. */
+function renderSkeletons(cantidad = 6) {
+    const grid = $('#propertiesGrid');
+    if (!grid) return;
+    grid.innerHTML = Array.from({ length: cantidad }, () => `
+        <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton-body">
+                <div class="skeleton skeleton-line w-30"></div>
+                <div class="skeleton skeleton-line tall w-70"></div>
+                <div class="skeleton skeleton-line w-50"></div>
+                <div class="skeleton skeleton-line w-90"></div>
+            </div>
+        </div>`).join('');
 }
 
 async function onToggleFavorito(btn) {
@@ -630,6 +647,17 @@ function initTestimonials() {
     const slider = $('#testimonialsSlider');
     const dotsContainer = $('#sliderDots');
     if (!slider || !dotsContainer) return;
+
+    if (!TESTIMONIOS.length) {
+        slider.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-comment-dots" aria-hidden="true"></i>
+                <h3>Pronto compartiremos historias</h3>
+                <p>Estamos preparando los testimonios de nuestros clientes.</p>
+            </div>`;
+        dotsContainer.innerHTML = '';
+        return;
+    }
 
     slider.innerHTML = TESTIMONIOS.map((t) => `
         <div class="testimonial-card">

@@ -35,20 +35,20 @@
             <form id="registroForm">
                 <div class="form-group">
                     <label for="fullName">Nombre completo</label>
-                    <input type="text" id="fullName" required autocomplete="name" placeholder="Tu nombre y apellido">
+                    <input type="text" id="fullName" required autocomplete="name" autocapitalize="words" placeholder="Tu nombre y apellido">
                 </div>
                 <div class="form-group">
                     <label for="email">Correo electrónico</label>
-                    <input type="email" id="email" required autocomplete="email" placeholder="tu@correo.com">
+                    <input type="email" id="email" required autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="tu@correo.com">
                 </div>
                 <div class="form-group">
                     <label for="email2">Repite el correo</label>
-                    <input type="email" id="email2" required autocomplete="off" placeholder="Escríbelo otra vez">
+                    <input type="email" id="email2" required autocomplete="off" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Escríbelo otra vez">
                     <small class="field-hint">Escríbelo de nuevo para evitar errores. No se permite copiar ni pegar.</small>
                 </div>
                 <div class="form-group">
                     <label for="phone">Teléfono / WhatsApp</label>
-                    <input type="tel" id="phone" required autocomplete="tel" placeholder="0414-1338254">
+                    <input type="tel" id="phone" required autocomplete="tel" inputmode="tel" placeholder="0414-1338254">
                 </div>
                 <div class="form-group">
                     <label for="password">Contraseña</label>
@@ -83,6 +83,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.isSupabaseReady()) {
                 show('Supabase aún no está configurado. Pega tus claves en config.js.', 'error');
+            }
+
+            // Mostrar / ocultar las contraseñas
+            if (window.Auth && Auth.addPasswordToggle) {
+                Auth.addPasswordToggle('password');
+                Auth.addPasswordToggle('password2');
             }
 
             // Captcha anti-robots (solo aparece si Cloudflare lo pide)

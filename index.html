@@ -7,11 +7,22 @@
     <meta name="description" content="Meyer's Inmobiliaria — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.">
     <meta name="author" content="Meyer's Inmobiliaria">
 
-    <!-- Open Graph -->
+    <!-- Open Graph / vista previa al compartir (WhatsApp, redes) -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Meyer's Inmobiliaria">
     <meta property="og:title" content="Meyer's Inmobiliaria | Bienes Raíces">
     <meta property="og:description" content="Encuentra la propiedad que se adapta a tu estilo de vida. Asesoría personalizada y respuesta en menos de 24 horas.">
     <meta property="og:locale" content="es_VE">
+    <meta property="og:url" content="https://meyers-mu.vercel.app/">
+    <meta property="og:image" content="https://meyers-mu.vercel.app/img/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Meyer's Inmobiliaria">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Meyer's Inmobiliaria | Bienes Raíces">
+    <meta name="twitter:description" content="Encuentra la propiedad que se adapta a tu estilo de vida.">
+    <meta name="twitter:image" content="https://meyers-mu.vercel.app/img/og-image.png">
+    <link rel="canonical" href="https://meyers-mu.vercel.app/">
 
     <title>Meyer's Inmobiliaria | Bienes Raíces</title>
 
@@ -282,15 +293,15 @@
                         <h3>Solicita Información</h3>
                         <div class="form-group">
                             <label class="sr-only" for="nombre">Nombre completo</label>
-                            <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required minlength="3" autocomplete="name">
+                            <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required minlength="3" autocomplete="name" autocapitalize="words">
                         </div>
                         <div class="form-group">
                             <label class="sr-only" for="email">Correo electrónico</label>
-                            <input type="email" id="email" name="email" placeholder="Correo electrónico" required autocomplete="email">
+                            <input type="email" id="email" name="email" placeholder="Correo electrónico" required autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
                         </div>
                         <div class="form-group">
                             <label class="sr-only" for="telefono">Teléfono o WhatsApp</label>
-                            <input type="tel" id="telefono" name="telefono" placeholder="Teléfono / WhatsApp" required pattern="[0-9+()\-\s]{7,}" autocomplete="tel">
+                            <input type="tel" id="telefono" name="telefono" placeholder="Teléfono / WhatsApp" required pattern="[0-9+()\-\s]{7,}" autocomplete="tel" inputmode="tel">
                         </div>
                         <div class="form-group">
                             <label class="sr-only" for="interes">Interés</label>

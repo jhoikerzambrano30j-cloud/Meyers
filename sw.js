@@ -12,6 +12,7 @@ const CORE = [
     './login.html',
     './registro.html',
     './cuenta.html',
+    './404.html',
     './styles.css',
     './app.css',
     './config.js',

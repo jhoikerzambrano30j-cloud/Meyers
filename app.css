@@ -1923,6 +1923,10 @@ a, button {
     .modal-content {
         padding: 24px 20px;
     }
+
+    .table-wrap {
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 /* ============================================================
@@ -1936,4 +1940,64 @@ a, button {
 
 .captcha-box:empty {
     margin-bottom: 0;
+}
+
+/* ============================================================
+   PÁGINA 404
+   ============================================================ */
+.error-404 {
+    text-align: center;
+}
+
+.error-code {
+    display: block;
+    font-family: var(--font-script);
+    font-size: clamp(3.2rem, 12vw, 4.6rem);
+    line-height: 1;
+    margin-bottom: 10px;
+    background: var(--chrome-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.error-404 .btn-block {
+    margin-top: 8px;
+}
+
+/* ============================================================
+   MOSTRAR / OCULTAR CONTRASEÑA
+   ============================================================ */
+.password-wrap {
+    position: relative;
+    display: block;
+}
+
+.password-wrap input {
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--gray-text);
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+    color: var(--gold);
+    background: rgba(225, 189, 69, 0.14);
 }

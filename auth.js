@@ -82,6 +82,36 @@
         reiniciar();
     };
 
+    /** Añade el botón de mostrar/ocultar a un campo de contraseña. */
+    Auth.addPasswordToggle = function (inputId) {
+        const input = document.getElementById(inputId);
+        if (!input || input.dataset.toggleReady) return;
+        input.dataset.toggleReady = '1';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'password-wrap';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle';
+        btn.setAttribute('aria-label', 'Mostrar contraseña');
+        btn.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
+
+        btn.addEventListener('click', () => {
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            btn.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            btn.innerHTML = visible
+                ? '<i class="fas fa-eye" aria-hidden="true"></i>'
+                : '<i class="fas fa-eye-slash" aria-hidden="true"></i>';
+            input.focus();
+        });
+
+        wrap.appendChild(btn);
+    };
+
     // ------------------------------------------------------------
     // Protección de páginas
     // ------------------------------------------------------------
