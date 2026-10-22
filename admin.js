@@ -18,6 +18,7 @@ let currentUser = null;
 let currentProfile = null;
 let imagenes = [];       // [{ url, path, blob? }]
 let editandoId = null;
+let codigoOriginal = '';          // código/ticket original al editar (no cambia)
 let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
 let cacheAsesores = [];
@@ -462,6 +463,8 @@ function initCaracteristicas() {
 
 async function openForm(id, lista) {
     editandoId = id || null;
+    const pLista = (lista || []).find((x) => x.id === editandoId);
+    codigoOriginal = pLista ? (pLista.codigo || '') : '';
     const form = $('#propertyForm');
     form.reset();
     imagenes = [];
@@ -482,8 +485,10 @@ async function openForm(id, lista) {
         if (!p.id) return cargarYEditar(editandoId);
 
         $('#propId').value = p.id || '';
+        codigoOriginal = p.codigo || codigoOriginal || '';
+        asegurarOpcionAsesor(p.asesor_id);
         $('#asesor').value = p.asesor_id || '';
-        $('#codigo').value = p.codigo || '';
+        $('#codigo').value = codigoOriginal;
         $('#titulo').value = p.titulo || '';
         $('#operacion').value = p.operacion || '';
         asegurarTipoOpcion(p.tipo);
@@ -504,6 +509,7 @@ async function openForm(id, lista) {
         cargarImagenesDePropiedad(p.id, p.imagen);
     } else {
         $('#propId').value = '';
+        codigoOriginal = '';
         card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
@@ -739,6 +745,7 @@ function closeForm() {
     imagenes.forEach((i) => i.esNueva && URL.revokeObjectURL(i.url));
     imagenes = [];
     editandoId = null;
+    codigoOriginal = '';
 }
 
 /* ============================================================
@@ -922,7 +929,7 @@ document.addEventListener('change', (e) => {
    AYUDAS — botones "?" que explican cada campo
    ============================================================ */
 const AYUDAS = [
-    ['codigo', 'Se genera solo al guardar, usando la nomenclatura del asesor (ej. BP-0007). No se cambia a mano.'],
+    ['codigo', 'Se genera solo al guardar con la nomenclatura del asesor (ej. BP-0007). Al editar una propiedad, el código NO cambia.'],
     ['asesor', 'Elige el asesor que hizo la captación. Su nomenclatura se usará en el código de la propiedad.'],
     ['asesorNombre', 'Nombre completo del asesor (ej. Belkis Prada).'],
     ['asesorCodigo', 'Nomenclatura de 2 a 4 letras. Se usa en el código de captación (ej. BP-0007).'],
@@ -932,9 +939,9 @@ const AYUDAS = [
     ['asesorInstagram', 'Usuario de Instagram (ej. @meyers.inmobiliaria).'],
     ['asesorBio', 'Breve descripción. Puedes usar ENTER para separar líneas.'],
     ['titulo', 'Nombre corto y claro de la propiedad. Se guarda en MAYÚSCULAS.'],
-    ['tipo', 'Categoría: Casa, Apartamento, Terreno o Local Comercial.'],
+    ['tipo', 'Elige el tipo de propiedad en la lista (Casa, Apartamento, Oficina, Galpón, etc.).'],
     ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
-    ['zona', 'Sector o urbanización DENTRO de la ciudad. Solo aparecen las zonas de la ciudad elegida.'],
+    ['zona', 'Sector o urbanización. Es una lista libre: escribe o elige. El botón + agrega una zona nueva.'],
     ['precio', 'Precio en dólares (USD). Solo números.'],
     ['area', 'Superficie en metros cuadrados (m²).'],
     ['habitaciones', 'Cantidad de habitaciones. Pon 0 si no aplica.'],
@@ -1019,13 +1026,33 @@ function actualizarCodigoPreview() {
     const sel = $('#asesor');
     const codigo = $('#codigo');
     if (!sel || !codigo) return;
+
+    // Al EDITAR, el código/ticket original NO cambia nunca
+    if (editandoId) {
+        codigo.value = codigoOriginal;
+        return;
+    }
+
     const a = cacheAsesores.find((x) => x.id === sel.value);
     if (a) {
         codigo.value = a.codigo + '-' + String((a.contador || 0) + 1).padStart(4, '0');
     } else {
         codigo.value = '';
-        codigo.placeholder = 'Selecciona un asesor';
+        codigo.placeholder = 'Se asigna al guardar';
     }
+}
+
+/** Asegura que el asesor actual exista en el select (aunque esté inactivo). */
+function asegurarOpcionAsesor(id) {
+    const sel = $('#asesor');
+    if (!sel || !id) return;
+    if (Array.from(sel.options).some((o) => o.value === id)) return;
+
+    const a = cacheAsesores.find((x) => x.id === id);
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = a ? `${a.nombre} (${a.codigo})${a.activo ? '' : ' · inactivo'}` : 'Asesor actual';
+    sel.appendChild(opt);
 }
 
 async function cargarAsesores() {
@@ -1041,7 +1068,7 @@ async function cargarAsesores() {
     if (sel) {
         const actual = sel.value;
         sel.innerHTML = '<option value="">Selecciona…</option>' +
-            cacheAsesores.filter((a) => a.activo).map((a) => `<option value="${esc(a.id)}">${esc(a.nombre)} (${esc(a.codigo)})</option>`).join('');
+            cacheAsesores.map((a) => `<option value="${esc(a.id)}">${esc(a.nombre)} (${esc(a.codigo)})${a.activo ? '' : ' · inactivo'}</option>`).join('');
         if (actual) sel.value = actual;
     }
 
