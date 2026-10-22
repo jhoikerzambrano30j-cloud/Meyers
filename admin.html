@@ -68,6 +68,7 @@
             <!-- Formulario -->
             <div class="panel-card" id="formCard" style="display:none">
                 <h3 id="formTitle">Nueva propiedad</h3>
+                <p class="form-intro">Completa la información. Los campos con <b>*</b> son obligatorios.</p>
                 <form id="propertyForm">
                     <input type="hidden" id="propId">
 
@@ -173,7 +174,7 @@
                         <div class="field full">
                             <div class="checkbox-field">
                                 <input type="checkbox" id="destacada">
-                                <label for="destacada" style="margin:0">Mostrar como propiedad destacada</label>
+                                <label for="destacada">Mostrar como propiedad destacada</label>
                             </div>
                         </div>
 
@@ -188,11 +189,11 @@
                         </div>
                     </div>
 
-                    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+                    <div class="form-actions">
                         <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar propiedad</button>
                         <button type="button" class="btn-sm btn-edit" id="btnCancelForm">Cancelar</button>
                     </div>
-                    <div class="alert" id="formStatus" style="margin-top:16px"></div>
+                    <div class="alert form-status" id="formStatus"></div>
                 </form>
             </div>
 

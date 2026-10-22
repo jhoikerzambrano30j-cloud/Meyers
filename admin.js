@@ -444,28 +444,40 @@ function renderCaracteristicas(seleccionadas) {
     const sel = (seleccionadas || []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
     const extras = sel.filter((s) => !CARACTERISTICAS_DEFAULT.includes(s));
     const opciones = CARACTERISTICAS_DEFAULT.concat(extras);
-    box.innerHTML = opciones.map((c) => `
-        <label class="check-item">
-            <input type="checkbox" value="${esc(c)}" ${sel.includes(c) ? 'checked' : ''}>
+    box.innerHTML = opciones.map((c) => {
+        const checked = sel.includes(c);
+        return `
+        <label class="check-item${checked ? ' is-checked' : ''}">
+            <input type="checkbox" value="${esc(c)}" ${checked ? 'checked' : ''}>
             <span>${esc(c)}</span>
-        </label>`).join('');
+        </label>`;
+    }).join('');
 }
 
 function initCaracteristicas() {
     const btn = $('#btnAddCaracteristica');
     const input = $('#nuevaCaracteristica');
-    if (!btn || !input) return;
+    const box = $('#caracteristicasBox');
+    if (!btn || !input || !box) return;
+
+    // Mantiene el resaltado de la tarjeta sincronizado con el check
+    box.addEventListener('change', (event) => {
+        const check = event.target.closest('input[type="checkbox"]');
+        if (!check) return;
+        const item = check.closest('.check-item');
+        if (item) item.classList.toggle('is-checked', check.checked);
+    });
 
     const agregar = () => {
         const valor = (input.value || '').trim().toUpperCase();
         if (!valor) return;
-        const box = $('#caracteristicasBox');
         const existente = Array.from(box.querySelectorAll('input')).find((c) => c.value === valor);
         if (existente) {
             existente.checked = true;
+            existente.closest('.check-item')?.classList.add('is-checked');
         } else {
             const label = document.createElement('label');
-            label.className = 'check-item';
+            label.className = 'check-item is-checked';
             label.innerHTML = '<input type="checkbox" value="' + esc(valor) + '" checked><span>' + esc(valor) + '</span>';
             box.appendChild(label);
         }

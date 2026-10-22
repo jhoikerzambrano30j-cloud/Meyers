@@ -89,6 +89,8 @@ Proyecto/
 - **Panel autogestionable:** propiedades, usuarios, asesores, “Nuestra
   Historia”, contenido del sitio, títulos de secciones, servicios, reseñas,
   métricas e historial.
+- **Formulario de propiedad estandarizado:** características en tarjetas
+  uniformes, campos alineados y acciones de guardar/cancelar separadas.
 - **PWA:** se puede instalar en el teléfono.
 - **Página 404** personalizada con el diseño de la marca.
 - **Móvil y tablet:** menú con la sesión integrada, buscador compacto, fotos en alta calidad según la pantalla, campos sin zoom automático en iPhone y botones táctiles de 44 px.
