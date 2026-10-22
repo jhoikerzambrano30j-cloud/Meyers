@@ -926,6 +926,66 @@ h1, h2, h3, h4 {
     min-height: 300px;   /* reserva espacio mientras cargan (evita saltos) */
 }
 
+/* Chips de filtros activos (barra + búsqueda inteligente) */
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 900px;
+    margin: -6px auto 24px;
+}
+
+/* El atributo hidden debe ganar al display: flex */
+.active-filters[hidden] {
+    display: none;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 13px;
+    background: var(--white);
+    border: 1px solid rgba(225, 189, 69, 0.5);
+    border-radius: 30px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.filter-chip button {
+    border: none;
+    background: transparent;
+    color: var(--silver);
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    font-size: 0.78rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.filter-chip button:hover {
+    color: #e74c3c;
+}
+
+/* El chip de la búsqueda inteligente resalta en dorado */
+.filter-chip.smart {
+    background: #171717;
+    border-color: rgba(225, 189, 69, 0.7);
+    color: var(--gold-light);
+}
+
+.filter-chip.smart button {
+    color: var(--gold-light);
+}
+
+.filter-chip.smart button:hover {
+    color: #fff;
+}
+
 /* Tarjetas fantasma mientras cargan las propiedades */
 .skeleton-card {
     background: var(--white);

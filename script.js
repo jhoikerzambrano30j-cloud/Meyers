@@ -102,6 +102,8 @@ const SMART_SINONIMOS = {
     playa: ['playa', 'mar', 'costa'],
     piscina: ['piscina'],
     piscinas: ['piscina'],
+    jacuzzi: ['jacuzzi', 'hidromasaje', 'jacuzzy'],
+    hidromasaje: ['jacuzzi', 'hidromasaje'],
     estacionamiento: ['estacionamiento', 'garaje', 'parking', 'garage'],
     estacionamientos: ['estacionamiento', 'garaje', 'parking', 'garage'],
     garaje: ['estacionamiento', 'garaje', 'parking'],
@@ -808,14 +810,14 @@ function applyFilters() {
     state.busquedaActiva = terminos.length > 0;
 
     if (state.busquedaActiva) {
-        // Tipo y operación se aplican como filtro duro
+        // Tipo y operación se aplican como filtro duro SOLO si la barra no los fijó
         const tipoBusqueda = terminos.map((t) => SMART_TIPOS[t]).find(Boolean);
-        if (tipoBusqueda) {
+        if (tipoBusqueda && !tipo) {
             state.visibles = state.visibles.filter((p) => slug(p.tipo) === tipoBusqueda);
         }
 
         const operacionBusqueda = terminos.map((t) => SMART_OPERACIONES[t]).find(Boolean);
-        if (operacionBusqueda) {
+        if (operacionBusqueda && !operacion) {
             state.visibles = state.visibles.filter((p) => slug(p.operacion || 'Venta') === operacionBusqueda);
         }
 
@@ -998,6 +1000,83 @@ function ordenarPropiedades(lista) {
     return copia;
 }
 
+/** Muestra chips con los filtros activos (incluida la búsqueda inteligente). */
+function renderActiveFilters() {
+    const cont = $('#activeFilters');
+    if (!cont) return;
+
+    const chips = [];
+    const agregar = (label, clave, extra) => {
+        if (!label) return;
+        chips.push(
+            `<span class="filter-chip${extra ? ' ' + extra : ''}">${escapeHtml(label)}` +
+            `<button type="button" data-clear-filter="${clave}" aria-label="Quitar filtro ${escapeHtml(label)}">` +
+            `<i class="fas fa-times" aria-hidden="true"></i></button></span>`
+        );
+    };
+    const textoOpcion = (id) => {
+        const sel = $('#' + id);
+        if (!sel || !sel.value) return '';
+        return (sel.selectedOptions && sel.selectedOptions[0]
+            ? sel.selectedOptions[0].textContent
+            : '').trim();
+    };
+
+    agregar(textoOpcion('operacion'), 'operacion');
+    agregar(textoOpcion('tipo'), 'tipo');
+    agregar(textoOpcion('ubicacion'), 'ubicacion');
+    agregar(textoOpcion('zona'), 'zona');
+
+    const pMin = ($('#precioMin')?.value || '').trim();
+    const pMax = ($('#precioMax')?.value || '').trim();
+    if (pMin || pMax) {
+        let label;
+        if (pMin && pMax) label = `$${pMin} – $${pMax}`;
+        else if (pMin) label = `Desde $${pMin}`;
+        else label = `Hasta $${pMax}`;
+        agregar(label, 'precio');
+    }
+
+    const hab = $('#habitaciones')?.value;
+    if (hab) agregar(`${hab}+ habitaciones`, 'habitaciones');
+    const ban = $('#banos')?.value;
+    if (ban) agregar(`${ban}+ baños`, 'banos');
+    agregar(textoOpcion('area'), 'area');
+    agregar(textoOpcion('caracteristica'), 'caracteristica');
+    if ($('#soloDestacadas')?.checked) agregar('Solo destacadas', 'destacadas');
+
+    const smart = ($('#smartInput')?.value || '').trim();
+    if (smart) {
+        const q = smart.length > 42 ? smart.slice(0, 39) + '…' : smart;
+        agregar(`“${q}”`, 'smart', 'smart');
+    }
+
+    cont.innerHTML = chips.join('');
+    cont.hidden = chips.length === 0;
+
+    cont.querySelectorAll('[data-clear-filter]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const clave = btn.dataset.clearFilter;
+            if (clave === 'precio') {
+                const a = $('#precioMin');
+                const b = $('#precioMax');
+                if (a) a.value = '';
+                if (b) b.value = '';
+            } else if (clave === 'smart') {
+                const s = $('#smartInput');
+                if (s) s.value = '';
+            } else if (clave === 'destacadas') {
+                const d = $('#soloDestacadas');
+                if (d) d.checked = false;
+            } else {
+                const el = $('#' + clave);
+                if (el) el.value = '';
+            }
+            applyFilters();
+        });
+    });
+}
+
 function updateResultsBar() {
     const countEl = $('#resultsCount');
     const clearBtn = $('#clearFilters');
@@ -1023,6 +1102,7 @@ function updateResultsBar() {
     }
     if (clearBtn) clearBtn.hidden = !state.filtrosActivos;
     if (viewAllWrapper) viewAllWrapper.hidden = state.filtrosActivos || state.mostrarTodas;
+    renderActiveFilters();
 }
 
 /* ---------- Modal ---------- */
