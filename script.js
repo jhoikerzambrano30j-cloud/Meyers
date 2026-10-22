@@ -481,7 +481,6 @@ function initProperties() {
     if (form) form.addEventListener('submit', (event) => { event.preventDefault(); applyFilters(); });
     if (viewAllBtn) viewAllBtn.addEventListener('click', showAll);
     if (clearBtn) clearBtn.addEventListener('click', resetFilters);
-    $('#ubicacion')?.addEventListener('change', poblarZonas);
 
     initModal();
 
@@ -689,15 +688,13 @@ function poblarTipos() {
     if (actual) sel.value = actual;
 }
 
-/** Limpia y repuebla las zonas según la ciudad elegida. */
+/** Limpia y repuebla el filtro de zonas (lista libre, sin ciudad). */
 function poblarZonas() {
     const sel = $('#zona');
     if (!sel) return;
-    const ciudad = $('#ubicacion')?.value || '';
     const actual = sel.value;
 
     const zonas = [...new Set(PROPIEDADES
-        .filter((p) => !ciudad || slug(p.ubicacion) === ciudad)
         .map((p) => p.zona)
         .filter(Boolean))]
         .sort((a, b) => String(a).localeCompare(String(b), 'es'));

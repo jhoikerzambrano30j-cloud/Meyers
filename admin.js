@@ -343,21 +343,19 @@ function initPropertyForm() {
     }
 }
 
-/* ---------- Ciudades y Zonas ---------- */
+/* ---------- Ciudades y Zonas (listas libres, SIN relación) ---------- */
 let ciudadesPorNombre = new Map();   // nombre -> id
-let zonasCiudadActual = [];          // zonas de la ciudad elegida
-let ultimaCiudad = null;
+let zonasTodas = [];                 // todas las zonas (sin ciudad)
 
 function initUbicaciones() {
     const btnCiudad = $('#btnAddCiudad');
     const btnZona = $('#btnAddZona');
-    const inputCiudad = $('#ubicacion');
 
     if (btnCiudad) btnCiudad.addEventListener('click', agregarCiudad);
     if (btnZona) btnZona.addEventListener('click', agregarZona);
-    if (inputCiudad) ['input', 'change'].forEach((evt) => inputCiudad.addEventListener(evt, onCiudadCambia));
 
     cargarCiudades();
+    cargarZonas();
 }
 
 async function cargarCiudades() {
@@ -368,29 +366,14 @@ async function cargarCiudades() {
     if (list) list.innerHTML = (data || []).map((c) => `<option value="${esc(c.nombre)}"></option>`).join('');
 }
 
-async function onCiudadCambia() {
-    const nombre = ($('#ubicacion').value || '').trim().toUpperCase();
-    if (nombre === ultimaCiudad) return;
-    ultimaCiudad = nombre;
-    await cargarZonas(nombre);
-}
-
-async function cargarZonas(nombreCiudad) {
+async function cargarZonas() {
     const list = $('#zonasList');
     const inputZona = $('#zona');
-    zonasCiudadActual = [];
-
-    const ciudadId = ciudadesPorNombre.get(nombreCiudad);
-    if (!ciudadId) {
-        if (list) list.innerHTML = '';
-        if (inputZona) inputZona.placeholder = nombreCiudad ? 'PRIMERO AGREGA LA CIUDAD (botón +)' : 'ELIGE UNA CIUDAD PRIMERO';
-        return;
-    }
-
-    const { data } = await window.db.from('zonas').select('nombre').eq('ciudad_id', ciudadId).order('nombre');
-    zonasCiudadActual = (data || []).map((z) => z.nombre);
-    if (list) list.innerHTML = zonasCiudadActual.map((z) => `<option value="${esc(z)}"></option>`).join('');
-    if (inputZona) inputZona.placeholder = zonasCiudadActual.length ? 'ESCRIBE O ELIGE…' : 'ESCRIBE LA PRIMERA ZONA';
+    const { data, error } = await window.db.from('zonas').select('nombre').order('nombre');
+    if (error) { zonasTodas = []; return; }
+    zonasTodas = (data || []).map((z) => z.nombre);
+    if (list) list.innerHTML = zonasTodas.map((z) => `<option value="${esc(z)}"></option>`).join('');
+    if (inputZona) inputZona.placeholder = zonasTodas.length ? 'ESCRIBE O ELIGE…' : 'ESCRIBE LA PRIMERA ZONA';
 }
 
 async function agregarCiudad() {
@@ -406,41 +389,25 @@ async function agregarCiudad() {
     if (error) { toast('No se pudo agregar la ciudad: ' + error.message); return; }
     await cargarCiudades();
     input.value = nombre;
-    ultimaCiudad = null;
-    await onCiudadCambia();
-    toast('Ciudad "' + nombre + '" agregada. Ahora agrega sus zonas.');
+    toast('Ciudad "' + nombre + '" agregada.');
 }
 
 async function agregarZona() {
-    const inputCiudad = $('#ubicacion');
     const inputZona = $('#zona');
-    const ciudad = (inputCiudad.value || '').trim().toUpperCase();
     const zona = (inputZona.value || '').trim().toUpperCase();
-
-    if (!ciudad) { toast('Primero escribe la ciudad.'); return; }
     if (!zona) { toast('Escribe la zona que quieres agregar.'); return; }
 
-    let ciudadId = ciudadesPorNombre.get(ciudad);
-    if (!ciudadId) {
-        const { data, error } = await window.db.from('locations').insert({ nombre: ciudad }).select('id').single();
-        if (error) { toast('No se pudo crear la ciudad: ' + error.message); return; }
-        ciudadId = data.id;
-        await cargarCiudades();
-    }
-
-    if (zonasCiudadActual.includes(zona)) {
+    if (zonasTodas.includes(zona)) {
         inputZona.value = zona;
-        toast('La zona "' + zona + '" ya existe en ' + ciudad + '.');
+        toast('La zona "' + zona + '" ya existe.');
         return;
     }
 
-    const { error } = await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zona });
+    const { error } = await window.db.from('zonas').insert({ nombre: zona });
     if (error) { toast('No se pudo agregar la zona: ' + error.message); return; }
-
-    ultimaCiudad = null;
-    await cargarZonas(ciudad);
+    await cargarZonas();
     inputZona.value = zona;
-    toast('Zona "' + zona + '" agregada a ' + ciudad + '.');
+    toast('Zona "' + zona + '" agregada.');
 }
 
 /** Pone en MAYÚSCULAS todos los campos marcados con data-upper. */
@@ -498,8 +465,7 @@ async function openForm(id, lista) {
     const form = $('#propertyForm');
     form.reset();
     imagenes = [];
-    ultimaCiudad = null;
-    await cargarZonas('');
+    await cargarZonas();
 
     const card = $('#formCard');
     mostrarConAnimacion(card);
@@ -523,8 +489,7 @@ async function openForm(id, lista) {
         asegurarTipoOpcion(p.tipo);
         $('#tipo').value = p.tipo || '';
         $('#ubicacion').value = p.ubicacion || '';
-        ultimaCiudad = null;
-        await cargarZonas((p.ubicacion || '').toUpperCase());
+        await cargarZonas();
         $('#zona').value = p.zona || '';
         $('#precio').value = p.precio || '';
         $('#habitaciones').value = p.habitaciones || 0;
@@ -618,14 +583,13 @@ async function guardarPropiedad(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
     try {
-        // Asegurar la ciudad y la zona (siempre en MAYÚSCULAS)
-        let ciudadId = ciudadesPorNombre.get(ubicacionVal);
-        if (ubicacionVal && !ciudadId) {
+        // Asegurar la ciudad y la zona (listas independientes)
+        if (ubicacionVal && !ciudadesPorNombre.has(ubicacionVal)) {
             const { data } = await window.db.from('locations').insert({ nombre: ubicacionVal }).select('id').single();
-            if (data) { ciudadId = data.id; ciudadesPorNombre.set(ubicacionVal, data.id); }
+            if (data) ciudadesPorNombre.set(ubicacionVal, data.id);
         }
-        if (ciudadId && zonaVal && !zonasCiudadActual.includes(zonaVal)) {
-            await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zonaVal });
+        if (zonaVal && !zonasTodas.includes(zonaVal)) {
+            await window.db.from('zonas').insert({ nombre: zonaVal });
         }
 
         // 1) Subir las imágenes nuevas (WebP grande + miniatura)

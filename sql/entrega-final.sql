@@ -48,16 +48,32 @@ create policy "about_admin_write" on public.about_content
 alter table public.properties add column if not exists operacion text;
 
 update public.properties
+set operacion = 'Alquiler'
+where operacion = 'Alquiler con opción a compra';
+
+update public.properties
 set operacion = 'Venta'
 where operacion is null
-   or operacion not in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso');
+   or operacion not in ('Venta', 'Alquiler', 'Traspaso');
 
 alter table public.properties alter column operacion set default 'Venta';
 alter table public.properties alter column operacion set not null;
 
 alter table public.properties drop constraint if exists properties_operacion_check;
 alter table public.properties add constraint properties_operacion_check
-    check (operacion in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso'));
+    check (operacion in ('Venta', 'Alquiler', 'Traspaso'));
+
+-- ----------------------------------------------------------------------------
+-- 2b) ZONAS LIBRES (sin relación con la ciudad, sin duplicados)
+-- ----------------------------------------------------------------------------
+delete from public.zonas a
+using public.zonas b
+where a.nombre = b.nombre and a.id > b.id;
+
+alter table public.zonas drop column if exists ciudad_id cascade;
+
+alter table public.zonas drop constraint if exists zonas_nombre_key;
+alter table public.zonas add constraint zonas_nombre_key unique (nombre);
 
 -- ----------------------------------------------------------------------------
 -- 3) ÍNDICES (rendimiento)
@@ -75,7 +91,6 @@ create index if not exists idx_testimonials_estado on public.testimonials (estad
 create index if not exists idx_services_activo_orden on public.services (activo, orden);
 create index if not exists idx_profiles_role on public.profiles (role);
 create index if not exists idx_asesores_activo_orden on public.asesores (activo, orden);
-create index if not exists idx_zonas_ciudad on public.zonas (ciudad_id);
 
 -- ----------------------------------------------------------------------------
 -- 4) MASTER: permitir nombrar master (máximo 3)

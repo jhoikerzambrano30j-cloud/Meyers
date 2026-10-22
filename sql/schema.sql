@@ -325,18 +325,21 @@ create table if not exists public.properties (
     updated_at      timestamptz not null default now()
 );
 
--- Compatibilidad: agrega la operación (Venta/Alquiler/...) a bases existentes
+-- Compatibilidad: agrega la operación (Venta/Alquiler/Traspaso) a bases existentes
 alter table public.properties add column if not exists operacion text;
+update public.properties
+set operacion = 'Alquiler'
+where operacion = 'Alquiler con opción a compra';
 update public.properties
 set operacion = 'Venta'
 where operacion is null
-   or operacion not in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso');
+   or operacion not in ('Venta', 'Alquiler', 'Traspaso');
 alter table public.properties alter column operacion set default 'Venta';
 alter table public.properties alter column operacion set not null;
 
 alter table public.properties drop constraint if exists properties_operacion_check;
 alter table public.properties add constraint properties_operacion_check
-    check (operacion in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso'));
+    check (operacion in ('Venta', 'Alquiler', 'Traspaso'));
 
 alter table public.properties enable row level security;
 
@@ -460,15 +463,24 @@ insert into public.locations (nombre) values
 on conflict (nombre) do nothing;
 
 -- ----------------------------------------------------------------------------
--- ZONAS / SECTORES (cada zona pertenece a UNA ciudad)
+-- ZONAS / SECTORES (lista libre, SIN relación con la ciudad)
 -- ----------------------------------------------------------------------------
 create table if not exists public.zonas (
     id         uuid primary key default gen_random_uuid(),
-    ciudad_id  uuid not null references public.locations(id) on delete cascade,
     nombre     text not null check (nombre = upper(nombre)),
     created_at timestamptz not null default now(),
-    unique (ciudad_id, nombre)
+    unique (nombre)
 );
+
+-- Compatibilidad con bases existentes: desasociar de la ciudad y evitar duplicados
+delete from public.zonas a
+using public.zonas b
+where a.nombre = b.nombre and a.id > b.id;
+
+alter table public.zonas drop column if exists ciudad_id cascade;
+
+alter table public.zonas drop constraint if exists zonas_nombre_key;
+alter table public.zonas add constraint zonas_nombre_key unique (nombre);
 
 alter table public.zonas enable row level security;
 
@@ -479,29 +491,24 @@ drop policy if exists "zonas_admin_write" on public.zonas;
 create policy "zonas_admin_write" on public.zonas
     for all using (public.is_admin()) with check (public.is_admin());
 
--- Zonas más comunes por ciudad (editables desde el panel)
-insert into public.zonas (ciudad_id, nombre)
-select c.id, z.nombre
-from public.locations c
-join (values
-    ('CARACAS','CATEDRAL'), ('CARACAS','ALTAGRACIA'), ('CARACAS','LA CANDELARIA'),
-    ('CARACAS','SAN BERNARDINO'), ('CARACAS','SANTA ROSALÍA'), ('CARACAS','SAN PEDRO'),
-    ('CARACAS','EL RECREO'), ('CARACAS','EL VALLE'), ('CARACAS','LA VEGA'),
-    ('CARACAS','ANTÍMANO'), ('CARACAS','CARICUAO'), ('CARACAS','MACARAO'),
-    ('CARACAS','PETARE'), ('CARACAS','CATIA'), ('CARACAS','CHACAO'),
-    ('CARACAS','BARUTA'), ('CARACAS','EL HATILLO'), ('CARACAS','LA CALIFORNIA'),
-    ('CARACAS','LAS MERCEDES'), ('CARACAS','LOS CHAGUARAMOS'), ('CARACAS','SABANA GRANDE'),
-    ('CUA','CENTRO'), ('CUA','LA MAGDALENA'), ('CUA','EL PORTACHUELO'), ('CUA','SAN JOSÉ'),
-    ('CHARALLAVE','CENTRO'), ('CHARALLAVE','LA ESTRELLA'), ('CHARALLAVE','EL PINAR'),
-    ('CHARALLAVE','LAS BRISAS'), ('CHARALLAVE','SANTA BÁRBARA'),
-    ('SANTA TERESA','CENTRO'), ('SANTA TERESA','EL PLACER'), ('SANTA TERESA','LA FUNDACIÓN'),
-    ('SANTA LUCIA','CENTRO'), ('SANTA LUCIA','EL CALVARIO'), ('SANTA LUCIA','EL CARMEN'),
-    ('OCUMARE','CENTRO'), ('OCUMARE','LA DEMOCRACIA'), ('OCUMARE','LOS OLIVOS'),
-    ('SAN CASIMIRO','CENTRO'), ('SAN CASIMIRO','LA COLONIA'), ('SAN CASIMIRO','SAN RAFAEL')
-) as z(ciudad, nombre) on c.nombre = z.ciudad
-where not exists (
-    select 1 from public.zonas x where x.ciudad_id = c.id and x.nombre = z.nombre
-);
+-- Zonas más comunes (lista libre, sin ciudad)
+insert into public.zonas (nombre)
+select distinct nombre from (values
+    ('CATEDRAL'), ('ALTAGRACIA'), ('LA CANDELARIA'),
+    ('SAN BERNARDINO'), ('SANTA ROSALÍA'), ('SAN PEDRO'),
+    ('EL RECREO'), ('EL VALLE'), ('LA VEGA'),
+    ('ANTÍMANO'), ('CARICUAO'), ('MACARAO'),
+    ('PETARE'), ('CATIA'), ('CHACAO'),
+    ('BARUTA'), ('EL HATILLO'), ('LA CALIFORNIA'),
+    ('LAS MERCEDES'), ('LOS CHAGUARAMOS'), ('SABANA GRANDE'),
+    ('CENTRO'), ('LA MAGDALENA'), ('EL PORTACHUELO'), ('SAN JOSÉ'),
+    ('LA ESTRELLA'), ('EL PINAR'), ('LAS BRISAS'), ('SANTA BÁRBARA'),
+    ('EL PLACER'), ('LA FUNDACIÓN'),
+    ('EL CALVARIO'), ('EL CARMEN'),
+    ('LA DEMOCRACIA'), ('LOS OLIVOS'),
+    ('LA COLONIA'), ('SAN RAFAEL')
+) as v(nombre)
+on conflict (nombre) do nothing;
 
 -- ----------------------------------------------------------------------------
 -- 3. GALERÍA DE PROPIEDADES (varias fotos por propiedad)
@@ -898,7 +905,6 @@ create index if not exists idx_testimonials_estado on public.testimonials (estad
 create index if not exists idx_services_activo_orden on public.services (activo, orden);
 create index if not exists idx_profiles_role on public.profiles (role);
 create index if not exists idx_asesores_activo_orden on public.asesores (activo, orden);
-create index if not exists idx_zonas_ciudad on public.zonas (ciudad_id);
 
 -- ============================================================================
 -- 9. HAZTE ADMINISTRADOR

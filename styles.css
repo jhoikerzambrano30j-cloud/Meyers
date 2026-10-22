@@ -452,13 +452,13 @@ h1, h2, h3, h4 {
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 1200px;
+    max-width: 1120px;
     z-index: 10;
 }
 
 .search-form {
     display: grid;
-    grid-template-columns: 1.9fr 1fr 1fr 1fr auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto auto;
     gap: 0;
     background: var(--white);
     border-radius: 60px;
@@ -468,7 +468,7 @@ h1, h2, h3, h4 {
 }
 
 .search-group {
-    padding: 15px 14px;
+    padding: 15px 20px;
     border-right: 1px solid #eee;
     text-align: left;
     min-width: 0;
@@ -488,7 +488,7 @@ h1, h2, h3, h4 {
     border: none;
     background: transparent;
     font-family: var(--font-body);
-    font-size: 0.88rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--dark);
     cursor: pointer;
