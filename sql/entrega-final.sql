@@ -11,9 +11,11 @@ create table if not exists public.about_content (
     id                int primary key default 1 check (id = 1),
     tag               text not null default 'Nuestra Historia',
     titulo            text not null default 'Meyer''s Inmobiliaria',
-    texto             text not null default $$Fundada en 2020 por Mayerlyn Martínez, Meyer's nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.
-
-No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.$$,
+    texto             text not null default (
+        'Fundada en 2020 por Mayerlyn Martínez, Meyer''s nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.'
+        || E'\n\n' ||
+        'No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.'
+    ),
     imagen            text,
     imagen_thumb      text,
     imagen_path       text,

@@ -51,9 +51,138 @@ function formatPrice(value) {
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ============================================================
+   BÚSQUEDA INTELIGENTE (sin IA externa)
+   Busca en título, descripción, características, zona y ciudad.
+   ============================================================ */
+const SMART_STOPWORDS = new Set([
+    'con', 'de', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'u',
+    'en', 'para', 'por', 'cerca', 'cercano', 'cercana', 'cercanos', 'cercanas', 'que',
+    'busco', 'quiero', 'necesito', 'mi', 'tu', 'su', 'al', 'del', 'se', 'a', 'e', 'es',
+    'son', 'como', 'donde', 'cual', 'mas', 'muy', 'tenga', 'tener', 'este', 'esta'
+]);
+
+const SMART_SINONIMOS = {
+    casa: ['casa', 'quinta', 'hogar', 'vivienda'],
+    casas: ['casa', 'quinta', 'hogar', 'vivienda'],
+    quinta: ['quinta', 'casa', 'villa'],
+    apartamento: ['apartamento', 'apto', 'departamento'],
+    apartamentos: ['apartamento', 'apto', 'departamento'],
+    apto: ['apartamento', 'apto'],
+    terreno: ['terreno', 'solar', 'lote'],
+    terrenos: ['terreno', 'solar', 'lote'],
+    oficina: ['oficina'],
+    local: ['local', 'comercio', 'tienda'],
+    locales: ['local', 'comercio', 'tienda'],
+    galpon: ['galpon', 'almacen', 'deposito'],
+    deposito: ['deposito', 'galpon', 'almacen'],
+    alquiler: ['alquiler', 'renta', 'arriendo'],
+    alquilar: ['alquiler', 'renta', 'arriendo'],
+    renta: ['alquiler', 'renta', 'arriendo'],
+    venta: ['venta', 'vender', 'comprar'],
+    vender: ['venta', 'vender', 'comprar'],
+    comprar: ['venta', 'comprar'],
+    colegio: ['colegio', 'escuela', 'liceo', 'educacion'],
+    colegios: ['colegio', 'escuela', 'liceo', 'educacion'],
+    escuela: ['colegio', 'escuela', 'liceo', 'educacion'],
+    escuelas: ['colegio', 'escuela', 'liceo', 'educacion'],
+    liceo: ['colegio', 'escuela', 'liceo'],
+    universidad: ['universidad', 'colegio', 'educacion'],
+    centro: ['centro', 'mall', 'cc'],
+    centros: ['centro', 'mall', 'cc'],
+    comercial: ['comercial', 'mall', 'cc'],
+    comerciales: ['comercial', 'mall', 'cc'],
+    mall: ['mall', 'centro comercial', 'cc'],
+    hospital: ['hospital', 'clinica', 'salud'],
+    clinica: ['hospital', 'clinica', 'salud'],
+    salud: ['hospital', 'clinica', 'salud'],
+    playa: ['playa', 'mar', 'costa'],
+    piscina: ['piscina'],
+    piscinas: ['piscina'],
+    estacionamiento: ['estacionamiento', 'garaje', 'parking', 'garage'],
+    estacionamientos: ['estacionamiento', 'garaje', 'parking', 'garage'],
+    garaje: ['estacionamiento', 'garaje', 'parking'],
+    parking: ['estacionamiento', 'garaje', 'parking'],
+    seguridad: ['seguridad', 'vigilancia'],
+    transporte: ['transporte', 'metro', 'autobus', 'parada'],
+    metro: ['metro', 'transporte'],
+    parque: ['parque', 'plaza'],
+    parques: ['parque', 'plaza'],
+    plaza: ['plaza', 'parque'],
+    jardin: ['jardin', 'areas verdes'],
+    jardines: ['jardin', 'areas verdes'],
+    amoblado: ['amoblado', 'muebles'],
+    amoblada: ['amoblado', 'muebles'],
+    aire: ['aire acondicionado', 'climatizado'],
+    ascensor: ['ascensor', 'elevador'],
+    terraza: ['terraza', 'balcon'],
+    balcon: ['balcon', 'terraza'],
+    vista: ['vista', 'panoramica'],
+    lujo: ['lujo', 'premium', 'exclusivo'],
+    nuevo: ['nuevo', 'estreno'],
+    moderna: ['moderna', 'moderno'],
+    moderno: ['moderno', 'moderna']
+};
+
+const SMART_TIPOS = {
+    casa: 'casa', casas: 'casa', quinta: 'quinta', quintas: 'quinta',
+    apartamento: 'apartamento', apartamentos: 'apartamento', apto: 'apartamento',
+    terreno: 'terreno', terrenos: 'terreno', solar: 'terreno', lote: 'terreno',
+    oficina: 'oficina', oficinas: 'oficina',
+    local: 'local-comercial', locales: 'local-comercial',
+    galpon: 'galpon', galpones: 'galpon', deposito: 'deposito'
+};
+
+const SMART_OPERACIONES = {
+    venta: 'venta', vender: 'venta', comprar: 'venta',
+    alquiler: 'alquiler', alquilar: 'alquiler', renta: 'alquiler', arriendo: 'alquiler',
+    traspaso: 'traspaso'
+};
+
+/** Minúsculas, sin acentos ni signos, para comparar texto. */
+function normalizarBusqueda(texto) {
+    return String(texto || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9ñ\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/** Palabras útiles de la consulta (sin conectores). */
+function terminosBusqueda(consulta) {
+    const palabras = normalizarBusqueda(consulta)
+        .split(' ')
+        .map((t) => t.trim())
+        .filter((t) => t.length >= 2 && !SMART_STOPWORDS.has(t));
+    return [...new Set(palabras)];
+}
+
+/** Puntúa una propiedad según cuántos conceptos de la consulta coinciden. */
+function puntuarBusqueda(prop, terminos) {
+    const hay = normalizarBusqueda([
+        prop.titulo,
+        prop.descripcion,
+        (prop.caracteristicas || []).join(' '),
+        prop.zona,
+        prop.ubicacion,
+        prop.tipo,
+        prop.operacion,
+        prop.badge
+    ].join(' '));
+
+    let score = 0;
+    for (const termino of terminos) {
+        const variantes = SMART_SINONIMOS[termino] || [termino];
+        if (variantes.some((v) => hay.includes(v))) score++;
+    }
+    return score;
+}
+
+/* ============================================================
    ESTADO
    ============================================================ */
-const state = { visibles: [], filtrosActivos: false, mostrarTodas: false };
+const state = { visibles: [], filtrosActivos: false, mostrarTodas: false, busquedaActiva: false };
 let favoritos = new Set();
 let currentUser = null;
 let catalogoPermitido = false;
@@ -482,6 +611,16 @@ function initProperties() {
     if (viewAllBtn) viewAllBtn.addEventListener('click', showAll);
     if (clearBtn) clearBtn.addEventListener('click', resetFilters);
 
+    const smartBtn = $('#smartSearchBtn');
+    const smartInput = $('#smartInput');
+    if (smartBtn) smartBtn.addEventListener('click', applyFilters);
+    if (smartInput) {
+        smartInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') { event.preventDefault(); applyFilters(); }
+        });
+        smartInput.addEventListener('search', applyFilters);
+    }
+
     initModal();
 
     if (!catalogoPermitido) {
@@ -575,16 +714,20 @@ function renderProperties(lista) {
     const grid = $('#propertiesGrid');
     if (!grid) return;
     if (!lista.length) {
+        const consulta = ($('#smartInput')?.value || '').trim();
         grid.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-house-circle-xmark" aria-hidden="true"></i>
-                <h3>No encontramos propiedades</h3>
-                <p>Prueba ajustando los filtros o explora todas las propiedades disponibles.</p>
+                <h3>${consulta ? 'Sin coincidencias' : 'No encontramos propiedades'}</h3>
+                <p>${consulta
+                    ? `No encontramos propiedades que coincidan con “${escapeHtml(consulta)}”. Prueba con otras palabras o limpia la búsqueda.`
+                    : 'Prueba ajustando los filtros o explora todas las propiedades disponibles.'}</p>
                 <button type="button" class="btn btn-outline" data-action="clear-filters">Ver todas las propiedades</button>
             </div>`;
         return;
     }
-    grid.innerHTML = ordenarPropiedades(lista).map((prop, i) => cardTemplate(prop, i)).join('');
+    const listaFinal = state.busquedaActiva ? lista : ordenarPropiedades(lista);
+    grid.innerHTML = listaFinal.map((prop, i) => cardTemplate(prop, i)).join('');
 }
 
 function renderFeatured() {
@@ -592,6 +735,7 @@ function renderFeatured() {
     if (!state.visibles.length) state.visibles = [...PROPIEDADES];
     state.filtrosActivos = false;
     state.mostrarTodas = false;
+    state.busquedaActiva = false;
     renderProperties(state.visibles);
     updateResultsBar();
 }
@@ -633,10 +777,35 @@ function applyFilters() {
         return true;
     });
 
+    // Búsqueda inteligente en toda la descripción
+    const consulta = ($('#smartInput')?.value || '').trim();
+    const terminos = terminosBusqueda(consulta);
+    state.busquedaActiva = terminos.length > 0;
+
+    if (state.busquedaActiva) {
+        // Tipo y operación se aplican como filtro duro
+        const tipoBusqueda = terminos.map((t) => SMART_TIPOS[t]).find(Boolean);
+        if (tipoBusqueda) {
+            state.visibles = state.visibles.filter((p) => slug(p.tipo) === tipoBusqueda);
+        }
+
+        const operacionBusqueda = terminos.map((t) => SMART_OPERACIONES[t]).find(Boolean);
+        if (operacionBusqueda) {
+            state.visibles = state.visibles.filter((p) => slug(p.operacion || 'Venta') === operacionBusqueda);
+        }
+
+        const minimo = terminos.length <= 1 ? 1 : Math.max(2, Math.ceil(terminos.length * 0.6));
+        state.visibles = state.visibles
+            .map((prop) => ({ prop, score: puntuarBusqueda(prop, terminos) }))
+            .filter((x) => x.score >= minimo)
+            .sort((a, b) => b.score - a.score)
+            .map((x) => x.prop);
+    }
+
     state.filtrosActivos = Boolean(
         operacion || tipo || ubicacion || min !== '' || max !== '' || zona ||
         habitaciones || banos || areaMin !== '' || areaMax !== '' ||
-        caracteristica || soloDestacadas
+        caracteristica || soloDestacadas || consulta
     );
     state.mostrarTodas = false;
 
@@ -650,6 +819,7 @@ function showAll() {
     state.visibles = [...PROPIEDADES];
     state.filtrosActivos = false;
     state.mostrarTodas = true;
+    state.busquedaActiva = false;
     renderProperties(state.visibles);
     updateResultsBar();
 }
@@ -662,6 +832,9 @@ function resetFilters() {
     });
     const dest = $('#soloDestacadas');
     if (dest) dest.checked = false;
+    const smart = $('#smartInput');
+    if (smart) smart.value = '';
+    state.busquedaActiva = false;
     poblarZonas();
     actualizarBadgeFiltros();
     showAll();
@@ -805,9 +978,15 @@ function updateResultsBar() {
     const clearBtn = $('#clearFilters');
     const viewAllWrapper = $('#viewAllWrapper');
     const total = state.visibles.length;
+    const consulta = ($('#smartInput')?.value || '').trim();
+    const consultaCorta = consulta.length > 60 ? consulta.slice(0, 57) + '…' : consulta;
 
     if (countEl) {
-        if (state.filtrosActivos) {
+        if (consulta && state.busquedaActiva) {
+            countEl.textContent = total
+                ? `${total} coincidencia${total === 1 ? '' : 's'} para “${consultaCorta}”`
+                : `Sin coincidencias para “${consultaCorta}”`;
+        } else if (state.filtrosActivos) {
             countEl.textContent = total
                 ? `${total} propiedad${total === 1 ? '' : 'es'} encontrada${total === 1 ? '' : 's'}`
                 : 'Sin resultados para tu búsqueda';
