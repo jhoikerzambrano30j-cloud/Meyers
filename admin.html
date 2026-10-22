@@ -44,6 +44,7 @@
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
             <button class="admin-tab" data-tab="nosotros"><i class="fas fa-landmark"></i> Nosotros</button>
+            <button class="admin-tab" data-tab="sitio"><i class="fas fa-sliders"></i> Sitio</button>
             <button class="admin-tab" data-tab="resenas"><i class="fas fa-star"></i> Reseñas <span class="tab-badge" id="resenasTabBadge" hidden>0</span></button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
             <button class="admin-tab" data-tab="historial"><i class="fas fa-clock-rotate-left"></i> Historial</button>
@@ -387,6 +388,110 @@
                         <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar cambios</button>
                     </div>
                     <div class="alert" id="aboutStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============ SITIO (HERO, CONTACTO, PIE Y SEO) ============ -->
+        <section class="admin-panel" id="tab-sitio">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Contenido del sitio</h2>
+                    <p>Portada, datos de contacto, redes sociales, pie de página y SEO.</p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <form id="sitioForm">
+                    <h3><i class="fas fa-bullhorn" style="color:#B8931F"></i> Portada (Hero)</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="sitioHeroSubtitulo">Texto superior</label>
+                            <input type="text" id="sitioHeroSubtitulo" placeholder="Bienvenido a Meyer's">
+                        </div>
+                        <div class="field">
+                            <label for="sitioHeroSlogan">Frase destacada</label>
+                            <input type="text" id="sitioHeroSlogan" placeholder="Estás en tu casa">
+                        </div>
+                        <div class="field full">
+                            <label for="sitioHeroTitulo">Título principal</label>
+                            <input type="text" id="sitioHeroTitulo" placeholder="Llegaste al lugar indicado">
+                        </div>
+                        <div class="field full">
+                            <label for="sitioHeroTexto">Texto descriptivo</label>
+                            <textarea id="sitioHeroTexto" rows="3"></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="sitioHeroCta">Texto del botón</label>
+                            <input type="text" id="sitioHeroCta" placeholder="Explorar Propiedades">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px"><i class="fas fa-address-book" style="color:#B8931F"></i> Contacto</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="sitioTelefono">Teléfono (como se muestra)</label>
+                            <input type="text" id="sitioTelefono" placeholder="0414-1338254">
+                        </div>
+                        <div class="field">
+                            <label for="sitioWhatsapp">WhatsApp (solo números)</label>
+                            <input type="text" id="sitioWhatsapp" placeholder="584141338254">
+                            <small class="field-hint">Sin +, espacios ni guiones. Ej: 584141338254</small>
+                        </div>
+                        <div class="field">
+                            <label for="sitioEmail">Correo</label>
+                            <input type="email" id="sitioEmail" placeholder="correo@meyers.com">
+                        </div>
+                        <div class="field">
+                            <label for="sitioDireccion">Dirección</label>
+                            <input type="text" id="sitioDireccion" placeholder="Av. Lamas, Santa Teresa, Piso 1">
+                        </div>
+                        <div class="field full">
+                            <label for="sitioHorario">Horario</label>
+                            <input type="text" id="sitioHorario" placeholder="Lun a Vie: 9:00 AM - 4:00 PM">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px"><i class="fas fa-share-nodes" style="color:#B8931F"></i> Redes sociales</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="sitioInstagram">Instagram (URL)</label>
+                            <input type="url" id="sitioInstagram" placeholder="https://instagram.com/...">
+                        </div>
+                        <div class="field">
+                            <label for="sitioFacebook">Facebook (URL)</label>
+                            <input type="url" id="sitioFacebook" placeholder="https://facebook.com/...">
+                        </div>
+                        <div class="field full">
+                            <label for="sitioLinkedin">LinkedIn (URL)</label>
+                            <input type="url" id="sitioLinkedin" placeholder="https://linkedin.com/...">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px"><i class="fas fa-shoe-prints" style="color:#B8931F"></i> Pie de página</h3>
+                    <div class="form-grid">
+                        <div class="field full">
+                            <label for="sitioFooterDesc">Descripción del pie</label>
+                            <textarea id="sitioFooterDesc" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px"><i class="fas fa-magnifying-glass" style="color:#B8931F"></i> SEO (Google y al compartir)</h3>
+                    <div class="form-grid">
+                        <div class="field full">
+                            <label for="sitioSeoTitulo">Título de la página</label>
+                            <input type="text" id="sitioSeoTitulo" placeholder="Meyer's Inmobiliaria | Bienes Raíces">
+                        </div>
+                        <div class="field full">
+                            <label for="sitioSeoDescripcion">Descripción</label>
+                            <textarea id="sitioSeoDescripcion" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:22px">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar contenido</button>
+                    </div>
+                    <div class="alert" id="sitioStatus" style="margin-top:16px"></div>
                 </form>
             </div>
         </section>

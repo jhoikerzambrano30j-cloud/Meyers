@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1A1A1A">
-    <meta name="description" content="Meyer's Inmobiliaria — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.">
+    <meta name="description" id="metaDescription" content="Meyer's Inmobiliaria — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.">
     <meta name="author" content="Meyer's Inmobiliaria">
 
     <!-- Open Graph / vista previa al compartir (WhatsApp, redes) -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Meyer's Inmobiliaria">
-    <meta property="og:title" content="Meyer's Inmobiliaria | Bienes Raíces">
-    <meta property="og:description" content="Encuentra la propiedad que se adapta a tu estilo de vida. Asesoría personalizada y respuesta en menos de 24 horas.">
+    <meta property="og:title" id="ogTitle" content="Meyer's Inmobiliaria | Bienes Raíces">
+    <meta property="og:description" id="ogDescription" content="Encuentra la propiedad que se adapta a tu estilo de vida. Asesoría personalizada y respuesta en menos de 24 horas.">
     <meta property="og:locale" content="es_VE">
     <meta property="og:url" content="https://meyers-mu.vercel.app/">
     <meta property="og:image" content="https://meyers-mu.vercel.app/img/og-image.png">
@@ -92,11 +92,11 @@
     <header class="hero" id="inicio">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <p class="hero-subtitle">Bienvenido a Meyer's</p>
-            <h1 class="hero-title">Llegaste al lugar indicado</h1>
-            <p class="hero-slogan">Estás en tu casa</p>
-            <p class="hero-text">Somos diferentes, porque mejoramos cada día. Encuentra la propiedad que se adapta a tu estilo de vida.</p>
-            <a href="#propiedades" class="btn btn-primary">Explorar Propiedades</a>
+            <p class="hero-subtitle" id="heroSubtitulo">Bienvenido a Meyer's</p>
+            <h1 class="hero-title" id="heroTitulo">Llegaste al lugar indicado</h1>
+            <p class="hero-slogan" id="heroSlogan">Estás en tu casa</p>
+            <p class="hero-text" id="heroTexto">Somos diferentes, porque mejoramos cada día. Encuentra la propiedad que se adapta a tu estilo de vida.</p>
+            <a href="#propiedades" class="btn btn-primary" id="heroCta">Explorar Propiedades</a>
         </div>
 
         <!-- Buscador Flotante -->
@@ -316,10 +316,10 @@
                             <i class="fab fa-whatsapp" aria-hidden="true"></i> Escribir por WhatsApp
                         </a>
                         <div class="contact-direct-links">
-                            <a href="#" data-phone><i class="fas fa-phone" aria-hidden="true"></i> +58 414-1338254</a>
-                            <a href="#" data-email><i class="fas fa-envelope" aria-hidden="true"></i> inmb.mimeyerhouse@gmail.com</a>
-                            <p><i class="fas fa-location-dot" aria-hidden="true"></i> Av. Lamas, Santa Teresa, Piso 1</p>
-                            <p><i class="fas fa-clock" aria-hidden="true"></i> Lun–Vie 9:00 AM – 4:00 PM</p>
+                            <a href="#" data-phone><i class="fas fa-phone" aria-hidden="true"></i> <span id="contactoTelefono">0414-1338254</span></a>
+                            <a href="#" data-email><i class="fas fa-envelope" aria-hidden="true"></i> <span id="contactoEmail">inmb.mimeyerhouse@gmail.com</span></a>
+                            <p><i class="fas fa-location-dot" aria-hidden="true"></i> <span id="contactoDireccion">Av. Lamas, Santa Teresa, Piso 1</span></p>
+                            <p><i class="fas fa-clock" aria-hidden="true"></i> <span id="contactoHorario">Lun–Vie 9:00 AM – 4:00 PM</span></p>
                         </div>
                     </div>
                 </div>
@@ -335,12 +335,12 @@
                     <div class="footer-logo">
                         <img src="img/logo-meyer.png" alt="Meyer's Inmobiliaria" class="brand-badge brand-badge--footer" width="120" height="120">
                     </div>
-                    <p class="footer-desc">Somos diferentes, porque mejoramos cada día. Tu hogar te espera.</p>
+                    <p class="footer-desc" id="footerDesc">Somos diferentes, porque mejoramos cada día. Tu hogar te espera.</p>
                     <div class="social-links">
-                        <a href="#" aria-label="Instagram" rel="noopener"><i class="fab fa-instagram" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="Facebook" rel="noopener"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="WhatsApp" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="LinkedIn" rel="noopener"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Instagram" rel="noopener" id="socialInstagram" hidden><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Facebook" rel="noopener" id="socialFacebook" hidden><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="WhatsApp" rel="noopener" id="socialWhatsapp" data-whatsapp><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="LinkedIn" rel="noopener" id="socialLinkedin" hidden><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
                     </div>
                 </div>
                 <div class="footer-col">
@@ -368,10 +368,10 @@
                 <div class="footer-col">
                     <h4>Contacto</h4>
                     <ul class="footer-contact">
-                        <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Av. Lamas, Santa Teresa, Piso 1</li>
-                        <li><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+584141338254" data-phone>0414-1338254</a></li>
-                        <li><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:inmb.mimeyerhouse@gmail.com" data-email>inmb.mimeyerhouse@gmail.com</a></li>
-                        <li><i class="fas fa-clock" aria-hidden="true"></i> Lun a Vie: 9:00 AM - 4:00 PM</li>
+                        <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i> <span id="footerDireccion">Av. Lamas, Santa Teresa, Piso 1</span></li>
+                        <li><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+584141338254" data-phone id="footerTelefono">0414-1338254</a></li>
+                        <li><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:inmb.mimeyerhouse@gmail.com" data-email id="footerEmail">inmb.mimeyerhouse@gmail.com</a></li>
+                        <li><i class="fas fa-clock" aria-hidden="true"></i> <span id="footerHorario">Lun a Vie: 9:00 AM - 4:00 PM</span></li>
                     </ul>
                 </div>
             </div>

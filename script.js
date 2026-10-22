@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
     applyConfig();
+    cargarSitio();
     initReveal();
     initScrollEffects();
     initMobileMenu();
@@ -252,6 +253,79 @@ async function cargarNosotros() {
         set('stat3Etiqueta', data.stat3_etiqueta);
     } catch (e) {
         // Si la tabla aún no existe, se mantiene el contenido estático de la web
+    }
+}
+
+/** Carga la configuración general editable (hero, contacto, pie y SEO). */
+async function cargarSitio() {
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
+
+    try {
+        const { data, error } = await window.db
+            .from('site_settings')
+            .select('*')
+            .eq('id', 1)
+            .maybeSingle();
+
+        if (error || !data) return;
+
+        const set = (id, valor) => {
+            const el = document.getElementById(id);
+            if (el && valor != null && String(valor).trim() !== '') el.textContent = valor;
+        };
+
+        // Hero
+        set('heroSubtitulo', data.hero_subtitulo);
+        set('heroTitulo', data.hero_titulo);
+        set('heroSlogan', data.hero_slogan);
+        set('heroTexto', data.hero_texto);
+        set('heroCta', data.hero_cta);
+
+        // Contacto (tarjeta y pie de página)
+        set('contactoTelefono', data.telefono);
+        set('contactoEmail', data.email);
+        set('contactoDireccion', data.direccion);
+        set('contactoHorario', data.horario);
+        set('footerTelefono', data.telefono);
+        set('footerEmail', data.email);
+        set('footerDireccion', data.direccion);
+        set('footerHorario', data.horario);
+        set('footerDesc', data.footer_desc);
+
+        // Datos para los enlaces tel:, mailto: y WhatsApp
+        if (data.telefono) CONFIG.telefono = data.telefono;
+        if (data.whatsapp) CONFIG.whatsapp = String(data.whatsapp).replace(/\D/g, '');
+        if (data.email) CONFIG.email = data.email;
+
+        // SEO
+        if (data.seo_titulo) document.title = data.seo_titulo;
+        const meta = document.getElementById('metaDescription');
+        if (meta && data.seo_descripcion) meta.setAttribute('content', data.seo_descripcion);
+        const ogTitle = document.getElementById('ogTitle');
+        if (ogTitle && data.seo_titulo) ogTitle.setAttribute('content', data.seo_titulo);
+        const ogDesc = document.getElementById('ogDescription');
+        if (ogDesc && data.seo_descripcion) ogDesc.setAttribute('content', data.seo_descripcion);
+
+        // Redes sociales
+        [['socialInstagram', data.instagram], ['socialFacebook', data.facebook], ['socialLinkedin', data.linkedin]]
+            .forEach(([id, url]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (url && String(url).trim()) {
+                    el.href = url;
+                    el.hidden = false;
+                } else {
+                    el.hidden = true;
+                }
+            });
+
+        const wa = document.getElementById('socialWhatsapp');
+        if (wa) wa.href = `https://wa.me/${CONFIG.whatsapp}`;
+
+        // Refresca todos los enlaces con los datos nuevos
+        applyConfig();
+    } catch (e) {
+        // Si la tabla aún no existe se mantienen los datos por defecto
     }
 }
 

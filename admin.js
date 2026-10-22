@@ -192,11 +192,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnCancelAsesor')?.addEventListener('click', closeAsesorForm);
     initAsesorForm();
     initAboutForm();
+    initSitioForm();
     $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
     $('#btnCopyReviewLink')?.addEventListener('click', copiarLinkResena);
     $('#btnReviewWhatsapp')?.addEventListener('click', compartirWhatsappResena);
 
-    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas(), cargarAbout()]);
+    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas(), cargarAbout(), cargarSitioAdmin()]);
 
     // Limpieza automática del historial: se borran los tratos con más de 2 meses
     if (await limpiarHistorial()) await loadProperties();
@@ -227,6 +228,7 @@ function initTabs() {
             if (destino === 'historial') renderHistorial();
             if (destino === 'resenas') loadResenas();
             if (destino === 'nosotros') cargarAbout();
+            if (destino === 'sitio') cargarSitioAdmin();
         });
     });
 }
@@ -1328,6 +1330,94 @@ async function guardarAbout(e) {
         setStatus(status, '¡Nuestra Historia actualizada!', 'success');
         toast('Nuestra Historia actualizada.', 'success');
         await cargarAbout();
+    } catch (err) {
+        setStatus(status, 'Error: ' + (err.message || err), 'error');
+        toast('No se pudo guardar: ' + (err.message || err), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+}
+
+/* ============================================================
+   CONTENIDO DEL SITIO (hero, contacto, pie y SEO)
+   ============================================================ */
+async function cargarSitioAdmin() {
+    const form = $('#sitioForm');
+    if (!form) return;
+
+    const { data, error } = await window.db
+        .from('site_settings')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle();
+
+    if (error) {
+        setStatus($('#sitioStatus'), 'Error al cargar: ' + error.message, 'error');
+        return;
+    }
+
+    const d = data || {};
+    $('#sitioHeroSubtitulo').value = d.hero_subtitulo || '';
+    $('#sitioHeroTitulo').value = d.hero_titulo || '';
+    $('#sitioHeroSlogan').value = d.hero_slogan || '';
+    $('#sitioHeroTexto').value = d.hero_texto || '';
+    $('#sitioHeroCta').value = d.hero_cta || '';
+    $('#sitioTelefono').value = d.telefono || '';
+    $('#sitioWhatsapp').value = d.whatsapp || '';
+    $('#sitioEmail').value = d.email || '';
+    $('#sitioDireccion').value = d.direccion || '';
+    $('#sitioHorario').value = d.horario || '';
+    $('#sitioInstagram').value = d.instagram || '';
+    $('#sitioFacebook').value = d.facebook || '';
+    $('#sitioLinkedin').value = d.linkedin || '';
+    $('#sitioFooterDesc').value = d.footer_desc || '';
+    $('#sitioSeoTitulo').value = d.seo_titulo || '';
+    $('#sitioSeoDescripcion').value = d.seo_descripcion || '';
+}
+
+function initSitioForm() {
+    const form = $('#sitioForm');
+    if (!form) return;
+    form.addEventListener('submit', guardarSitio);
+}
+
+async function guardarSitio(e) {
+    e.preventDefault();
+    const status = $('#sitioStatus');
+    const btn = $('#sitioForm button[type="submit"]');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const payload = {
+            id: 1,
+            hero_subtitulo: $('#sitioHeroSubtitulo').value.trim(),
+            hero_titulo: $('#sitioHeroTitulo').value.trim(),
+            hero_slogan: $('#sitioHeroSlogan').value.trim(),
+            hero_texto: $('#sitioHeroTexto').value.trim(),
+            hero_cta: $('#sitioHeroCta').value.trim() || 'Explorar Propiedades',
+            telefono: $('#sitioTelefono').value.trim(),
+            whatsapp: $('#sitioWhatsapp').value.replace(/\D/g, ''),
+            email: $('#sitioEmail').value.trim(),
+            direccion: $('#sitioDireccion').value.trim(),
+            horario: $('#sitioHorario').value.trim(),
+            instagram: $('#sitioInstagram').value.trim() || null,
+            facebook: $('#sitioFacebook').value.trim() || null,
+            linkedin: $('#sitioLinkedin').value.trim() || null,
+            footer_desc: $('#sitioFooterDesc').value.trim(),
+            seo_titulo: $('#sitioSeoTitulo').value.trim(),
+            seo_descripcion: $('#sitioSeoDescripcion').value.trim(),
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await window.db.from('site_settings').upsert(payload);
+        if (error) throw error;
+
+        setStatus(status, '¡Contenido del sitio actualizado!', 'success');
+        toast('Contenido del sitio actualizado.', 'success');
+        await cargarSitioAdmin();
     } catch (err) {
         setStatus(status, 'Error: ' + (err.message || err), 'error');
         toast('No se pudo guardar: ' + (err.message || err), 'error');

@@ -699,6 +699,42 @@ create policy "about_admin_write" on public.about_content
     for all using (public.is_admin()) with check (public.is_admin());
 
 -- ----------------------------------------------------------------------------
+-- 5d. CONFIGURACIÓN GENERAL DEL SITIO (hero, contacto, pie y SEO)
+-- ----------------------------------------------------------------------------
+create table if not exists public.site_settings (
+    id               int primary key default 1 check (id = 1),
+    hero_subtitulo   text not null default 'Bienvenido a Meyer''s',
+    hero_titulo      text not null default 'Llegaste al lugar indicado',
+    hero_slogan      text not null default 'Estás en tu casa',
+    hero_texto       text not null default 'Somos diferentes, porque mejoramos cada día. Encuentra la propiedad que se adapta a tu estilo de vida.',
+    hero_cta         text not null default 'Explorar Propiedades',
+    telefono         text not null default '0414-1338254',
+    whatsapp         text not null default '584141338254',
+    email            text not null default 'inmb.mimeyerhouse@gmail.com',
+    direccion        text not null default 'Av. Lamas, Santa Teresa, Piso 1',
+    horario          text not null default 'Lun a Vie: 9:00 AM - 4:00 PM',
+    instagram        text,
+    facebook         text,
+    linkedin         text,
+    footer_desc      text not null default 'Somos diferentes, porque mejoramos cada día. Tu hogar te espera.',
+    seo_titulo       text not null default 'Meyer''s Inmobiliaria | Bienes Raíces',
+    seo_descripcion  text not null default 'Meyer''s Inmobiliaria — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.',
+    updated_at       timestamptz not null default now()
+);
+
+insert into public.site_settings (id) values (1) on conflict (id) do nothing;
+
+alter table public.site_settings enable row level security;
+
+drop policy if exists "site_settings_public_read" on public.site_settings;
+create policy "site_settings_public_read" on public.site_settings
+    for select using (true);
+
+drop policy if exists "site_settings_admin_write" on public.site_settings;
+create policy "site_settings_admin_write" on public.site_settings
+    for all using (public.is_admin()) with check (public.is_admin());
+
+-- ----------------------------------------------------------------------------
 -- 6. STORAGE (bucket público para las fotos de propiedades)
 -- ----------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
