@@ -527,16 +527,38 @@ create table if not exists public.testimonials (
     rol        text,
     texto      text not null,
     avatar     text,
+    estrellas  int not null default 5,
+    estado     text not null default 'aprobado',
     sort_order int not null default 0,
     created_at timestamptz not null default now()
 );
 
+-- Compatibilidad con bases de datos ya creadas
+alter table public.testimonials
+    add column if not exists estrellas int not null default 5,
+    add column if not exists estado text not null default 'aprobado';
+
+alter table public.testimonials drop constraint if exists testimonials_estrellas_check;
+alter table public.testimonials add constraint testimonials_estrellas_check
+    check (estrellas between 1 and 5);
+
+alter table public.testimonials drop constraint if exists testimonials_estado_check;
+alter table public.testimonials add constraint testimonials_estado_check
+    check (estado in ('pendiente', 'aprobado', 'rechazado'));
+
 alter table public.testimonials enable row level security;
 
+-- El público solo ve las reseñas aprobadas
 drop policy if exists "testimonials_public_read" on public.testimonials;
 create policy "testimonials_public_read" on public.testimonials
-    for select using (true);
+    for select using (estado = 'aprobado');
 
+-- Cualquiera puede enviar una reseña (siempre queda pendiente)
+drop policy if exists "testimonials_public_insert" on public.testimonials;
+create policy "testimonials_public_insert" on public.testimonials
+    for insert with check (estado = 'pendiente');
+
+-- El admin puede ver y gestionar todas
 drop policy if exists "testimonials_admin_write" on public.testimonials;
 create policy "testimonials_admin_write" on public.testimonials
     for all using (public.is_admin()) with check (public.is_admin());

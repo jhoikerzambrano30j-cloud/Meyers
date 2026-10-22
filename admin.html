@@ -44,6 +44,7 @@
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
+            <button class="admin-tab" data-tab="resenas"><i class="fas fa-star"></i> Reseñas <span class="tab-badge" id="resenasTabBadge" hidden>0</span></button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
             <button class="admin-tab" data-tab="historial"><i class="fas fa-clock-rotate-left"></i> Historial</button>
         </div>
@@ -324,6 +325,53 @@
                     </thead>
                     <tbody id="asesoresTableBody"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- ============ RESEÑAS ============ -->
+        <section class="admin-panel" id="tab-resenas">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Reseñas de clientes</h2>
+                    <p id="resenasCount">Cargando…</p>
+                </div>
+                <div class="review-share">
+                    <button type="button" class="btn-sm btn-edit" id="btnReviewWhatsapp">
+                        <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
+                    </button>
+                    <button type="button" class="btn-sm btn-gold" id="btnCopyReviewLink">
+                        <i class="fas fa-link"></i> Copiar enlace
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel-card" style="padding:14px 20px;color:var(--gray-text);font-size:0.85rem">
+                <i class="fas fa-circle-info" style="color:#B8931F"></i>
+                Comparte el enlace para que tus clientes dejen su reseña. Llegarán aquí como <b>pendientes</b> y solo se publicarán cuando las apruebes.
+            </div>
+
+            <div class="review-block">
+                <h3 class="review-block-title">
+                    <i class="fas fa-hourglass-half" style="color:#B8931F"></i>
+                    Pendientes <span id="resenasPendientesCount">(0)</span>
+                </h3>
+                <div id="resenasPendientes"></div>
+            </div>
+
+            <div class="review-block">
+                <h3 class="review-block-title">
+                    <i class="fas fa-circle-check" style="color:#2ecc71"></i>
+                    Publicadas <span id="resenasAprobadasCount">(0)</span>
+                </h3>
+                <div id="resenasAprobadas"></div>
+            </div>
+
+            <div class="review-block">
+                <h3 class="review-block-title">
+                    <i class="fas fa-eye-slash" style="color:#9D9D9C"></i>
+                    Rechazadas <span id="resenasRechazadasCount">(0)</span>
+                </h3>
+                <div id="resenasRechazadas"></div>
             </div>
         </section>
 

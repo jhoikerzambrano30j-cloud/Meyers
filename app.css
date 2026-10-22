@@ -2003,3 +2003,229 @@ a, button {
     color: var(--gold);
     background: rgba(225, 189, 69, 0.14);
 }
+
+/* ============================================================
+   RESEÑAS: formulario público
+   ============================================================ */
+.auth-card select,
+.auth-card textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    background: var(--off-white);
+    color: var(--dark);
+    outline: none;
+    transition: var(--transition);
+}
+
+.auth-card select:focus,
+.auth-card textarea:focus {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(225, 189, 69, 0.15);
+}
+
+.auth-card textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.6;
+}
+
+.rating {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 0 2px;
+}
+
+.rating-star {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: #dcdcdc;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.rating-star.active {
+    color: var(--gold);
+}
+
+.rating-star:hover {
+    transform: scale(1.12);
+}
+
+.rating + .field-hint {
+    display: block;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Trampa anti-robots */
+.hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Estrellas en los testimonios publicados */
+.testimonial-stars .star {
+    color: #dcdcdc;
+}
+
+.testimonial-stars .star.filled {
+    color: var(--gold);
+}
+
+/* Avatar con inicial cuando no hay foto */
+.testimonial-avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--chrome-gold);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border: 2px solid var(--gold);
+}
+
+/* Botón "Déjanos tu reseña" bajo los testimonios */
+.testimonials-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* ============================================================
+   PANEL: RESEÑAS
+   ============================================================ */
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    margin-left: 5px;
+    border-radius: 20px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.review-share {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.review-block {
+    margin-bottom: 30px;
+}
+
+.review-block-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    margin-bottom: 14px;
+}
+
+.review-card {
+    background: var(--white);
+    border: 1px solid rgba(225, 189, 69, 0.25);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+}
+
+.review-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.review-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--chrome-gold);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.review-meta {
+    flex: 1;
+    min-width: 160px;
+}
+
+.review-meta strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.review-role {
+    font-size: 0.78rem;
+    color: var(--gray-text);
+}
+
+.review-stars {
+    color: var(--gold);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.review-stars .off {
+    color: #dcdcdc;
+}
+
+.review-text {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    margin-bottom: 14px;
+    white-space: pre-line;
+}
+
+.review-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.review-empty {
+    color: var(--gray-text);
+    font-size: 0.88rem;
+    padding: 18px;
+    background: var(--off-white);
+    border-radius: 12px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .review-share {
+        width: 100%;
+    }
+
+    .review-share .btn-sm {
+        flex: 1;
+        justify-content: center;
+    }
+}

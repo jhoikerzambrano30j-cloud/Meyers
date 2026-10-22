@@ -155,9 +155,19 @@ async function cargarTestimonios() {    if (!window.isSupabaseReady || !window.i
     }
     try {
         const { data } = await window.db
-            .from('testimonials').select('*').order('sort_order', { ascending: true });
+            .from('testimonials')
+            .select('*')
+            .eq('estado', 'aprobado')
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: false });
         if (data && data.length) {
-            TESTIMONIOS = data.map((t) => ({ nombre: t.nombre, rol: t.rol, texto: t.texto, avatar: t.avatar }));
+            TESTIMONIOS = data.map((t) => ({
+                nombre: t.nombre,
+                rol: t.rol,
+                texto: t.texto,
+                avatar: t.avatar,
+                estrellas: t.estrellas
+            }));
         }
     } catch (e) {
         console.warn('[Meyer\'s] No se pudieron cargar los testimonios:', e);
@@ -832,19 +842,29 @@ function initTestimonials() {
         return;
     }
 
-    slider.innerHTML = TESTIMONIOS.map((t) => `
+    slider.innerHTML = TESTIMONIOS.map((t) => {
+        const n = Math.max(1, Math.min(5, Number(t.estrellas) || 5));
+        const estrellas = '<span class="star filled">★</span>'.repeat(n) +
+            '<span class="star">★</span>'.repeat(5 - n);
+        const inicial = String(t.nombre || '?').trim().charAt(0).toUpperCase();
+        const avatar = t.avatar
+            ? `<img src="${escapeHtml(t.avatar)}" alt="${escapeHtml(t.nombre)}" class="testimonial-avatar" loading="lazy" decoding="async"
+                     onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">`
+            : `<span class="testimonial-avatar testimonial-avatar-initial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
+
+        return `
         <div class="testimonial-card">
-            <div class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</div>
+            <div class="testimonial-stars" aria-label="${n} de 5 estrellas">${estrellas}</div>
             <p class="testimonial-text">"${escapeHtml(t.texto)}"</p>
             <div class="testimonial-author">
-                <img src="${escapeHtml(t.avatar || PLACEHOLDER_IMG)}" alt="${escapeHtml(t.nombre)}" class="testimonial-avatar" loading="lazy" decoding="async"
-                     onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                ${avatar}
                 <div>
                     <p class="testimonial-name">${escapeHtml(t.nombre)}</p>
                     <p class="testimonial-role">${escapeHtml(t.rol || '')}</p>
                 </div>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 
     dotsContainer.innerHTML = TESTIMONIOS.map((_, i) =>
         `<button type="button" class="dot ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="Ir al testimonio ${i + 1}"></button>`).join('');

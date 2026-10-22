@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A1A1A">
+    <title>Déjanos tu reseña | Meyer's Inmobiliaria</title>
+    <meta name="description" content="Cuéntanos tu experiencia con Meyer's Inmobiliaria y puntúa nuestro servicio con estrellas.">
+    <meta name="robots" content="noindex">
+
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Meyer's">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+    <a href="index.html" class="auth-back"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+
+    <div class="auth-page">
+        <div class="auth-card review-form-card">
+            <div class="auth-logo">
+                <img src="img/logo-meyer.png" alt="Meyer's Inmobiliaria">
+            </div>
+            <h1>Déjanos tu reseña</h1>
+            <p class="auth-sub">Cuéntanos cómo fue tu experiencia. Tu reseña se publicará después de ser revisada.</p>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre completo *</label>
+                    <input type="text" id="nombre" required maxlength="60" autocomplete="name" autocapitalize="words" placeholder="Tu nombre y apellido">
+                </div>
+                <div class="form-group">
+                    <label for="rol">¿Cuál fue tu relación con nosotros?</label>
+                    <select id="rol">
+                        <option value="">Selecciona (opcional)</option>
+                        <option value="Comprador">Comprador</option>
+                        <option value="Compradora">Compradora</option>
+                        <option value="Vendedor">Vendedor</option>
+                        <option value="Vendedora">Vendedora</option>
+                        <option value="Inquilino">Inquilino</option>
+                        <option value="Inquilina">Inquilina</option>
+                        <option value="Inversionista">Inversionista</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tu puntuación *</label>
+                    <div class="rating" id="rating" role="radiogroup" aria-label="Puntuación de 1 a 5 estrellas">
+                        <button type="button" class="rating-star" data-value="1" aria-label="1 estrella">★</button>
+                        <button type="button" class="rating-star" data-value="2" aria-label="2 estrellas">★</button>
+                        <button type="button" class="rating-star" data-value="3" aria-label="3 estrellas">★</button>
+                        <button type="button" class="rating-star" data-value="4" aria-label="4 estrellas">★</button>
+                        <button type="button" class="rating-star" data-value="5" aria-label="5 estrellas">★</button>
+                    </div>
+                    <input type="hidden" id="estrellas" value="0">
+                    <small class="field-hint" id="ratingHint">Toca las estrellas para puntuar.</small>
+                </div>
+                <div class="form-group">
+                    <label for="texto">Tu reseña *</label>
+                    <textarea id="texto" rows="5" required minlength="10" maxlength="500" placeholder="Cuéntanos tu experiencia con Meyer's..."></textarea>
+                </div>
+
+                <!-- Trampa anti-robots (no se ve) -->
+                <div class="hp" aria-hidden="true">
+                    <label for="web">No llenar</label>
+                    <input type="text" id="web" tabindex="-1" autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Enviar reseña</button>
+            </form>
+
+            <p class="auth-foot">Tu reseña será revisada antes de publicarse.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        const alertBox = document.getElementById('alert');
+        const show = (msg, tipo) => {
+            alertBox.textContent = msg;
+            alertBox.className = 'alert show ' + (tipo === 'error' ? 'alert-error' : 'alert-success');
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.isSupabaseReady()) {
+                show('Supabase aún no está configurado. Pega tus claves en config.js.', 'error');
+            }
+
+            const stars = Array.from(document.querySelectorAll('.rating-star'));
+            let puntuacion = 0;
+
+            const pintar = (n) => stars.forEach((s, i) => s.classList.toggle('active', i < n));
+
+            const setPuntuacion = (n) => {
+                puntuacion = n;
+                document.getElementById('estrellas').value = String(n);
+                pintar(n);
+                const hint = document.getElementById('ratingHint');
+                if (hint) {
+                    hint.textContent = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'][n]
+                        || 'Toca las estrellas para puntuar.';
+                }
+            };
+
+            stars.forEach((star, i) => {
+                star.addEventListener('click', () => setPuntuacion(Number(star.dataset.value)));
+                star.addEventListener('mouseenter', () => pintar(i + 1));
+                star.addEventListener('mouseleave', () => pintar(puntuacion));
+            });
+
+            const form = document.getElementById('reviewForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!window.isSupabaseReady()) return;
+
+                // Si el campo trampa tiene texto, es un robot: simulamos éxito
+                if ((document.getElementById('web')?.value || '').trim()) {
+                    form.reset();
+                    setPuntuacion(0);
+                    show('¡Gracias por tu reseña!', 'success');
+                    return;
+                }
+
+                if (!puntuacion) {
+                    show('Elige una puntuación de 1 a 5 estrellas.', 'error');
+                    return;
+                }
+
+                const nombre = document.getElementById('nombre').value.trim();
+                const texto = document.getElementById('texto').value.trim();
+                const rol = document.getElementById('rol').value || null;
+
+                if (nombre.length < 3) { show('Escribe tu nombre completo.', 'error'); return; }
+                if (texto.length < 10) { show('Cuéntanos un poco más (mínimo 10 caracteres).', 'error'); return; }
+
+                const btn = form.querySelector('button[type="submit"]');
+                const original = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+                const { error } = await window.db.from('testimonials').insert({
+                    nombre,
+                    rol,
+                    texto,
+                    estrellas: puntuacion,
+                    estado: 'pendiente',
+                    sort_order: 0
+                });
+
+                btn.disabled = false;
+                btn.innerHTML = original;
+
+                if (error) {
+                    show('No se pudo enviar tu reseña: ' + error.message, 'error');
+                    return;
+                }
+
+                form.reset();
+                setPuntuacion(0);
+                show('¡Gracias por tu reseña! La revisaremos y publicaremos muy pronto.', 'success');
+                btn.innerHTML = '<i class="fas fa-check"></i> ¡Reseña enviada!';
+                btn.disabled = true;
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = original; }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

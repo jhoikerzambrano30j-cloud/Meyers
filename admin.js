@@ -145,8 +145,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnCancelAsesor')?.addEventListener('click', closeAsesorForm);
     initAsesorForm();
     $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
+    $('#btnCopyReviewLink')?.addEventListener('click', copiarLinkResena);
+    $('#btnReviewWhatsapp')?.addEventListener('click', compartirWhatsappResena);
 
-    await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), cargarAsesores()]);
+    await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), cargarAsesores(), loadResenas()]);
 
     // Limpieza automática del historial: se borran los tratos con más de 2 meses
     if (await limpiarHistorial()) await loadProperties();
@@ -175,6 +177,7 @@ function initTabs() {
             if (panel) panel.classList.add('active');
             if (destino === 'metricas') renderMetricas();
             if (destino === 'historial') renderHistorial();
+            if (destino === 'resenas') loadResenas();
         });
     });
 }
@@ -1186,6 +1189,149 @@ async function borrarAsesor(id) {
     if (error) { alert('Error: ' + error.message); return; }
     if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
     await cargarAsesores();
+}
+
+/* ============================================================
+   RESEÑAS (aprobar antes de publicar)
+   ============================================================ */
+async function loadResenas() {
+    const pendientes = $('#resenasPendientes');
+    const aprobadas = $('#resenasAprobadas');
+    const rechazadas = $('#resenasRechazadas');
+    if (!pendientes || !aprobadas) return;
+
+    pendientes.innerHTML = '<div class="review-empty"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>';
+    aprobadas.innerHTML = '';
+    if (rechazadas) rechazadas.innerHTML = '';
+
+    const { data, error } = await window.db
+        .from('testimonials')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        pendientes.innerHTML = `<div class="review-empty">Error: ${esc(error.message)}</div>`;
+        return;
+    }
+
+    const lista = data || [];
+    const pend = lista.filter((r) => r.estado === 'pendiente');
+    const apro = lista.filter((r) => r.estado === 'aprobado');
+    const rech = lista.filter((r) => r.estado === 'rechazado');
+
+    const count = $('#resenasCount');
+    if (count) {
+        count.textContent = `${pend.length} pendiente${pend.length === 1 ? '' : 's'} · ${apro.length} publicada${apro.length === 1 ? '' : 's'}`;
+    }
+
+    const pc = $('#resenasPendientesCount');
+    const ac = $('#resenasAprobadasCount');
+    const rc = $('#resenasRechazadasCount');
+    if (pc) pc.textContent = `(${pend.length})`;
+    if (ac) ac.textContent = `(${apro.length})`;
+    if (rc) rc.textContent = `(${rech.length})`;
+
+    const badge = $('#resenasTabBadge');
+    if (badge) {
+        badge.textContent = pend.length;
+        badge.hidden = pend.length === 0;
+    }
+
+    pendientes.innerHTML = pend.length
+        ? pend.map((r) => reviewCard(r, 'pendiente')).join('')
+        : '<div class="review-empty"><i class="fas fa-circle-check"></i> No hay reseñas pendientes.</div>';
+
+    aprobadas.innerHTML = apro.length
+        ? apro.map((r) => reviewCard(r, 'aprobado')).join('')
+        : '<div class="review-empty"><i class="fas fa-star"></i> Aún no hay reseñas publicadas.</div>';
+
+    if (rechazadas) {
+        rechazadas.innerHTML = rech.length
+            ? rech.map((r) => reviewCard(r, 'rechazado')).join('')
+            : '<div class="review-empty"><i class="fas fa-eye-slash"></i> No hay reseñas rechazadas.</div>';
+    }
+
+    [pendientes, aprobadas, rechazadas].filter(Boolean).forEach(bindResenaAcciones);
+}
+
+function estrellasAdmin(n) {
+    const k = Math.max(1, Math.min(5, Number(n) || 5));
+    return '<span>★</span>'.repeat(k) + '<span class="off">★</span>'.repeat(5 - k);
+}
+
+function reviewCard(r, modo) {
+    const inicial = String(r.nombre || '?').trim().charAt(0).toUpperCase();
+    const acciones = {
+        pendiente: `
+            <button type="button" class="btn-sm btn-gold" data-aprobar="${esc(r.id)}"><i class="fas fa-check"></i> Aprobar</button>
+            <button type="button" class="btn-sm btn-danger" data-rechazar="${esc(r.id)}"><i class="fas fa-xmark"></i> Rechazar</button>`,
+        aprobado: `
+            <button type="button" class="btn-sm btn-edit" data-ocultar="${esc(r.id)}"><i class="fas fa-eye-slash"></i> Ocultar</button>`,
+        rechazado: `
+            <button type="button" class="btn-sm btn-gold" data-aprobar="${esc(r.id)}"><i class="fas fa-check"></i> Aprobar</button>`
+    }[modo] || '';
+
+    return `
+        <article class="review-card">
+            <div class="review-head">
+                <div class="review-avatar">${esc(inicial)}</div>
+                <div class="review-meta">
+                    <strong>${esc(r.nombre)}</strong>
+                    <span class="review-role">${esc(r.rol || 'Cliente')} · ${esc(fecha(r.created_at))}</span>
+                </div>
+                <div class="review-stars" aria-label="${Number(r.estrellas) || 5} de 5 estrellas">${estrellasAdmin(r.estrellas)}</div>
+            </div>
+            <p class="review-text">"${esc(r.texto)}"</p>
+            <div class="review-actions">
+                ${acciones}
+                <button type="button" class="btn-sm btn-edit" data-eliminar="${esc(r.id)}"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+        </article>`;
+}
+
+function bindResenaAcciones(cont) {
+    cont.querySelectorAll('[data-aprobar]').forEach((b) =>
+        b.addEventListener('click', () => cambiarEstadoResena(b.dataset.aprobar, 'aprobado')));
+    cont.querySelectorAll('[data-rechazar]').forEach((b) =>
+        b.addEventListener('click', () => cambiarEstadoResena(b.dataset.rechazar, 'rechazado')));
+    cont.querySelectorAll('[data-ocultar]').forEach((b) =>
+        b.addEventListener('click', () => cambiarEstadoResena(b.dataset.ocultar, 'rechazado')));
+    cont.querySelectorAll('[data-eliminar]').forEach((b) =>
+        b.addEventListener('click', () => borrarResena(b.dataset.eliminar)));
+}
+
+async function cambiarEstadoResena(id, estado) {
+    const { error } = await window.db.from('testimonials').update({ estado }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await loadResenas();
+}
+
+async function borrarResena(id) {
+    const ok = await confirmar('Eliminar reseña', 'Se borrará esta reseña definitivamente. Esta acción no se puede deshacer.', 'Sí, eliminar');
+    if (!ok) return;
+    const { error } = await window.db.from('testimonials').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await loadResenas();
+}
+
+function enlaceResena() {
+    return window.location.origin + '/resena.html';
+}
+
+async function copiarLinkResena() {
+    const link = enlaceResena();
+    try {
+        await navigator.clipboard.writeText(link);
+        alert('Enlace copiado:\n' + link + '\n\nCompártelo con tus clientes.');
+    } catch (e) {
+        window.prompt('Copia y comparte este enlace:', link);
+    }
+}
+
+function compartirWhatsappResena() {
+    const link = enlaceResena();
+    const texto = '¡Hola! En Meyer\'s Inmobiliaria queremos conocer tu experiencia. Déjanos tu reseña aquí: ' + link;
+    window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener');
 }
 
 /* ============================================================

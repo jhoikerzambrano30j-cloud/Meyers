@@ -11,6 +11,7 @@ const CORE = [
     './index.html',
     './login.html',
     './registro.html',
+    './resena.html',
     './cuenta.html',
     './404.html',
     './styles.css',
