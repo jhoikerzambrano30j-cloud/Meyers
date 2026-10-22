@@ -40,7 +40,7 @@ function esc(v) {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
 }
-const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+const money = (n) => '$' + (window.formatNumero ? window.formatNumero(n) : Number(n || 0).toLocaleString('es-VE', { maximumFractionDigits: 2 }));
 const fecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '—';
 
 /** Aviso elegante (toast) con el estilo de la marca. */
@@ -331,6 +331,18 @@ function initPropertyForm() {
     if (!form) return;
 
     form.addEventListener('submit', guardarPropiedad);
+
+    const precioInput = $('#precio');
+    if (precioInput) {
+        precioInput.addEventListener('input', () => {
+            precioInput.value = precioInput.value.replace(/[^0-9.,]/g, '');
+        });
+        precioInput.addEventListener('blur', () => {
+            const n = window.parsePrecio ? window.parsePrecio(precioInput.value) : Number(precioInput.value || 0);
+            precioInput.value = n ? (window.formatNumero ? window.formatNumero(n) : String(n)) : '';
+        });
+    }
+
     const input = $('#imagenInput');
     const uploader = $('#uploader');
     if (uploader && input) {
@@ -496,7 +508,7 @@ async function openForm(id, lista) {
         $('#ubicacion').value = p.ubicacion || '';
         await cargarZonas();
         $('#zona').value = p.zona || '';
-        $('#precio').value = p.precio || '';
+        $('#precio').value = p.precio ? (window.formatNumero ? window.formatNumero(p.precio) : p.precio) : '';
         $('#habitaciones').value = p.habitaciones || 0;
         $('#banos').value = p.banos || 0;
         $('#area').value = p.area || 0;
@@ -627,7 +639,7 @@ async function guardarPropiedad(e) {
             ubicacion: ubicacionVal,
             zona: zonaVal,
             asesor_id: $('#asesor').value || null,
-            precio: Number($('#precio').value || 0),
+            precio: window.parsePrecio ? window.parsePrecio($('#precio').value) : Number($('#precio').value || 0),
             habitaciones: Number($('#habitaciones').value || 0),
             banos: Number($('#banos').value || 0),
             area: Number($('#area').value || 0),
@@ -942,7 +954,7 @@ const AYUDAS = [
     ['tipo', 'Elige el tipo de propiedad en la lista (Casa, Apartamento, Oficina, Galpón, etc.).'],
     ['ubicacion', 'Ciudad. Escribe o elige de la lista. El botón + agrega una ciudad nueva.'],
     ['zona', 'Sector o urbanización. Es una lista libre: escribe o elige. El botón + agrega una zona nueva.'],
-    ['precio', 'Precio en dólares (USD). Solo números.'],
+    ['precio', 'Precio en dólares (USD). Puedes escribir 25.000,00 (puntos de miles y coma decimal).'],
     ['area', 'Superficie en metros cuadrados (m²).'],
     ['habitaciones', 'Cantidad de habitaciones. Pon 0 si no aplica.'],
     ['banos', 'Cantidad de baños. Pon 0 si no aplica.'],
@@ -1972,7 +1984,7 @@ function renderMetricas() {
                     <span class="top-pos">${medallas[i] || (i + 1)}</span>
                     <strong>${esc(t.nombre)}</strong>
                     <span>${t.cierres} cierre${t.cierres === 1 ? '' : 's'}</span>
-                    <span class="top-monto">$${t.monto.toLocaleString('en-US')}</span>
+                    <span class="top-monto">$${window.formatNumero ? window.formatNumero(t.monto) : t.monto.toLocaleString('es-VE')}</span>
                 </div>`).join('');
         }
     }

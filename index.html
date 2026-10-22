@@ -131,9 +131,9 @@
                     <label for="precioMin">Precio (USD)</label>
                     <div class="price-range">
                         <span class="price-prefix" aria-hidden="true">$</span>
-                        <input type="number" id="precioMin" name="precioMin" min="0" step="1" inputmode="numeric" placeholder="Desde" aria-label="Precio mínimo">
+                        <input type="text" id="precioMin" name="precioMin" inputmode="decimal" placeholder="Desde" aria-label="Precio mínimo" autocomplete="off">
                         <span class="price-sep" aria-hidden="true">–</span>
-                        <input type="number" id="precioMax" name="precioMax" min="0" step="1" inputmode="numeric" placeholder="Hasta" aria-label="Precio máximo">
+                        <input type="text" id="precioMax" name="precioMax" inputmode="decimal" placeholder="Hasta" aria-label="Precio máximo" autocomplete="off">
                     </div>
                 </div>
                 <button type="button" class="btn-more-filters" id="btnMoreFilters" aria-haspopup="dialog" aria-controls="filtersOverlay">

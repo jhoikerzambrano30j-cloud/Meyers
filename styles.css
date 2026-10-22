@@ -1035,13 +1035,26 @@ h1, h2, h3, h4 {
     position: absolute;
     bottom: 15px;
     left: 15px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 8px 18px;
-    border-radius: 25px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--dark);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: rgba(12, 12, 12, 0.78);
+    border: 1px solid rgba(225, 189, 69, 0.7);
+    padding: 7px 15px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2;
+}
+
+.property-price span {
+    background: var(--chrome-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--gold-light);
+    -webkit-text-fill-color: transparent;
 }
 
 .property-content {

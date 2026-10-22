@@ -113,7 +113,7 @@
 
         const $ = (s) => document.querySelector(s);
         const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+        const money = (n) => '$' + (window.formatNumero ? window.formatNumero(n) : Number(n || 0).toLocaleString('es-VE', { maximumFractionDigits: 2 }));
         const alertBox = $('#alert');
         const show = (m, t) => { alertBox.textContent = m; alertBox.className = 'alert show ' + (t === 'error' ? 'alert-error' : 'alert-success'); };
 
@@ -182,7 +182,7 @@
                         <div class="property-image">
                             <input type="checkbox" class="fav-select" data-select="${esc(p.id)}" ${seleccion.has(p.id) ? 'checked' : ''} aria-label="Seleccionar para comparar">
                             ${p.imagen ? `<img src="${esc(p.imagen)}" alt="${esc(p.titulo)}" loading="lazy" decoding="async">` : ''}
-                            <div class="property-price">${money(p.precio)}</div>
+                            <div class="property-price"><span>${money(p.precio)}</span></div>
                             <button class="fav-btn active" data-quitar="${esc(p.id)}" title="Quitar de favoritos"><i class="fas fa-heart"></i></button>
                         </div>
                         <div class="property-content">

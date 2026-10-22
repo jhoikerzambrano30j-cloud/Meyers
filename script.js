@@ -45,7 +45,11 @@ function slug(text) {
 }
 
 function formatPrice(value) {
-    return '$' + Number(value).toLocaleString('en-US');
+    const n = Number(value || 0);
+    const txt = window.formatNumero
+        ? window.formatNumero(n)
+        : n.toLocaleString('es-VE', { maximumFractionDigits: 2 });
+    return '$' + txt;
 }
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -621,6 +625,18 @@ function initProperties() {
         smartInput.addEventListener('search', applyFilters);
     }
 
+    ['precioMin', 'precioMax'].forEach((id) => {
+        const el = $('#' + id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+            el.value = el.value.replace(/[^0-9.,]/g, '');
+        });
+        el.addEventListener('blur', () => {
+            const n = window.parsePrecio ? window.parsePrecio(el.value) : Number(el.value || 0);
+            el.value = n ? (window.formatNumero ? window.formatNumero(n) : String(n)) : '';
+        });
+    });
+
     initModal();
 
     if (!catalogoPermitido) {
@@ -697,7 +713,7 @@ function cardTemplate(prop, i = 0) {
                 </button>
                 <img src="${escapeHtml(prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                <div class="property-price">${formatPrice(prop.precio)}</div>
+                <div class="property-price"><span>${formatPrice(prop.precio)}</span></div>
             </div>
             <div class="property-content">
                 <p class="property-type">${escapeHtml(prop.operacion || 'Venta')} · ${escapeHtml(prop.tipo)}</p>
@@ -749,14 +765,14 @@ function applyFilters() {
     const operacion = $('#operacion')?.value || '';
     const tipo = $('#tipo')?.value || '';
     const ubicacion = $('#ubicacion')?.value || '';
-    let precioMin = Number($('#precioMin')?.value || 0);
-    let precioMax = Number($('#precioMax')?.value || 0);
+    let precioMin = window.parsePrecio ? window.parsePrecio($('#precioMin')?.value) : Number($('#precioMin')?.value || 0);
+    let precioMax = window.parsePrecio ? window.parsePrecio($('#precioMax')?.value) : Number($('#precioMax')?.value || 0);
     if (precioMin < 0) precioMin = 0;
     if (precioMax < 0) precioMax = 0;
     if (precioMin > 0 && precioMax > 0 && precioMin > precioMax) {
         [precioMin, precioMax] = [precioMax, precioMin];
-        if ($('#precioMin')) $('#precioMin').value = String(precioMin);
-        if ($('#precioMax')) $('#precioMax').value = String(precioMax);
+        if ($('#precioMin')) $('#precioMin').value = window.formatNumero ? window.formatNumero(precioMin) : String(precioMin);
+        if ($('#precioMax')) $('#precioMax').value = window.formatNumero ? window.formatNumero(precioMax) : String(precioMax);
     }
     const zona = $('#zona')?.value || '';
     const habitaciones = Number($('#habitaciones')?.value || 0);
@@ -1097,7 +1113,7 @@ function modalTemplate(prop) {
             <img class="modal-hero-bg" id="modalBg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="" aria-hidden="true">
             <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-            <div class="property-price">${formatPrice(prop.precio)}</div>
+            <div class="property-price"><span>${formatPrice(prop.precio)}</span></div>
         </div>
         <div class="modal-gallery" id="modalGallery"></div>
         <div class="modal-content">

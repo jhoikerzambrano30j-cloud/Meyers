@@ -42,6 +42,32 @@
     // Utilidades compartidas
     // ------------------------------------------------------------
 
+    /** Convierte un precio escrito (ej. "25.000,50") a número. */
+    window.parsePrecio = function (valor) {
+        let s = String(valor == null ? '' : valor).trim().replace(/\s/g, '');
+        if (!s) return 0;
+
+        if (s.includes(',')) {
+            // coma decimal: se quitan los puntos de miles
+            s = s.replace(/\./g, '').replace(',', '.');
+        } else if ((s.match(/\./g) || []).length === 1 && /\.\d{1,2}$/.test(s)) {
+            // punto decimal (ej. 5.5)
+        } else {
+            // puntos de miles (ej. 25.000)
+            s = s.replace(/\./g, '');
+        }
+
+        const n = Number(s);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    /** Formatea un número con puntos de miles y coma decimal (es-VE). */
+    window.formatNumero = function (n) {
+        const num = Number(n || 0);
+        return num.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    };
+
+
     /** Convierte un archivo de imagen a WebP optimizado. */
     window.optimizarImagen = async function (file, options) {
         const opts = (window.APP_CONFIG && window.APP_CONFIG.image) || {};
