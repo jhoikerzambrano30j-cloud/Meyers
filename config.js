@@ -27,5 +27,18 @@ window.APP_CONFIG = {
     // Datos de contacto (se usan en la web y en WhatsApp)
     contacto: {
         whatsapp: '584141338254'
+    },
+
+    // ------------------------------------------------------------
+    // CAPTCHA ANTI-ROBOTS (Cloudflare Turnstile) — gratis
+    // ------------------------------------------------------------
+    // 1) Crea tus llaves en: https://dash.cloudflare.com → Turnstile
+    // 2) Pega aquí tu "Site Key" (la pública).
+    // 3) En Supabase → Authentication → Attack Protection:
+    //    activa CAPTCHA, proveedor Turnstile y pega tu "Secret Key".
+    // Estas llaves son de PRUEBA (siempre dejan pasar):
+    turnstile: {
+        enabled: true,
+        siteKey: '1x00000000000000000000AA'
     }
 };

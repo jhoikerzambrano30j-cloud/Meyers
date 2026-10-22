@@ -1730,42 +1730,6 @@ table.compare-table tr:hover td {
     }
 }
 
-@media (max-width: 720px) {
-    .admin-topbar {
-        padding: 12px 14px;
-    }
-
-    .admin-topbar .admin-brand img {
-        width: 40px;
-        height: 40px;
-    }
-
-    .admin-tab {
-        padding: 8px 14px;
-        font-size: 0.8rem;
-    }
-
-    .admin-wrap {
-        padding: 20px 14px 80px;
-    }
-
-    .panel-card {
-        padding: 20px 16px;
-    }
-
-    .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .confirm-modal {
-        padding: 26px 20px 22px;
-    }
-
-    .modal-content {
-        padding: 24px 20px;
-    }
-}
-
 .btn-sm:disabled,
 .btn-gold:disabled {
     opacity: 0.5;
@@ -1959,4 +1923,17 @@ a, button {
     .modal-content {
         padding: 24px 20px;
     }
+}
+
+/* ============================================================
+   CAPTCHA (Cloudflare Turnstile)
+   ============================================================ */
+.captcha-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.captcha-box:empty {
+    margin-bottom: 0;
 }

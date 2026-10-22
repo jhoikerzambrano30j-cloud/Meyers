@@ -17,6 +17,7 @@ const CORE = [
     './config.js',
     './supabase-client.js',
     './auth.js',
+    './captcha.js',
     './script.js',
     './img/logo-meyer.png',
     './img/favicon.png',

@@ -31,21 +31,25 @@
     // ------------------------------------------------------------
     // Registro / ingreso / salida
     // ------------------------------------------------------------
-    Auth.signUp = async function ({ email, password, fullName, phone }) {
+    Auth.signUp = async function ({ email, password, fullName, phone, captchaToken }) {
         if (!window.isSupabaseReady()) throw new Error('Supabase no está configurado.');
-        return window.db.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { full_name: fullName || '', phone: phone || '' },
-                emailRedirectTo: window.location.origin + '/login.html'
-            }
-        });
+
+        const options = {
+            data: { full_name: fullName || '', phone: phone || '' },
+            emailRedirectTo: window.location.origin + '/login.html'
+        };
+        if (captchaToken) options.captchaToken = captchaToken;
+
+        return window.db.auth.signUp({ email, password, options });
     };
 
-    Auth.signIn = async function (email, password) {
+    Auth.signIn = async function (email, password, captchaToken) {
         if (!window.isSupabaseReady()) throw new Error('Supabase no está configurado.');
-        return window.db.auth.signInWithPassword({ email, password });
+
+        const options = {};
+        if (captchaToken) options.captchaToken = captchaToken;
+
+        return window.db.auth.signInWithPassword({ email, password, options });
     };
 
     Auth.signOut = async function () {

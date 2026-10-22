@@ -41,6 +41,7 @@
                     <label for="password">Contraseña</label>
                     <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
                 </div>
+                <div class="captcha-box" id="captchaBox"></div>
                 <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
             </form>
 
@@ -54,6 +55,7 @@
     <script src="config.js"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
+    <script src="captcha.js"></script>
     <script>
         const alertBox = document.getElementById('alert');
         const show = (msg, tipo) => {
@@ -78,28 +80,48 @@
                 return;
             }
 
+            // Captcha anti-robots (solo aparece si Cloudflare lo pide)
+            if (window.Captcha) Captcha.render('#captchaBox');
+
             const form = document.getElementById('loginForm');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+
                 const btn = form.querySelector('button[type="submit"]');
                 const original = btn.innerHTML;
                 btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+
+                // Verificación anti-robots (Cloudflare Turnstile)
+                const captchaToken = await Captcha.waitForToken(10000);
+                if (Captcha.activo && !captchaToken) {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                    show('No pudimos verificar que no eres un robot. Inténtalo de nuevo.', 'error');
+                    Captcha.reset();
+                    return;
+                }
+
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ingresando...';
 
                 const { error } = await Auth.signIn(
                     document.getElementById('email').value.trim(),
-                    document.getElementById('password').value
+                    document.getElementById('password').value,
+                    captchaToken
                 );
 
                 if (error) {
                     btn.disabled = false;
                     btn.innerHTML = original;
+                    Captcha.reset();
                     const esBloqueo = /banned|blocked|bloquead/i.test(error.message);
                     show(esBloqueo
                         ? 'Tu cuenta está bloqueada. Contacta al administrador.'
                         : error.message === 'Invalid login credentials'
                             ? 'Correo o contraseña incorrectos.'
-                            : error.message, 'error');
+                            : /captcha/i.test(error.message)
+                                ? 'La verificación de seguridad falló. Inténtalo de nuevo.'
+                                : error.message, 'error');
                     return;
                 }
 
