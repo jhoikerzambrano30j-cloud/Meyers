@@ -1364,24 +1364,39 @@ async function borrarResena(id) {
     await loadResenas();
 }
 
-function enlaceResena() {
-    return window.location.origin + '/resena.html';
+async function generarEnlaceResena() {
+    const { data, error } = await window.db
+        .from('review_links')
+        .insert({ created_by: currentUser ? currentUser.id : null })
+        .select('token')
+        .single();
+
+    if (error) throw new Error(error.message);
+    return `${window.location.origin}/resena.html?t=${data.token}`;
 }
 
 async function copiarLinkResena() {
-    const link = enlaceResena();
-    const ok = await copiarAlPortapapeles(link);
-    if (ok) {
-        toast('Enlace copiado. Compártelo con tus clientes.', 'success');
-    } else {
-        toast('No se pudo copiar el enlace: ' + link, 'error');
+    try {
+        const link = await generarEnlaceResena();
+        const ok = await copiarAlPortapapeles(link);
+        if (ok) {
+            toast('Enlace de un solo uso generado y copiado.', 'success');
+        } else {
+            toast('Enlace generado: ' + link, 'info');
+        }
+    } catch (e) {
+        toast('No se pudo generar el enlace: ' + e.message, 'error');
     }
 }
 
-function compartirWhatsappResena() {
-    const link = enlaceResena();
-    const texto = '¡Hola! En Meyer\'s Inmobiliaria queremos conocer tu experiencia. Déjanos tu reseña aquí: ' + link;
-    window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+async function compartirWhatsappResena() {
+    try {
+        const link = await generarEnlaceResena();
+        const texto = '¡Hola! En Meyer\'s Inmobiliaria queremos conocer tu experiencia. Déjanos tu reseña aquí (enlace de un solo uso): ' + link;
+        window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+    } catch (e) {
+        toast('No se pudo generar el enlace: ' + e.message, 'error');
+    }
 }
 
 /* ============================================================

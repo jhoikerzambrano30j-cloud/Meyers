@@ -578,6 +578,89 @@ create policy "testimonials_admin_write" on public.testimonials
     for all using (public.is_admin()) with check (public.is_admin());
 
 -- ----------------------------------------------------------------------------
+-- 5b. ENLACES DE RESEÑA (un solo uso)
+-- ----------------------------------------------------------------------------
+create table if not exists public.review_links (
+    id         uuid primary key default gen_random_uuid(),
+    token      text unique not null default replace(gen_random_uuid()::text, '-', ''),
+    usado      boolean not null default false,
+    created_by uuid references public.profiles(id) on delete set null,
+    created_at timestamptz not null default now(),
+    used_at    timestamptz
+);
+
+alter table public.review_links enable row level security;
+
+drop policy if exists "review_links_admin_all" on public.review_links;
+create policy "review_links_admin_all" on public.review_links
+    for all using (public.is_admin()) with check (public.is_admin());
+
+-- El público solo puede validar un token (sin ver la tabla)
+create or replace function public.validar_token_resena(p_token text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1 from public.review_links
+        where token = p_token and usado = false
+    );
+$$;
+
+revoke all on function public.validar_token_resena(text) from public;
+grant execute on function public.validar_token_resena(text) to anon, authenticated;
+
+-- Crea la reseña y consume el token de forma atómica
+create or replace function public.crear_resena_con_token(
+    p_token text,
+    p_nombre text,
+    p_rol text,
+    p_texto text,
+    p_estrellas int
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_id uuid;
+begin
+    select id into v_id
+    from public.review_links
+    where token = p_token and usado = false
+    for update;
+
+    if v_id is null then
+        raise exception 'Este enlace ya fue utilizado o no es válido.';
+    end if;
+
+    if p_estrellas is null or p_estrellas < 1 or p_estrellas > 5 then
+        raise exception 'La puntuación debe ser de 1 a 5 estrellas.';
+    end if;
+
+    if coalesce(trim(p_nombre), '') = '' or length(trim(p_nombre)) < 3 then
+        raise exception 'Escribe tu nombre completo.';
+    end if;
+
+    if coalesce(trim(p_texto), '') = '' or length(trim(p_texto)) < 10 then
+        raise exception 'La reseña debe tener al menos 10 caracteres.';
+    end if;
+
+    insert into public.testimonials (nombre, rol, texto, estrellas, estado, sort_order)
+    values (trim(p_nombre), nullif(trim(p_rol), ''), trim(p_texto), p_estrellas, 'pendiente', 0);
+
+    update public.review_links
+    set usado = true, used_at = now()
+    where id = v_id;
+end;
+$$;
+
+revoke all on function public.crear_resena_con_token(text, text, text, text, int) from public;
+grant execute on function public.crear_resena_con_token(text, text, text, text, int) to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
 -- 6. MENSAJES DEL FORMULARIO DE CONTACTO (leads)
 -- ----------------------------------------------------------------------------
 create table if not exists public.leads (

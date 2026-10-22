@@ -29,11 +29,24 @@
                 <img src="img/logo-meyer.png" alt="Meyer's Inmobiliaria">
             </div>
             <h1>Déjanos tu reseña</h1>
-            <p class="auth-sub">Cuéntanos cómo fue tu experiencia. Tu reseña se publicará después de ser revisada.</p>
+            <p class="auth-sub" id="reviewSub">Cuéntanos cómo fue tu experiencia. Tu reseña se publicará después de ser revisada.</p>
 
             <div class="alert" id="alert"></div>
 
-            <form id="reviewForm">
+            <div class="review-loading" id="reviewLoading">
+                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Verificando enlace…
+            </div>
+
+            <div class="review-invalid" id="reviewInvalid" hidden>
+                <i class="fas fa-link-slash" aria-hidden="true"></i>
+                <h2>Enlace no válido</h2>
+                <p>Este enlace ya fue utilizado o no existe. Cada enlace sirve para <b>una sola reseña</b>.</p>
+                <a id="waResena" href="#" class="btn btn-primary btn-block" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Pedir un enlace nuevo
+                </a>
+            </div>
+
+            <form id="reviewForm" hidden>
                 <div class="form-group">
                     <label for="nombre">Nombre completo *</label>
                     <input type="text" id="nombre" required maxlength="60" autocomplete="name" autocapitalize="words" placeholder="Tu nombre y apellido">
@@ -78,7 +91,7 @@
                 <button type="submit" class="btn btn-primary btn-block">Enviar reseña</button>
             </form>
 
-            <p class="auth-foot">Tu reseña será revisada antes de publicarse.</p>
+            <p class="auth-foot" id="reviewFoot">Tu reseña será revisada antes de publicarse.</p>
         </div>
     </div>
 
@@ -93,11 +106,49 @@
             alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             if (!window.isSupabaseReady()) {
                 show('Supabase aún no está configurado. Pega tus claves en config.js.', 'error');
+                return;
             }
 
+            const token = (new URLSearchParams(location.search).get('t') || '').trim();
+            const loading = document.getElementById('reviewLoading');
+            const invalid = document.getElementById('reviewInvalid');
+            const form = document.getElementById('reviewForm');
+            const sub = document.getElementById('reviewSub');
+
+            // Enlace de WhatsApp para pedir uno nuevo
+            const wa = document.getElementById('waResena');
+            if (wa) {
+                const numero = (window.APP_CONFIG && window.APP_CONFIG.contacto && window.APP_CONFIG.contacto.whatsapp) || '584141338254';
+                wa.href = 'https://wa.me/' + numero + '?text=' +
+                    encodeURIComponent('Hola Meyer\'s, necesito un enlace para dejar mi reseña.');
+            }
+
+            const mostrarInvalido = () => {
+                if (loading) loading.hidden = true;
+                if (form) form.hidden = true;
+                if (invalid) invalid.hidden = false;
+                if (sub) sub.textContent = 'El enlace que abriste ya no está disponible.';
+                const foot = document.getElementById('reviewFoot');
+                if (foot) foot.hidden = true;
+            };
+
+            if (!token) { mostrarInvalido(); return; }
+
+            try {
+                const { data, error } = await window.db.rpc('validar_token_resena', { p_token: token });
+                if (error || data !== true) { mostrarInvalido(); return; }
+            } catch (e) {
+                mostrarInvalido();
+                return;
+            }
+
+            if (loading) loading.hidden = true;
+            if (form) form.hidden = false;
+
+            // Selector de estrellas
             const stars = Array.from(document.querySelectorAll('.rating-star'));
             let puntuacion = 0;
 
@@ -120,15 +171,13 @@
                 star.addEventListener('mouseleave', () => pintar(puntuacion));
             });
 
-            const form = document.getElementById('reviewForm');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!window.isSupabaseReady()) return;
 
                 // Si el campo trampa tiene texto, es un robot: simulamos éxito
                 if ((document.getElementById('web')?.value || '').trim()) {
-                    form.reset();
-                    setPuntuacion(0);
+                    form.hidden = true;
                     show('¡Gracias por tu reseña!', 'success');
                     return;
                 }
@@ -150,29 +199,29 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-                const { error } = await window.db.from('testimonials').insert({
-                    nombre,
-                    rol,
-                    texto,
-                    estrellas: puntuacion,
-                    estado: 'pendiente',
-                    sort_order: 0
+                const { error } = await window.db.rpc('crear_resena_con_token', {
+                    p_token: token,
+                    p_nombre: nombre,
+                    p_rol: rol,
+                    p_texto: texto,
+                    p_estrellas: puntuacion
                 });
 
                 btn.disabled = false;
                 btn.innerHTML = original;
 
                 if (error) {
-                    show('No se pudo enviar tu reseña: ' + error.message, 'error');
+                    if (/utilizado|no es válido|no es valido/i.test(error.message)) {
+                        mostrarInvalido();
+                    } else {
+                        show('No se pudo enviar tu reseña: ' + error.message, 'error');
+                    }
                     return;
                 }
 
-                form.reset();
-                setPuntuacion(0);
+                form.hidden = true;
+                if (sub) sub.textContent = '¡Gracias por tu confianza! Tu reseña será revisada y publicada pronto.';
                 show('¡Gracias por tu reseña! La revisaremos y publicaremos muy pronto.', 'success');
-                btn.innerHTML = '<i class="fas fa-check"></i> ¡Reseña enviada!';
-                btn.disabled = true;
-                setTimeout(() => { btn.disabled = false; btn.innerHTML = original; }, 3000);
             });
         });
     </script>

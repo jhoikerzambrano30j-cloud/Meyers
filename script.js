@@ -127,6 +127,9 @@ function applyConfig() {
     $$('[data-whatsapp]').forEach((el) => {
         el.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(CONFIG.whatsappMensaje)}`;
     });
+    $$('[data-whatsapp-resena]').forEach((el) => {
+        el.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent('Hola Meyer\'s, me gustaría dejar mi reseña. ¿Me pueden enviar el enlace?')}`;
+    });
     const yearEl = $('#year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 }
