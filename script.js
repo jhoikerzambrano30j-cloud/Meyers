@@ -103,7 +103,6 @@ async function init() {
 
     initProperties();
     initTestimonials();
-    initContactForm();
     initSmoothScroll();
     updateFavFloat();
 
@@ -984,56 +983,6 @@ function initMobileMenu() {
     navMenu.querySelectorAll('.nav-link').forEach((l) => l.addEventListener('click', () => setMenu(false)));
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && navMenu.classList.contains('active')) setMenu(false); });
     window.matchMedia('(min-width: 993px)').addEventListener('change', (e) => { if (e.matches) setMenu(false); });
-}
-
-/* ============================================================
-   FORMULARIO DE CONTACTO (guarda en la tabla "leads")
-   ============================================================ */
-function initContactForm() {
-    const form = $('#contactForm');
-    if (!form) return;
-    const status = $('#formStatus');
-    const button = form.querySelector('button[type="submit"]');
-    const originalText = button.innerHTML;
-
-    const setStatus = (message, type) => {
-        if (!status) return;
-        status.textContent = message;
-        status.className = 'form-status' + (type ? ' ' + type : '');
-    };
-
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (!form.checkValidity()) { form.reportValidity(); setStatus('Por favor completa los campos obligatorios.', 'error'); return; }
-
-        const datos = {
-            nombre: $('#nombre').value.trim(),
-            email: $('#email').value.trim(),
-            telefono: $('#telefono').value.trim(),
-            interes: $('#interes')?.value || null,
-            mensaje: $('#mensaje')?.value.trim() || null
-        };
-
-        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Enviando...';
-        button.disabled = true;
-        setStatus('Enviando tu mensaje...', '');
-
-        try {
-            if (window.isSupabaseReady && window.isSupabaseReady()) {
-                const { error } = await window.db.from('leads').insert(datos);
-                if (error) throw error;
-            } else {
-                await new Promise((r) => setTimeout(r, 1000)); // simulación
-            }
-            button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> ¡Mensaje Enviado!';
-            setStatus(`¡Gracias, ${datos.nombre}! Hemos recibido tu mensaje. Un asesor te contactará pronto.`, 'success');
-            setTimeout(() => { form.reset(); button.innerHTML = originalText; button.disabled = false; }, 1800);
-        } catch (err) {
-            button.innerHTML = originalText;
-            button.disabled = false;
-            setStatus('No se pudo enviar: ' + (err.message || err), 'error');
-        }
-    });
 }
 
 /* ============================================================

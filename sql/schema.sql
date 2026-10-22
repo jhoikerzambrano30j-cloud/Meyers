@@ -661,31 +661,7 @@ revoke all on function public.crear_resena_con_token(text, text, text, text, int
 grant execute on function public.crear_resena_con_token(text, text, text, text, int) to anon, authenticated;
 
 -- ----------------------------------------------------------------------------
--- 6. MENSAJES DEL FORMULARIO DE CONTACTO (leads)
--- ----------------------------------------------------------------------------
-create table if not exists public.leads (
-    id         uuid primary key default gen_random_uuid(),
-    nombre     text not null,
-    email      text not null,
-    telefono   text,
-    interes    text,
-    mensaje    text,
-    atendido   boolean not null default false,
-    created_at timestamptz not null default now()
-);
-
-alter table public.leads enable row level security;
-
-drop policy if exists "leads_public_insert" on public.leads;
-create policy "leads_public_insert" on public.leads
-    for insert with check (true);
-
-drop policy if exists "leads_admin_read" on public.leads;
-create policy "leads_admin_read" on public.leads
-    for all using (public.is_admin()) with check (public.is_admin());
-
--- ----------------------------------------------------------------------------
--- 7. STORAGE (bucket público para las fotos de propiedades)
+-- 6. STORAGE (bucket público para las fotos de propiedades)
 -- ----------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('propiedades', 'propiedades', true)

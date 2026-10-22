@@ -1339,6 +1339,42 @@ h1, h2, h3, h4 {
     font-size: 1.3rem;
 }
 
+.contact-direct-text {
+    color: var(--gray-text);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.contact-direct-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.contact-direct-links a,
+.contact-direct-links p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--dark);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.contact-direct-links a:hover {
+    color: var(--gold-dark);
+}
+
+.contact-direct-links i {
+    color: var(--gold-dark);
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -1374,22 +1410,6 @@ h1, h2, h3, h4 {
 .form-group textarea {
     resize: vertical;
     min-height: 100px;
-}
-
-.form-status {
-    margin-top: 15px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-align: center;
-    min-height: 1.2em;
-}
-
-.form-status.success {
-    color: var(--green);
-}
-
-.form-status.error {
-    color: #e74c3c;
 }
 
 /* ============================================

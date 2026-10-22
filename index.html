@@ -299,7 +299,7 @@
                 <div class="cta-content reveal">
                     <span class="brand-tag on-dark">Hablemos</span>
                     <h2 class="cta-title">¿Listo para encontrar tu próximo hogar?</h2>
-                    <p class="cta-text">Déjanos tus datos y un asesor se pondrá en contacto contigo en menos de 24 horas.</p>
+                    <p class="cta-text">Escríbenos por WhatsApp o llámanos y un asesor te atenderá en menos de 24 horas.</p>
                     <ul class="cta-benefits">
                         <li><i class="fas fa-check" aria-hidden="true"></i> Asesoría personalizada</li>
                         <li><i class="fas fa-check" aria-hidden="true"></i> Sin compromiso</li>
@@ -307,37 +307,19 @@
                     </ul>
                 </div>
                 <div class="cta-form-wrapper reveal">
-                    <form class="contact-form" id="contactForm" novalidate>
-                        <h3>Solicita Información</h3>
-                        <div class="form-group">
-                            <label class="sr-only" for="nombre">Nombre completo</label>
-                            <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required minlength="3" autocomplete="name" autocapitalize="words">
+                    <div class="contact-form contact-direct">
+                        <h3>Contáctanos directamente</h3>
+                        <p class="contact-direct-text">Escríbenos y un asesor te atenderá en menos de 24 horas.</p>
+                        <a href="#" class="btn btn-primary btn-block" data-whatsapp>
+                            <i class="fab fa-whatsapp" aria-hidden="true"></i> Escribir por WhatsApp
+                        </a>
+                        <div class="contact-direct-links">
+                            <a href="#" data-phone><i class="fas fa-phone" aria-hidden="true"></i> +58 414-1338254</a>
+                            <a href="#" data-email><i class="fas fa-envelope" aria-hidden="true"></i> inmb.mimeyerhouse@gmail.com</a>
+                            <p><i class="fas fa-location-dot" aria-hidden="true"></i> Av. Lamas, Santa Teresa, Piso 1</p>
+                            <p><i class="fas fa-clock" aria-hidden="true"></i> Lun–Vie 9:00 AM – 4:00 PM</p>
                         </div>
-                        <div class="form-group">
-                            <label class="sr-only" for="email">Correo electrónico</label>
-                            <input type="email" id="email" name="email" placeholder="Correo electrónico" required autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
-                        </div>
-                        <div class="form-group">
-                            <label class="sr-only" for="telefono">Teléfono o WhatsApp</label>
-                            <input type="tel" id="telefono" name="telefono" placeholder="Teléfono / WhatsApp" required pattern="[0-9+()\-\s]{7,}" autocomplete="tel" inputmode="tel">
-                        </div>
-                        <div class="form-group">
-                            <label class="sr-only" for="interes">Interés</label>
-                            <select id="interes" name="interes" required>
-                                <option value="">Estoy interesado en...</option>
-                                <option value="comprar">Comprar una propiedad</option>
-                                <option value="vender">Vender mi propiedad</option>
-                                <option value="alquilar">Alquilar</option>
-                                <option value="invertir">Invertir</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="sr-only" for="mensaje">Mensaje</label>
-                            <textarea id="mensaje" name="mensaje" rows="4" placeholder="Cuéntanos qué buscas..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Enviar Mensaje</button>
-                        <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

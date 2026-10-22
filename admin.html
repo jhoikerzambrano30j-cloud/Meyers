@@ -42,7 +42,6 @@
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="propiedades"><i class="fas fa-house"></i> Propiedades</button>
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
-            <button class="admin-tab" data-tab="mensajes"><i class="fas fa-envelope"></i> Mensajes</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
             <button class="admin-tab" data-tab="resenas"><i class="fas fa-star"></i> Reseñas <span class="tab-badge" id="resenasTabBadge" hidden>0</span></button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
@@ -232,31 +231,6 @@
                         </tr>
                     </thead>
                     <tbody id="usersTableBody"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- ============ MENSAJES ============ -->
-        <section class="admin-panel" id="tab-mensajes">
-            <div class="admin-panel-head">
-                <div>
-                    <h2>Mensajes de contacto</h2>
-                    <p id="leadsCount">Cargando…</p>
-                </div>
-                <button type="button" class="btn-sm btn-dark" id="btnExportLeads">
-                    <i class="fas fa-file-csv"></i> Exportar CSV
-                </button>
-            </div>
-
-            <div class="table-wrap">
-                <table class="data">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th><th>Nombre</th><th>Contacto</th>
-                            <th>Interés</th><th>Mensaje</th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="leadsTableBody"></tbody>
                 </table>
             </div>
         </section>

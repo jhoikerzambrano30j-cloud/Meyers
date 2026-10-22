@@ -2,7 +2,6 @@
    PANEL DE ADMINISTRACIÓN
    - Propiedades: crear / editar / borrar + subida de fotos (WebP)
    - Usuarios: registrar y exportar (correo + teléfono)
-   - Mensajes: leads del formulario de contacto
    ============================================================ */
 'use strict';
 
@@ -21,7 +20,6 @@ let imagenes = [];       // [{ url, path, blob? }]
 let editandoId = null;
 let guardandoPropiedad = false;   // evita guardados dobles
 let cacheUsuarios = [];
-let cacheLeads = [];
 let cacheAsesores = [];
 let cachePropiedades = [];
 let asesorFoto = null;
@@ -188,7 +186,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnNewProperty')?.addEventListener('click', () => openForm(null));
     $('#btnCancelForm')?.addEventListener('click', closeForm);
     $('#btnExportUsers')?.addEventListener('click', () => exportUsuarios());
-    $('#btnExportLeads')?.addEventListener('click', () => exportLeads());
     $('#btnNewAsesor')?.addEventListener('click', () => openAsesorForm(null));
     $('#btnCancelAsesor')?.addEventListener('click', closeAsesorForm);
     initAsesorForm();
@@ -196,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnCopyReviewLink')?.addEventListener('click', copiarLinkResena);
     $('#btnReviewWhatsapp')?.addEventListener('click', compartirWhatsappResena);
 
-    await Promise.all([loadProperties(), loadUsuarios(), loadLeads(), cargarAsesores(), loadResenas()]);
+    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas()]);
 
     // Limpieza automática del historial: se borran los tratos con más de 2 meses
     if (await limpiarHistorial()) await loadProperties();
@@ -883,70 +880,6 @@ function exportUsuarios() {
         Fecha_registro: fecha(u.created_at)
     }));
     exportCSV(filas, 'usuarios-meyers.csv');
-}
-
-/* ============================================================
-   MENSAJES (LEADS)
-   ============================================================ */
-async function loadLeads() {
-    const tbody = $('#leadsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6"><div class="spinner"></div></td></tr>';
-
-    const { data, error } = await window.db
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        tbody.innerHTML = `<tr><td colspan="6">Error: ${esc(error.message)}</td></tr>`;
-        return;
-    }
-
-    cacheLeads = data || [];
-    const countEl = $('#leadsCount');
-    if (countEl) countEl.textContent = cacheLeads.length + ' mensajes';
-
-    if (!cacheLeads.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-envelope-open"></i><p>No hay mensajes todavía.</p></div></td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = cacheLeads.map((l) => `
-        <tr>
-            <td>${fecha(l.created_at)}</td>
-            <td>${esc(l.nombre)}</td>
-            <td>${esc(l.email)}<br><small style="color:#888">${esc(l.telefono || '')}</small></td>
-            <td>${esc(l.interes || '—')}</td>
-            <td style="max-width:280px">${esc(l.mensaje || '—')}</td>
-            <td>
-                <div class="cell-actions">
-                    <a class="btn-sm btn-edit" href="mailto:${esc(l.email)}"><i class="fas fa-reply"></i></a>
-                    <button class="btn-sm btn-edit" data-atendido="${l.id}">${l.atendido ? 'Atendido ✓' : 'Marcar atendido'}</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
-
-    tbody.querySelectorAll('[data-atendido]').forEach((b) =>
-        b.addEventListener('click', async () => {
-            const row = cacheLeads.find((x) => x.id === b.dataset.atendido);
-            await window.db.from('leads').update({ atendido: !row.atendido }).eq('id', row.id);
-            await loadLeads();
-        }));
-}
-
-function exportLeads() {
-    const filas = cacheLeads.map((l) => ({
-        Fecha: fecha(l.created_at),
-        Nombre: l.nombre || '',
-        Correo: l.email || '',
-        Telefono: l.telefono || '',
-        Interes: l.interes || '',
-        Mensaje: l.mensaje || '',
-        Atendido: l.atendido ? 'Sí' : 'No'
-    }));
-    exportCSV(filas, 'mensajes-meyers.csv');
 }
 
 /* Filtro de usuarios */
