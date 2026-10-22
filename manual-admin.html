@@ -141,6 +141,17 @@
         margin-bottom: 22px;
     }
 
+    /* Evita una página en blanco al final del PDF */
+    .content > .section:last-child {
+        margin-bottom: 0;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    .content > .section:last-child > :last-child {
+        margin-bottom: 0;
+    }
+
     .lead {
         font-size: 10.5pt;
         color: #555;
@@ -323,7 +334,7 @@
     <p class="eyebrow">Meyer's Inmobiliaria</p>
     <h1>Manual del Panel<br>de Administración</h1>
     <p class="sub">Todo lo que puedes gestionar por tu cuenta, explicado paso a paso.</p>
-    <p class="date">Actualizado · Octubre 2026</p>
+    <p class="date">Actualizado · 22 de octubre de 2026</p>
 </section>
 
 <!-- ==================== CONTENIDO ==================== -->
@@ -372,6 +383,7 @@
                 <li>Buenas prácticas y límites</li>
                 <li>Preguntas frecuentes</li>
                 <li>Flujo recomendado</li>
+                <li>Últimos cambios</li>
             </ol>
         </div>
     </div>
@@ -387,7 +399,7 @@
             <li>Completa <b>Negocio</b>: Venta, Alquiler o Traspaso.</li>
             <li>Elige el <b>Tipo</b> (Casa, Apartamento, Oficina, Galpón, etc.).</li>
             <li>Escribe la <b>Ciudad</b> y la <b>Zona</b> (puedes crearlas desde el mismo campo).</li>
-            <li>Agrega <b>precio, habitaciones, baños y área</b>.</li>
+            <li>Agrega el <b>precio</b> (los puntos de miles aparecen solos), <b>habitaciones, baños y área</b>.</li>
             <li>Escribe una <b>descripción</b> clara y marca las características.</li>
             <li>Sube las <b>fotos</b> (la primera será la portada).</li>
             <li>Si quieres que salga en el inicio, marca <b>Destacada</b>.</li>
@@ -397,6 +409,11 @@
         <div class="note">
             <strong>Código automático</strong>
             El sistema asigna un código por asesor, por ejemplo <b>BP-0007</b>. No se reutiliza aunque borres la propiedad.
+        </div>
+
+        <div class="note">
+            <strong>El precio se formatea solo</strong>
+            Mientras escribes, el sistema separa los miles con punto: escribes <b>25000</b> y ves <b>25.000</b>. Si necesitas decimales, usa la coma: <b>25.000,50</b>. No escribas los puntos a mano.
         </div>
 
         <h3>Las fotos</h3>
@@ -707,6 +724,34 @@
         <div class="tip">
             <strong>Todo desde un solo lugar</strong>
             Propiedades, usuarios, asesores, reseñas, historia, contenido, secciones, servicios y métricas. No necesitas llamar a nadie para mantener la web al día.
+        </div>
+    </div>
+
+    <!-- ==================== 14. ÚLTIMOS CAMBIOS ==================== -->
+    <div class="section page-break" id="cambios">
+        <h2>14. Últimos cambios</h2>
+        <p class="lead">Registro de las mejoras más importantes. Este manual se actualiza con cada cambio.</p>
+
+        <h3>22 de octubre de 2026</h3>
+        <ul>
+            <li><b>Precios en tiempo real:</b> los puntos de miles aparecen mientras escribes, tanto en el panel como en el filtro de precio de la web. Escribes <b>25000</b> y ves <b>25.000</b>.</li>
+            <li><b>Búsqueda combinada:</b> los filtros de la barra y la búsqueda inteligente suman. Ejemplo: Ciudad <b>Caracas</b> + búsqueda <b>“con jacuzzi”</b> muestra solo las propiedades de Caracas con jacuzzi.</li>
+            <li><b>Chips de filtros:</b> debajo del contador aparecen las etiquetas de lo que está activo (<b>Caracas</b>, <b>“con jacuzzi”</b>, etc.). Cada una se quita con su botón de cerrar (<b>×</b>) sin borrar las demás.</li>
+            <li><b>Precios premium:</b> el precio se muestra sobre una placa oscura con borde dorado, sin tapar la foto de la propiedad.</li>
+        </ul>
+
+        <h3>Cambios anteriores · octubre 2026</h3>
+        <ul>
+            <li>Formato de precios venezolano (<b>25.000,00</b>) y filtro de precio <b>Desde / Hasta</b> con montos libres.</li>
+            <li>Búsqueda inteligente en toda la descripción, con sinónimos: colegio/escuela, centro comercial/mall, jacuzzi/hidromasaje.</li>
+            <li>Ciudades y zonas independientes; negocio limitado a <b>Venta, Alquiler o Traspaso</b>.</li>
+            <li>Reseñas con enlace de un solo uso, estrellas de 1 a 5 y aprobación antes de publicarse.</li>
+            <li>Manual del administrador, avisos y confirmaciones con el diseño de la marca, carga diferida de imágenes y acceso desde el teléfono (PWA).</li>
+        </ul>
+
+        <div class="tip">
+            <strong>¿Ves algo nuevo en la web o en el panel?</strong>
+            Este apartado se actualiza con cada mejora. Si algo no coincide con lo que ves, actualiza la página con <b>Ctrl + F5</b>.
         </div>
     </div>
 
