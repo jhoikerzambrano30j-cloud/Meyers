@@ -114,8 +114,6 @@ Proyecto/
 ## Documentación
 
 - **Manual de la dueña:** `manual-admin.html` (versión web) y `MANUAL-ADMIN.pdf`.
-- **Presentación comercial:** `presentacion-innovaciones.html` (editable) y
-  `PRESENTACION-INNOVACIONES.pdf` (8 páginas, lista para enviar o imprimir).
 - **Historial:** la sección **14. Últimos cambios** del manual registra las mejoras.
 - **Regla de mantenimiento:** cada cambio visible en la web o en el panel debe
   reflejarse en el manual y regenerar el PDF. Para hacerlo: abre
