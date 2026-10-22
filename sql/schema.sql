@@ -129,7 +129,9 @@ begin
                 raise exception 'No se puede cambiar el rol del master';
             end if;
             if new.role = 'master' and old.role is distinct from 'master' then
-                raise exception 'Solo el propietario puede asignar el rol master';
+                if not public.is_master() then
+                    raise exception 'Solo un master puede asignar el rol master';
+                end if;
             end if;
             -- Nadie puede cambiar su propio rol ni su estado
             if old.id = auth.uid() and (new.role is distinct from old.role or new.bloqueado is distinct from old.bloqueado) then
@@ -159,7 +161,7 @@ create trigger profiles_protect_role
     before insert or update on public.profiles
     for each row execute function public.protect_profile_role();
 
--- Límite: máximo 5 administradores (contando al master)
+-- Límites: máximo 5 administradores (contando masters) y máximo 3 master
 create or replace function public.enforce_admin_limit()
 returns trigger
 language plpgsql
@@ -167,11 +169,23 @@ security definer
 set search_path = public
 as $$
 declare
-    total int;
+    total_admin int;
+    total_master int;
 begin
-    if new.role = 'admin' and old.role is distinct from 'admin' then
-        select count(*) into total from public.profiles where role in ('admin', 'master');
-        if total >= 5 then
+    if new.role is distinct from old.role and new.role in ('admin', 'master') then
+        select count(*) into total_master
+        from public.profiles
+        where role = 'master' and id <> new.id;
+
+        if new.role = 'master' and total_master >= 3 then
+            raise exception 'Máximo 3 usuarios master permitidos';
+        end if;
+
+        select count(*) into total_admin
+        from public.profiles
+        where role in ('admin', 'master') and id <> new.id;
+
+        if total_admin >= 5 then
             raise exception 'Máximo 5 administradores permitidos';
         end if;
     end if;
@@ -708,6 +722,8 @@ create table if not exists public.site_settings (
     hero_slogan      text not null default 'Estás en tu casa',
     hero_texto       text not null default 'Somos diferentes, porque mejoramos cada día. Encuentra la propiedad que se adapta a tu estilo de vida.',
     hero_cta         text not null default 'Explorar Propiedades',
+    hero_imagen      text,
+    hero_imagen_path text,
     telefono         text not null default '0414-1338254',
     whatsapp         text not null default '584141338254',
     email            text not null default 'inmb.mimeyerhouse@gmail.com',
@@ -719,8 +735,43 @@ create table if not exists public.site_settings (
     footer_desc      text not null default 'Somos diferentes, porque mejoramos cada día. Tu hogar te espera.',
     seo_titulo       text not null default 'Meyer''s Inmobiliaria | Bienes Raíces',
     seo_descripcion  text not null default 'Meyer''s Inmobiliaria — Somos diferentes, porque mejoramos cada día. Compra, venta y alquiler de propiedades con asesoría personalizada, financiamiento y valoración de inmuebles.',
+    prop_tag         text not null default 'Portafolio Exclusivo',
+    prop_titulo      text not null default 'Propiedades Destacadas',
+    prop_subtitulo   text not null default 'Selección exclusiva de nuestros mejores inmuebles',
+    serv_tag         text not null default 'Meyer''s Inmobiliaria',
+    serv_titulo      text not null default 'Nuestros Servicios',
+    serv_subtitulo   text not null default 'Soluciones integrales para comprar, vender o alquilar',
+    team_tag         text not null default 'Nuestro Equipo',
+    team_titulo      text not null default 'Conoce a nuestros asesores',
+    team_subtitulo   text not null default 'Profesionales comprometidos con tu hogar',
+    test_tag         text not null default 'Confianza',
+    test_titulo      text not null default 'Lo que dicen nuestros clientes',
+    test_subtitulo   text not null default 'Historias reales de quienes ya encontraron su hogar con nosotros',
+    cta_tag          text not null default 'Hablemos',
+    cta_titulo       text not null default '¿Listo para encontrar tu próximo hogar?',
+    cta_texto        text not null default 'Escríbenos por WhatsApp o llámanos y un asesor te atenderá en menos de 24 horas.',
     updated_at       timestamptz not null default now()
 );
+
+-- Compatibilidad con bases ya creadas
+alter table public.site_settings
+    add column if not exists hero_imagen text,
+    add column if not exists hero_imagen_path text,
+    add column if not exists prop_tag text not null default 'Portafolio Exclusivo',
+    add column if not exists prop_titulo text not null default 'Propiedades Destacadas',
+    add column if not exists prop_subtitulo text not null default 'Selección exclusiva de nuestros mejores inmuebles',
+    add column if not exists serv_tag text not null default 'Meyer''s Inmobiliaria',
+    add column if not exists serv_titulo text not null default 'Nuestros Servicios',
+    add column if not exists serv_subtitulo text not null default 'Soluciones integrales para comprar, vender o alquilar',
+    add column if not exists team_tag text not null default 'Nuestro Equipo',
+    add column if not exists team_titulo text not null default 'Conoce a nuestros asesores',
+    add column if not exists team_subtitulo text not null default 'Profesionales comprometidos con tu hogar',
+    add column if not exists test_tag text not null default 'Confianza',
+    add column if not exists test_titulo text not null default 'Lo que dicen nuestros clientes',
+    add column if not exists test_subtitulo text not null default 'Historias reales de quienes ya encontraron su hogar con nosotros',
+    add column if not exists cta_tag text not null default 'Hablemos',
+    add column if not exists cta_titulo text not null default '¿Listo para encontrar tu próximo hogar?',
+    add column if not exists cta_texto text not null default 'Escríbenos por WhatsApp o llámanos y un asesor te atenderá en menos de 24 horas.';
 
 insert into public.site_settings (id) values (1) on conflict (id) do nothing;
 
@@ -733,6 +784,39 @@ create policy "site_settings_public_read" on public.site_settings
 drop policy if exists "site_settings_admin_write" on public.site_settings;
 create policy "site_settings_admin_write" on public.site_settings
     for all using (public.is_admin()) with check (public.is_admin());
+
+-- ----------------------------------------------------------------------------
+-- 5e. SERVICIOS (tarjetas editables de la web)
+-- ----------------------------------------------------------------------------
+create table if not exists public.services (
+    id          uuid primary key default gen_random_uuid(),
+    icono       text not null default 'fa-house',
+    titulo      text not null,
+    descripcion text not null,
+    orden       int not null default 0,
+    activo      boolean not null default true,
+    created_at  timestamptz not null default now()
+);
+
+alter table public.services enable row level security;
+
+drop policy if exists "services_public_read" on public.services;
+create policy "services_public_read" on public.services
+    for select using (activo = true);
+
+drop policy if exists "services_admin_all" on public.services;
+create policy "services_admin_all" on public.services
+    for all using (public.is_admin()) with check (public.is_admin());
+
+insert into public.services (icono, titulo, descripcion, orden)
+select icono, titulo, descripcion, orden
+from (values
+    ('fa-home', 'Compra y Venta', 'Te acompañamos en todo el proceso, desde la búsqueda hasta la firma de documentos.', 1),
+    ('fa-file-signature', 'Asesoría Legal', 'Contamos con expertos en documentación, títulos y trámites legales inmobiliarios.', 2),
+    ('fa-hand-holding-usd', 'Financiamiento', 'Te ayudamos a encontrar las mejores opciones de crédito y planes de pago.', 3),
+    ('fa-chart-line', 'Valoración de Inmuebles', 'Conoce el valor real de tu propiedad con nuestro análisis de mercado personalizado.', 4)
+) as v(icono, titulo, descripcion, orden)
+where not exists (select 1 from public.services);
 
 -- ----------------------------------------------------------------------------
 -- 6. STORAGE (bucket público para las fotos de propiedades)

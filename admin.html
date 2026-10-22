@@ -45,6 +45,8 @@
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
             <button class="admin-tab" data-tab="nosotros"><i class="fas fa-landmark"></i> Nosotros</button>
             <button class="admin-tab" data-tab="sitio"><i class="fas fa-sliders"></i> Sitio</button>
+            <button class="admin-tab" data-tab="secciones"><i class="fas fa-layer-group"></i> Secciones</button>
+            <button class="admin-tab" data-tab="servicios"><i class="fas fa-concierge-bell"></i> Servicios</button>
             <button class="admin-tab" data-tab="resenas"><i class="fas fa-star"></i> Reseñas <span class="tab-badge" id="resenasTabBadge" hidden>0</span></button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
             <button class="admin-tab" data-tab="historial"><i class="fas fa-clock-rotate-left"></i> Historial</button>
@@ -425,6 +427,15 @@
                             <label for="sitioHeroCta">Texto del botón</label>
                             <input type="text" id="sitioHeroCta" placeholder="Explorar Propiedades">
                         </div>
+                        <div class="field full">
+                            <label>Imagen de fondo (Hero)</label>
+                            <div class="uploader" id="heroUploader">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Haz clic o arrastra la foto aquí</strong><br>JPG, PNG o WebP · se optimiza automáticamente</p>
+                                <input type="file" id="heroInput" accept="image/*" hidden>
+                            </div>
+                            <div class="thumbs" id="heroThumbs"></div>
+                        </div>
                     </div>
 
                     <h3 style="margin-top:28px"><i class="fas fa-address-book" style="color:#B8931F"></i> Contacto</h3>
@@ -493,6 +504,187 @@
                     </div>
                     <div class="alert" id="sitioStatus" style="margin-top:16px"></div>
                 </form>
+            </div>
+        </section>
+
+        <!-- ============ SECCIONES ============ -->
+        <section class="admin-panel" id="tab-secciones">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Títulos de las secciones</h2>
+                    <p>Cambia las etiquetas, títulos y subtítulos que aparecen en la web.</p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <form id="seccionesForm">
+                    <h3>Propiedades</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="secPropTag">Etiqueta</label>
+                            <input type="text" id="secPropTag" maxlength="60">
+                        </div>
+                        <div class="field">
+                            <label for="secPropTitulo">Título</label>
+                            <input type="text" id="secPropTitulo" maxlength="80">
+                        </div>
+                        <div class="field full">
+                            <label for="secPropSubtitulo">Subtítulo</label>
+                            <input type="text" id="secPropSubtitulo" maxlength="140">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px">Servicios</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="secServTag">Etiqueta</label>
+                            <input type="text" id="secServTag" maxlength="60">
+                        </div>
+                        <div class="field">
+                            <label for="secServTitulo">Título</label>
+                            <input type="text" id="secServTitulo" maxlength="80">
+                        </div>
+                        <div class="field full">
+                            <label for="secServSubtitulo">Subtítulo</label>
+                            <input type="text" id="secServSubtitulo" maxlength="140">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px">Equipo</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="secTeamTag">Etiqueta</label>
+                            <input type="text" id="secTeamTag" maxlength="60">
+                        </div>
+                        <div class="field">
+                            <label for="secTeamTitulo">Título</label>
+                            <input type="text" id="secTeamTitulo" maxlength="80">
+                        </div>
+                        <div class="field full">
+                            <label for="secTeamSubtitulo">Subtítulo</label>
+                            <input type="text" id="secTeamSubtitulo" maxlength="140">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px">Testimonios</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="secTestTag">Etiqueta</label>
+                            <input type="text" id="secTestTag" maxlength="60">
+                        </div>
+                        <div class="field">
+                            <label for="secTestTitulo">Título</label>
+                            <input type="text" id="secTestTitulo" maxlength="80">
+                        </div>
+                        <div class="field full">
+                            <label for="secTestSubtitulo">Subtítulo</label>
+                            <input type="text" id="secTestSubtitulo" maxlength="140">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:28px">Contacto (CTA)</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="secCtaTag">Etiqueta</label>
+                            <input type="text" id="secCtaTag" maxlength="60">
+                        </div>
+                        <div class="field">
+                            <label for="secCtaTitulo">Título</label>
+                            <input type="text" id="secCtaTitulo" maxlength="90">
+                        </div>
+                        <div class="field full">
+                            <label for="secCtaTexto">Texto</label>
+                            <textarea id="secCtaTexto" rows="2" maxlength="220"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:22px">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar títulos</button>
+                    </div>
+                    <div class="alert" id="seccionesStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============ SERVICIOS ============ -->
+        <section class="admin-panel" id="tab-servicios">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Servicios</h2>
+                    <p id="serviciosCount">Cargando…</p>
+                </div>
+                <button type="button" class="btn-sm btn-gold" id="btnNewServicio">
+                    <i class="fas fa-plus"></i> Nuevo servicio
+                </button>
+            </div>
+
+            <div class="panel-card" id="servicioFormCard" style="display:none">
+                <h3 id="servicioFormTitle">Nuevo servicio</h3>
+                <form id="servicioForm">
+                    <input type="hidden" id="servicioId">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="servicioIcono">Icono</label>
+                            <select id="servicioIcono">
+                                <option value="fa-house">Casa</option>
+                                <option value="fa-building">Edificio</option>
+                                <option value="fa-key">Llave</option>
+                                <option value="fa-hand-holding-usd">Financiamiento</option>
+                                <option value="fa-chart-line">Gráfica / Valoración</option>
+                                <option value="fa-file-signature">Documento / Legal</option>
+                                <option value="fa-handshake">Acuerdo</option>
+                                <option value="fa-map-location-dot">Ubicación</option>
+                                <option value="fa-camera">Cámara</option>
+                                <option value="fa-ruler-combined">Área</option>
+                                <option value="fa-user-tie">Asesor</option>
+                                <option value="fa-scale-balanced">Balanza / Legal</option>
+                                <option value="fa-coins">Monedas</option>
+                                <option value="fa-city">Ciudad</option>
+                                <option value="fa-store">Local</option>
+                                <option value="fa-tree">Terreno</option>
+                                <option value="fa-water">Playa</option>
+                                <option value="fa-car">Estacionamiento</option>
+                                <option value="fa-shield-halved">Seguridad</option>
+                                <option value="fa-star">Estrella</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="servicioOrden">Orden</label>
+                            <input type="number" id="servicioOrden" value="0" min="0" step="1">
+                            <small class="field-hint">Menor número aparece primero.</small>
+                        </div>
+                        <div class="field full">
+                            <label for="servicioTitulo">Título *</label>
+                            <input type="text" id="servicioTitulo" required maxlength="60">
+                        </div>
+                        <div class="field full">
+                            <label for="servicioDescripcion">Descripción *</label>
+                            <textarea id="servicioDescripcion" rows="3" required maxlength="220"></textarea>
+                        </div>
+                        <div class="field full">
+                            <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0">
+                                <input type="checkbox" id="servicioActivo" checked style="width:auto">
+                                Mostrar en la web
+                            </label>
+                        </div>
+                    </div>
+                    <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar servicio</button>
+                        <button type="button" class="btn-sm btn-edit" id="btnCancelServicio">Cancelar</button>
+                    </div>
+                    <div class="alert" id="servicioStatus" style="margin-top:16px"></div>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Orden</th><th>Icono</th><th>Título</th><th>Descripción</th><th>Estado</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="serviciosTableBody"></tbody>
+                </table>
             </div>
         </section>
 

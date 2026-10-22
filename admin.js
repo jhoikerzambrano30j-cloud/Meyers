@@ -26,6 +26,9 @@ let asesorFoto = null;
 let asesorPathsViejos = [];
 let aboutImagen = null;
 let aboutPathsViejos = [];
+let heroImagen = null;
+let heroPathsViejos = [];
+let cacheServicios = [];
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -193,11 +196,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAsesorForm();
     initAboutForm();
     initSitioForm();
+    initSeccionesForm();
+    initServiciosAdmin();
     $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
     $('#btnCopyReviewLink')?.addEventListener('click', copiarLinkResena);
     $('#btnReviewWhatsapp')?.addEventListener('click', compartirWhatsappResena);
 
-    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas(), cargarAbout(), cargarSitioAdmin()]);
+    await Promise.all([
+        loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas(),
+        cargarAbout(), cargarSitioAdmin(), cargarSeccionesAdmin(), cargarServiciosAdmin()
+    ]);
 
     // Limpieza automática del historial: se borran los tratos con más de 2 meses
     if (await limpiarHistorial()) await loadProperties();
@@ -229,6 +237,8 @@ function initTabs() {
             if (destino === 'resenas') loadResenas();
             if (destino === 'nosotros') cargarAbout();
             if (destino === 'sitio') cargarSitioAdmin();
+            if (destino === 'secciones') cargarSeccionesAdmin();
+            if (destino === 'servicios') cargarServiciosAdmin();
         });
     });
 }
@@ -783,9 +793,10 @@ async function loadUsuarios() {
 
     cacheUsuarios = data || [];
     const admins = cacheUsuarios.filter((u) => u.role === 'admin' || u.role === 'master').length;
+    const masters = cacheUsuarios.filter((u) => u.role === 'master').length;
     const bloqueados = cacheUsuarios.filter((u) => u.bloqueado).length;
     const countEl = $('#usersCount');
-    if (countEl) countEl.textContent = `${cacheUsuarios.length} usuarios · ${admins} de 5 administradores · ${bloqueados} bloqueados`;
+    if (countEl) countEl.textContent = `${cacheUsuarios.length} usuarios · ${admins} de 5 administradores · ${masters} de 3 master · ${bloqueados} bloqueados`;
 
     if (!cacheUsuarios.length) {
         tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><i class="fas fa-users"></i><p>Todavía no hay usuarios registrados.</p></div></td></tr>';
@@ -850,9 +861,18 @@ function rolSelect(u) {
             ? '<span class="badge-admin">Administrador</span>'
             : '<span class="badge-user">Usuario</span>';
     }
+
+    const esMaster = currentProfile && currentProfile.role === 'master';
+    const totalMasters = cacheUsuarios.filter((x) => x.role === 'master').length;
+    const puedeMaster = esMaster && totalMasters < 3;
+    const opcionMaster = esMaster
+        ? `<option value="master" ${puedeMaster ? '' : 'disabled'}>Master${puedeMaster ? '' : ' (máx. 3)'}</option>`
+        : '';
+
     return `<select class="role-select" data-role="${esc(u.id)}">
         <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuario</option>
         <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrador</option>
+        ${opcionMaster}
     </select>`;
 }
 
@@ -867,13 +887,35 @@ function puedeGestionar(u) {
 
 async function cambiarRol(sel) {
     const id = sel.dataset.role;
-    const { error } = await window.db.from('profiles').update({ role: sel.value }).eq('id', id);
-    if (error) {
-        const msg = /5 administradores|máximo/i.test(error.message)
-            ? 'Ya hay 5 administradores (el máximo permitido).'
-            : error.message;
-        toast('No se pudo cambiar el rol: ' + msg);
+    const nuevo = sel.value;
+    const usuario = cacheUsuarios.find((u) => u.id === id);
+
+    if (nuevo === 'master') {
+        const totalMasters = cacheUsuarios.filter((u) => u.role === 'master').length;
+        if (totalMasters >= 3) {
+            toast('Ya hay 3 usuarios master (el máximo permitido).', 'error');
+            await loadUsuarios();
+            return;
+        }
+        const nombre = usuario ? (usuario.full_name || usuario.email || 'este usuario') : 'este usuario';
+        if (!confirm(`¿Dar permisos de master a ${nombre}? Podrá gestionar todo el sistema.`)) {
+            await loadUsuarios();
+            return;
+        }
     }
+
+    const { error } = await window.db.from('profiles').update({ role: nuevo }).eq('id', id);
+
+    if (error) {
+        let msg = error.message;
+        if (/3 usuarios master|máximo 3/i.test(msg)) msg = 'Ya hay 3 usuarios master (el máximo permitido).';
+        else if (/5 administradores|máximo 5/i.test(msg)) msg = 'Ya hay 5 administradores (el máximo permitido).';
+        else if (/solo un master/i.test(msg)) msg = 'Solo un master puede asignar ese rol.';
+        toast('No se pudo cambiar el rol: ' + msg, 'error');
+    } else if (nuevo === 'master') {
+        toast('Permisos de master otorgados.', 'success');
+    }
+
     await loadUsuarios();
 }
 
@@ -1374,12 +1416,58 @@ async function cargarSitioAdmin() {
     $('#sitioFooterDesc').value = d.footer_desc || '';
     $('#sitioSeoTitulo').value = d.seo_titulo || '';
     $('#sitioSeoDescripcion').value = d.seo_descripcion || '';
+
+    if (d.hero_imagen) {
+        heroImagen = { url: d.hero_imagen, path: d.hero_imagen_path };
+        heroPathsViejos = d.hero_imagen_path ? [d.hero_imagen_path] : [];
+    } else {
+        heroImagen = null;
+        heroPathsViejos = [];
+    }
+    renderHeroThumb();
 }
 
 function initSitioForm() {
     const form = $('#sitioForm');
     if (!form) return;
     form.addEventListener('submit', guardarSitio);
+
+    const uploader = $('#heroUploader');
+    const input = $('#heroInput');
+    if (uploader && input) {
+        uploader.addEventListener('click', () => input.click());
+        input.addEventListener('change', (e) => agregarFotoHero(e.target.files));
+        ['dragenter', 'dragover'].forEach((ev) =>
+            uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach((ev) =>
+            uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.remove('dragover'); }));
+        uploader.addEventListener('drop', (e) => agregarFotoHero(e.dataTransfer.files));
+    }
+}
+
+function agregarFotoHero(fileList) {
+    const MAX_MB = 15;
+    const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
+    if (!file) return;
+    if (file.size > MAX_MB * 1024 * 1024) {
+        toast('La foto supera ' + MAX_MB + ' MB. Usa una imagen más liviana.', 'error');
+        return;
+    }
+    if (heroImagen && heroImagen.esNueva && heroImagen.url) URL.revokeObjectURL(heroImagen.url);
+    heroImagen = { url: URL.createObjectURL(file), path: null, blob: file, esNueva: true };
+    renderHeroThumb();
+}
+
+function renderHeroThumb() {
+    const cont = $('#heroThumbs');
+    if (!cont) return;
+    cont.innerHTML = heroImagen ? `
+        <div class="thumb">
+            <img src="${esc(heroImagen.url)}" alt="">
+            <button type="button" class="thumb-remove" data-remove-hero title="Quitar">&times;</button>
+        </div>` : '';
+    const btn = cont.querySelector('[data-remove-hero]');
+    if (btn) btn.addEventListener('click', () => { heroImagen = null; renderHeroThumb(); });
 }
 
 async function guardarSitio(e) {
@@ -1391,6 +1479,16 @@ async function guardarSitio(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
     try {
+        const heroNueva = heroImagen && heroImagen.esNueva;
+        if (heroNueva && heroImagen.blob) {
+            const grande = await window.optimizarImagen(heroImagen.blob, { maxWidth: 1920, quality: 0.8 });
+            const subida = await window.subirImagen(grande);
+            heroImagen.url = subida.url;
+            heroImagen.path = subida.path;
+            heroImagen.esNueva = false;
+            heroImagen.blob = null;
+        }
+
         const payload = {
             id: 1,
             hero_subtitulo: $('#sitioHeroSubtitulo').value.trim(),
@@ -1398,14 +1496,16 @@ async function guardarSitio(e) {
             hero_slogan: $('#sitioHeroSlogan').value.trim(),
             hero_texto: $('#sitioHeroTexto').value.trim(),
             hero_cta: $('#sitioHeroCta').value.trim() || 'Explorar Propiedades',
+            hero_imagen: heroImagen ? heroImagen.url : null,
+            hero_imagen_path: heroImagen ? (heroImagen.path || null) : null,
             telefono: $('#sitioTelefono').value.trim(),
             whatsapp: $('#sitioWhatsapp').value.replace(/\D/g, ''),
             email: $('#sitioEmail').value.trim(),
             direccion: $('#sitioDireccion').value.trim(),
             horario: $('#sitioHorario').value.trim(),
-            instagram: $('#sitioInstagram').value.trim() || null,
-            facebook: $('#sitioFacebook').value.trim() || null,
-            linkedin: $('#sitioLinkedin').value.trim() || null,
+            instagram: /^https?:\/\//i.test($('#sitioInstagram').value.trim()) ? $('#sitioInstagram').value.trim() : null,
+            facebook: /^https?:\/\//i.test($('#sitioFacebook').value.trim()) ? $('#sitioFacebook').value.trim() : null,
+            linkedin: /^https?:\/\//i.test($('#sitioLinkedin').value.trim()) ? $('#sitioLinkedin').value.trim() : null,
             footer_desc: $('#sitioFooterDesc').value.trim(),
             seo_titulo: $('#sitioSeoTitulo').value.trim(),
             seo_descripcion: $('#sitioSeoDescripcion').value.trim(),
@@ -1414,6 +1514,11 @@ async function guardarSitio(e) {
 
         const { error } = await window.db.from('site_settings').upsert(payload);
         if (error) throw error;
+
+        if ((heroNueva || !heroImagen) && heroPathsViejos.length) {
+            await window.db.storage.from(window.APP_CONFIG.bucket).remove(heroPathsViejos);
+        }
+        heroPathsViejos = [];
 
         setStatus(status, '¡Contenido del sitio actualizado!', 'success');
         toast('Contenido del sitio actualizado.', 'success');
@@ -1425,6 +1530,220 @@ async function guardarSitio(e) {
         btn.disabled = false;
         btn.innerHTML = original;
     }
+}
+
+/* ============================================================
+   TÍTULOS DE LAS SECCIONES
+   ============================================================ */
+async function cargarSeccionesAdmin() {
+    const form = $('#seccionesForm');
+    if (!form) return;
+
+    const { data, error } = await window.db.from('site_settings').select('*').eq('id', 1).maybeSingle();
+    if (error) {
+        setStatus($('#seccionesStatus'), 'Error al cargar: ' + error.message, 'error');
+        return;
+    }
+
+    const d = data || {};
+    $('#secPropTag').value = d.prop_tag || '';
+    $('#secPropTitulo').value = d.prop_titulo || '';
+    $('#secPropSubtitulo').value = d.prop_subtitulo || '';
+    $('#secServTag').value = d.serv_tag || '';
+    $('#secServTitulo').value = d.serv_titulo || '';
+    $('#secServSubtitulo').value = d.serv_subtitulo || '';
+    $('#secTeamTag').value = d.team_tag || '';
+    $('#secTeamTitulo').value = d.team_titulo || '';
+    $('#secTeamSubtitulo').value = d.team_subtitulo || '';
+    $('#secTestTag').value = d.test_tag || '';
+    $('#secTestTitulo').value = d.test_titulo || '';
+    $('#secTestSubtitulo').value = d.test_subtitulo || '';
+    $('#secCtaTag').value = d.cta_tag || '';
+    $('#secCtaTitulo').value = d.cta_titulo || '';
+    $('#secCtaTexto').value = d.cta_texto || '';
+}
+
+function initSeccionesForm() {
+    const form = $('#seccionesForm');
+    if (!form) return;
+    form.addEventListener('submit', guardarSecciones);
+}
+
+async function guardarSecciones(e) {
+    e.preventDefault();
+    const status = $('#seccionesStatus');
+    const btn = $('#seccionesForm button[type="submit"]');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const payload = {
+            id: 1,
+            prop_tag: $('#secPropTag').value.trim(),
+            prop_titulo: $('#secPropTitulo').value.trim(),
+            prop_subtitulo: $('#secPropSubtitulo').value.trim(),
+            serv_tag: $('#secServTag').value.trim(),
+            serv_titulo: $('#secServTitulo').value.trim(),
+            serv_subtitulo: $('#secServSubtitulo').value.trim(),
+            team_tag: $('#secTeamTag').value.trim(),
+            team_titulo: $('#secTeamTitulo').value.trim(),
+            team_subtitulo: $('#secTeamSubtitulo').value.trim(),
+            test_tag: $('#secTestTag').value.trim(),
+            test_titulo: $('#secTestTitulo').value.trim(),
+            test_subtitulo: $('#secTestSubtitulo').value.trim(),
+            cta_tag: $('#secCtaTag').value.trim(),
+            cta_titulo: $('#secCtaTitulo').value.trim(),
+            cta_texto: $('#secCtaTexto').value.trim(),
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await window.db.from('site_settings').upsert(payload);
+        if (error) throw error;
+
+        setStatus(status, '¡Títulos actualizados!', 'success');
+        toast('Títulos de las secciones actualizados.', 'success');
+        await cargarSeccionesAdmin();
+    } catch (err) {
+        setStatus(status, 'Error: ' + (err.message || err), 'error');
+        toast('No se pudo guardar: ' + (err.message || err), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+}
+
+/* ============================================================
+   SERVICIOS
+   ============================================================ */
+async function cargarServiciosAdmin() {
+    const tbody = $('#serviciosTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6"><div class="spinner"></div></td></tr>';
+
+    const { data, error } = await window.db
+        .from('services')
+        .select('*')
+        .order('orden', { ascending: true })
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        tbody.innerHTML = `<tr><td colspan="6">Error: ${esc(error.message)}</td></tr>`;
+        return;
+    }
+
+    cacheServicios = data || [];
+    const count = $('#serviciosCount');
+    if (count) count.textContent = `${cacheServicios.length} servicio${cacheServicios.length === 1 ? '' : 's'}`;
+
+    if (!cacheServicios.length) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-concierge-bell"></i><p>Aún no hay servicios. Crea el primero.</p></div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = cacheServicios.map((s) => `
+        <tr>
+            <td>${Number(s.orden) || 0}</td>
+            <td><i class="fas ${esc(s.icono)}" style="font-size:1.2rem;color:#B8931F"></i></td>
+            <td><strong>${esc(s.titulo)}</strong></td>
+            <td style="max-width:320px">${esc(s.descripcion)}</td>
+            <td>${s.activo ? '<span class="badge-active">Visible</span>' : '<span class="badge-blocked">Oculto</span>'}</td>
+            <td>
+                <div class="cell-actions">
+                    <button class="btn-sm btn-edit" data-serv-edit="${esc(s.id)}"><i class="fas fa-pen"></i> Editar</button>
+                    <button class="btn-sm btn-danger" data-serv-del="${esc(s.id)}"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`).join('');
+
+    tbody.querySelectorAll('[data-serv-edit]').forEach((b) =>
+        b.addEventListener('click', () => openServicioForm(cacheServicios.find((x) => x.id === b.dataset.servEdit))));
+    tbody.querySelectorAll('[data-serv-del]').forEach((b) =>
+        b.addEventListener('click', () => borrarServicio(b.dataset.servDel)));
+}
+
+function initServiciosAdmin() {
+    $('#btnNewServicio')?.addEventListener('click', () => openServicioForm(null));
+    $('#btnCancelServicio')?.addEventListener('click', closeServicioForm);
+    $('#servicioForm')?.addEventListener('submit', guardarServicio);
+}
+
+function openServicioForm(s) {
+    const form = $('#servicioForm');
+    if (!form) return;
+    form.reset();
+    mostrarConAnimacion($('#servicioFormCard'));
+    const btnNuevo = $('#btnNewServicio');
+    if (btnNuevo) btnNuevo.disabled = true;
+    $('#servicioFormTitle').textContent = s ? 'Editar servicio' : 'Nuevo servicio';
+    setStatus($('#servicioStatus'), '', '');
+    $('#servicioId').value = s ? s.id : '';
+    $('#servicioIcono').value = s ? (s.icono || 'fa-house') : 'fa-house';
+    $('#servicioOrden').value = s ? (s.orden ?? 0) : cacheServicios.length + 1;
+    $('#servicioTitulo').value = s ? s.titulo : '';
+    $('#servicioDescripcion').value = s ? s.descripcion : '';
+    $('#servicioActivo').checked = s ? Boolean(s.activo) : true;
+    $('#servicioFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeServicioForm() {
+    const card = $('#servicioFormCard');
+    if (card) card.style.display = 'none';
+    const btn = $('#btnNewServicio');
+    if (btn) btn.disabled = false;
+}
+
+async function guardarServicio(e) {
+    e.preventDefault();
+    const status = $('#servicioStatus');
+    const id = $('#servicioId').value || null;
+    const titulo = $('#servicioTitulo').value.trim();
+    const descripcion = $('#servicioDescripcion').value.trim();
+
+    if (!titulo || !descripcion) {
+        setStatus(status, 'Completa el título y la descripción.', 'error');
+        return;
+    }
+
+    const payload = {
+        icono: $('#servicioIcono').value || 'fa-house',
+        titulo,
+        descripcion,
+        orden: Number($('#servicioOrden').value || 0),
+        activo: $('#servicioActivo').checked
+    };
+
+    const btn = $('#servicioForm button[type="submit"]');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const { error } = id
+            ? await window.db.from('services').update(payload).eq('id', id)
+            : await window.db.from('services').insert(payload);
+        if (error) throw error;
+
+        setStatus(status, '¡Servicio guardado!', 'success');
+        toast('Servicio guardado.', 'success');
+        await cargarServiciosAdmin();
+        setTimeout(closeServicioForm, 700);
+    } catch (err) {
+        setStatus(status, 'Error: ' + (err.message || err), 'error');
+        toast('No se pudo guardar: ' + (err.message || err), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+}
+
+async function borrarServicio(id) {
+    const ok = await confirmar('Eliminar servicio', 'Se eliminará esta tarjeta de la web. Esta acción no se puede deshacer.', 'Sí, eliminar');
+    if (!ok) return;
+    const { error } = await window.db.from('services').delete().eq('id', id);
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    toast('Servicio eliminado.', 'success');
+    await cargarServiciosAdmin();
 }
 
 /* ============================================================

@@ -94,6 +94,7 @@ async function init() {
     await cargarUbicacionesFiltro();
     await cargarEquipo();
     await cargarNosotros();
+    await cargarServicios();
     if (catalogoPermitido) {
         await cargarPropiedades();
         await cargarFavoritos();
@@ -306,13 +307,14 @@ async function cargarSitio() {
         const ogDesc = document.getElementById('ogDescription');
         if (ogDesc && data.seo_descripcion) ogDesc.setAttribute('content', data.seo_descripcion);
 
-        // Redes sociales
+        // Redes sociales (solo enlaces http/https)
         [['socialInstagram', data.instagram], ['socialFacebook', data.facebook], ['socialLinkedin', data.linkedin]]
             .forEach(([id, url]) => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                if (url && String(url).trim()) {
-                    el.href = url;
+                const seguro = /^https?:\/\//i.test(String(url || '').trim()) ? String(url).trim() : '';
+                if (seguro) {
+                    el.href = seguro;
                     el.hidden = false;
                 } else {
                     el.hidden = true;
@@ -322,10 +324,76 @@ async function cargarSitio() {
         const wa = document.getElementById('socialWhatsapp');
         if (wa) wa.href = `https://wa.me/${CONFIG.whatsapp}`;
 
+        // Títulos de las secciones
+        set('propTag', data.prop_tag);
+        set('propTitulo', data.prop_titulo);
+        set('propSubtitulo', data.prop_subtitulo);
+        set('servTag', data.serv_tag);
+        set('servTitulo', data.serv_titulo);
+        set('servSubtitulo', data.serv_subtitulo);
+        set('teamTag', data.team_tag);
+        set('teamTitulo', data.team_titulo);
+        set('teamSubtitulo', data.team_subtitulo);
+        set('testTag', data.test_tag);
+        set('testTitulo', data.test_titulo);
+        set('testSubtitulo', data.test_subtitulo);
+        set('ctaTag', data.cta_tag);
+        set('ctaTitulo', data.cta_titulo);
+        set('ctaTexto', data.cta_texto);
+
+        // Imagen de fondo del hero
+        const hero = document.querySelector('.hero');
+        if (hero && data.hero_imagen) {
+            hero.style.backgroundImage = `url("${data.hero_imagen}")`;
+        }
+
         // Refresca todos los enlaces con los datos nuevos
         applyConfig();
     } catch (e) {
         // Si la tabla aún no existe se mantienen los datos por defecto
+    }
+}
+
+/** Carga las tarjetas de servicios editables. */
+async function cargarServicios() {
+    const grid = document.getElementById('servicesGrid');
+    if (!grid || !window.isSupabaseReady || !window.isSupabaseReady()) return;
+
+    try {
+        const { data, error } = await window.db
+            .from('services')
+            .select('*')
+            .eq('activo', true)
+            .order('orden', { ascending: true })
+            .order('created_at', { ascending: true });
+
+        if (error) return;
+        if (!data || !data.length) {
+            grid.innerHTML = '';
+            return;
+        }
+
+        const permitidos = new Set([
+            'fa-house', 'fa-building', 'fa-key', 'fa-hand-holding-usd', 'fa-chart-line',
+            'fa-file-signature', 'fa-handshake', 'fa-map-location-dot', 'fa-camera',
+            'fa-ruler-combined', 'fa-user-tie', 'fa-scale-balanced', 'fa-coins',
+            'fa-city', 'fa-store', 'fa-tree', 'fa-water', 'fa-car',
+            'fa-shield-halved', 'fa-star'
+        ]);
+
+        grid.innerHTML = data.map((s) => {
+            const icono = permitidos.has(s.icono) ? s.icono : 'fa-house';
+            return `
+                <div class="service-card reveal">
+                    <div class="service-icon"><i class="fas ${icono}" aria-hidden="true"></i></div>
+                    <h3>${escapeHtml(s.titulo)}</h3>
+                    <p>${escapeHtml(s.descripcion)}</p>
+                </div>`;
+        }).join('');
+
+        initReveal();
+    } catch (e) {
+        // Si la tabla no existe, se mantienen las tarjetas estáticas
     }
 }
 
