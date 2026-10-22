@@ -290,6 +290,7 @@ create table if not exists public.properties (
     codigo          text unique,
     titulo          text not null,
     tipo            text not null,
+    operacion       text not null default 'Venta',
     ubicacion       text not null,
     zona            text,
     asesor_id       uuid references public.asesores(id) on delete set null,
@@ -309,6 +310,19 @@ create table if not exists public.properties (
     created_at      timestamptz not null default now(),
     updated_at      timestamptz not null default now()
 );
+
+-- Compatibilidad: agrega la operación (Venta/Alquiler/...) a bases existentes
+alter table public.properties add column if not exists operacion text;
+update public.properties
+set operacion = 'Venta'
+where operacion is null
+   or operacion not in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso');
+alter table public.properties alter column operacion set default 'Venta';
+alter table public.properties alter column operacion set not null;
+
+alter table public.properties drop constraint if exists properties_operacion_check;
+alter table public.properties add constraint properties_operacion_check
+    check (operacion in ('Venta', 'Alquiler', 'Alquiler con opción a compra', 'Traspaso'));
 
 alter table public.properties enable row level security;
 

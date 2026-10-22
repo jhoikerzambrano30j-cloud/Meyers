@@ -227,6 +227,7 @@ function mapPropiedad(p) {
         codigo: p.codigo,
         titulo: p.titulo,
         tipo: p.tipo,
+        operacion: p.operacion || 'Venta',
         ubicacion: p.ubicacion,
         zona: p.zona,
         asesor: p.asesores ? p.asesores.nombre : null,
@@ -368,7 +369,7 @@ function cardTemplate(prop, i = 0) {
                 <div class="property-price">${formatPrice(prop.precio)}</div>
             </div>
             <div class="property-content">
-                <p class="property-type">${escapeHtml(prop.tipo)}</p>
+                <p class="property-type">${escapeHtml(prop.operacion || 'Venta')} · ${escapeHtml(prop.tipo)}</p>
                 <h3 class="property-title">${escapeHtml(prop.titulo)}</h3>
                 <p class="property-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</p>
                 <div class="property-features">${features}</div>
@@ -409,6 +410,7 @@ function applyFilters() {
         $('#propiedades')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
         return;
     }
+    const operacion = $('#operacion')?.value || '';
     const tipo = $('#tipo')?.value || '';
     const ubicacion = $('#ubicacion')?.value || '';
     const precioOption = $('#precio')?.selectedOptions?.[0];
@@ -424,6 +426,7 @@ function applyFilters() {
     const soloDestacadas = Boolean($('#soloDestacadas')?.checked);
 
     state.visibles = PROPIEDADES.filter((prop) => {
+        if (operacion && slug(prop.operacion || 'Venta') !== operacion) return false;
         if (tipo && slug(prop.tipo) !== tipo) return false;
         if (ubicacion && slug(prop.ubicacion) !== ubicacion) return false;
         if (zona && prop.zona !== zona) return false;
@@ -439,7 +442,7 @@ function applyFilters() {
     });
 
     state.filtrosActivos = Boolean(
-        tipo || ubicacion || min !== '' || max !== '' || zona ||
+        operacion || tipo || ubicacion || min !== '' || max !== '' || zona ||
         habitaciones || banos || areaMin !== '' || areaMax !== '' ||
         caracteristica || soloDestacadas
     );
@@ -723,7 +726,7 @@ function modalTemplate(prop) {
         </div>
         <div class="modal-gallery" id="modalGallery"></div>
         <div class="modal-content">
-            <p class="property-type">${escapeHtml(prop.tipo)}</p>
+            <p class="property-type">${escapeHtml(prop.operacion || 'Venta')} · ${escapeHtml(prop.tipo)}</p>
             <h2 id="modalTitle">${escapeHtml(prop.titulo)}</h2>
             <div class="modal-meta">
                 <span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>${escapeHtml(prop.ubicacion)}${prop.zona ? ' · ' + escapeHtml(prop.zona) : ''}</span>

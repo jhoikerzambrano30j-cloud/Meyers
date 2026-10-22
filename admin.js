@@ -214,7 +214,7 @@ async function loadProperties() {
         <tr>
             <td>${p.imagen ? `<img class="table-thumb" src="${esc(p.imagen)}" alt="">` : '<div class="table-thumb"></div>'}</td>
             <td><strong>${esc(p.codigo || '—')}</strong></td>
-            <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
+            <td>${esc(p.titulo)}<br><small style="color:#888">${esc(p.operacion || 'Venta')} · ${esc(p.tipo)} · ${esc(p.ubicacion)}</small></td>
             <td>${money(p.precio)}</td>
             <td>${p.destacada ? '<span style="color:#1e8e4e;font-weight:700">Sí</span>' : 'No'}</td>
             <td>${fecha(p.created_at)}</td>
@@ -458,6 +458,7 @@ async function openForm(id, lista) {
         $('#asesor').value = p.asesor_id || '';
         $('#codigo').value = p.codigo || '';
         $('#titulo').value = p.titulo || '';
+        $('#operacion').value = p.operacion || '';
         asegurarTipoOpcion(p.tipo);
         $('#tipo').value = p.tipo || '';
         $('#ubicacion').value = p.ubicacion || '';
@@ -591,6 +592,7 @@ async function guardarPropiedad(e) {
         const payload = {
             titulo: titulo.toUpperCase(),
             tipo: $('#tipo').value,
+            operacion: $('#operacion').value,
             ubicacion: ubicacionVal,
             zona: zonaVal,
             asesor_id: $('#asesor').value || null,
