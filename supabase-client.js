@@ -48,13 +48,16 @@
         const maxWidth = (options && options.maxWidth) || opts.maxWidth || 1600;
         const quality = (options && options.quality) || opts.quality || 0.8;
 
-        if (!file || !file.type.startsWith('image/')) return file;
+        if (!file || !file.type || !file.type.startsWith('image/')) {
+            throw new Error('El archivo no es una imagen válida.');
+        }
 
         let bitmap;
         try {
             bitmap = await createImageBitmap(file);
         } catch (e) {
-            return file; // el navegador no pudo leerla, se sube tal cual
+            // Si el navegador no puede leerla, NO se sube el original (evita archivos pesados)
+            throw new Error('No se pudo procesar la imagen. Usa JPG, PNG o WebP.');
         }
 
         let { width, height } = bitmap;
@@ -72,23 +75,28 @@
 
         const toBlob = (type, q) => new Promise((resolve) => canvas.toBlob(resolve, type, q));
 
+        // Siempre se guarda optimizada (WebP; JPEG solo como respaldo)
         let blob = await toBlob('image/webp', quality);
-        if (!blob) blob = await toBlob('image/jpeg', quality); // respaldo
-        return blob || file;
+        if (!blob) blob = await toBlob('image/jpeg', quality);
+        if (!blob) throw new Error('No se pudo optimizar la imagen.');
+        return blob;
     };
 
     /** Sube un archivo al bucket y devuelve { url, path }. */
     window.subirImagen = async function (fileOrBlob, extension) {
         if (!window.isSupabaseReady()) throw new Error('Supabase no está configurado.');
 
-        const ext = extension || (fileOrBlob.type === 'image/webp' ? 'webp'
-            : fileOrBlob.type === 'image/jpeg' ? 'jpg' : 'png');
+        const tipo = fileOrBlob.type || 'image/webp';
+        const ext = extension || (tipo === 'image/webp' ? 'webp'
+            : tipo === 'image/jpeg' ? 'jpg'
+            : tipo === 'image/png' ? 'png'
+            : 'webp');
 
         const nombre = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())) + '.' + ext;
         const cfg = window.APP_CONFIG;
         const { error } = await window.db.storage
             .from(cfg.bucket)
-            .upload(nombre, fileOrBlob, { contentType: fileOrBlob.type || 'image/webp' });
+            .upload(nombre, fileOrBlob, { contentType: tipo });
 
         if (error) throw error;
 

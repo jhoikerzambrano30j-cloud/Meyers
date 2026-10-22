@@ -947,8 +947,13 @@ function initAsesorForm() {
 }
 
 function agregarFotoAsesor(fileList) {
+    const MAX_MB = 15;
     const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
     if (!file) return;
+    if (file.size > MAX_MB * 1024 * 1024) {
+        alert('La foto supera ' + MAX_MB + ' MB. Usa una imagen más liviana.');
+        return;
+    }
     if (asesorFoto && asesorFoto.esNueva && asesorFoto.url) URL.revokeObjectURL(asesorFoto.url);
     asesorFoto = { url: URL.createObjectURL(file), path: null, thumb: null, thumb_path: null, blob: file, esNueva: true };
     renderAsesorThumb();
