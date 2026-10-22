@@ -591,6 +591,7 @@ table.data .cell-actions {
 
 .btn-gold {
     background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
+    background-origin: border-box;
     color: #fff;
 }
 
@@ -1806,6 +1807,7 @@ table.compare-table tr:hover td {
 
 .admin-tab.active {
     background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
+    background-origin: border-box;
     color: #fff;
     border-color: transparent;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
