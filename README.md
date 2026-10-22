@@ -91,6 +91,7 @@ Proyecto/
   métricas e historial.
 - **PWA:** se puede instalar en el teléfono.
 - **Página 404** personalizada con el diseño de la marca.
+- **Móvil y tablet:** menú con la sesión integrada, buscador compacto, fotos en alta calidad según la pantalla, campos sin zoom automático en iPhone y botones táctiles de 44 px.
 - **Sin diálogos nativos:** avisos y confirmaciones usan el diseño de la marca.
 - **Contacto directo:** WhatsApp, teléfono y correo. No hay formulario de
   contacto ni bandeja de mensajes.

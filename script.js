@@ -205,6 +205,7 @@ async function init() {
     initReveal();
     initScrollEffects();
     initMobileMenu();
+    initMobileAuthSlot();
     initActiveNav();
     initFiltersDrawer();
     poblarTipos();
@@ -392,6 +393,22 @@ async function cargarNosotros() {
     }
 }
 
+/** Genera un srcset responsive para la imagen del hero (Unsplash). */
+function srcsetHero(url) {
+    if (!url) return '';
+    try {
+        const u = new URL(url, window.location.href);
+        if (u.hostname.includes('images.unsplash.com') && u.searchParams.has('w')) {
+            return [800, 1200, 1600, 1920, 2400].map((w) => {
+                const v = new URL(u.href);
+                v.searchParams.set('w', String(w));
+                return `${v.href} ${w}w`;
+            }).join(', ');
+        }
+    } catch (e) { /* URL inválida: se usa la original */ }
+    return '';
+}
+
 /** Carga la configuración general editable (hero, contacto, pie y SEO). */
 async function cargarSitio() {
     if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
@@ -476,10 +493,13 @@ async function cargarSitio() {
         set('ctaTitulo', data.cta_titulo);
         set('ctaTexto', data.cta_texto);
 
-        // Imagen de fondo del hero
-        const hero = document.querySelector('.hero');
-        if (hero && data.hero_imagen) {
-            hero.style.backgroundImage = `url("${data.hero_imagen}")`;
+        // Imagen de fondo del hero (responsive y en alta calidad)
+        const heroBg = document.getElementById('heroBg');
+        if (heroBg && data.hero_imagen) {
+            heroBg.src = data.hero_imagen;
+            const srcset = srcsetHero(data.hero_imagen);
+            if (srcset) heroBg.srcset = srcset;
+            else heroBg.removeAttribute('srcset');
         }
 
         // Refresca todos los enlaces con los datos nuevos
@@ -706,6 +726,11 @@ function cardTemplate(prop, i = 0) {
         ? `<span class="property-badge ${escapeHtml(prop.badgeClass)}">${escapeHtml(prop.badge)}</span>` : '';
 
     const activo = favoritos.has(prop.id) ? 'active' : '';
+    const thumb = prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG;
+    const large = prop.imagen || thumb;
+    const srcset = large && large !== thumb
+        ? `${escapeHtml(thumb)} 600w, ${escapeHtml(large)} 1600w`
+        : '';
 
     return `
         <article class="property-card" data-id="${escapeHtml(prop.id)}" role="button" tabindex="0"
@@ -716,7 +741,7 @@ function cardTemplate(prop, i = 0) {
                 <button type="button" class="fav-btn ${activo}" data-fav="${escapeHtml(prop.id)}" aria-label="Guardar en favoritos">
                     <i class="fas fa-heart" aria-hidden="true"></i>
                 </button>
-                <img src="${escapeHtml(prop.imagenThumb || prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
+                <img src="${escapeHtml(thumb)}"${srcset ? ` srcset="${srcset}" sizes="(max-width: 600px) 100vw, (max-width: 992px) 50vw, 360px"` : ''} alt="${escapeHtml(prop.titulo)}" loading="lazy" decoding="async"
                      onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <div class="property-price"><span>${formatPrice(prop.precio)}</span></div>
             </div>
@@ -1194,7 +1219,7 @@ function modalTemplate(prop) {
     return `
         <div class="modal-hero">
             <img class="modal-hero-bg" id="modalBg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="" aria-hidden="true">
-            <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" decoding="async"
+            <img id="modalMainImg" src="${escapeHtml(prop.imagen || PLACEHOLDER_IMG)}" alt="${escapeHtml(prop.titulo)}" fetchpriority="high" decoding="async"
                  onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <div class="property-price"><span>${formatPrice(prop.precio)}</span></div>
         </div>
@@ -1395,6 +1420,27 @@ function initTestimonials() {
 /* ============================================================
    NAVBAR / NAVEGACIÓN
    ============================================================ */
+/** En móvil mueve el área de sesión al menú; en tablet/escritorio la devuelve a la barra. */
+function initMobileAuthSlot() {
+    const authArea = document.getElementById('authArea');
+    const slot = document.getElementById('navAuthMobile');
+    const navActions = document.querySelector('.nav-actions');
+    if (!authArea || !slot || !navActions) return;
+
+    const mq = window.matchMedia('(max-width: 600px)');
+    const ubicar = () => {
+        if (mq.matches) {
+            if (authArea.parentElement !== slot) slot.appendChild(authArea);
+        } else if (authArea.parentElement !== navActions) {
+            navActions.insertBefore(authArea, navActions.firstChild);
+        }
+    };
+
+    if (mq.addEventListener) mq.addEventListener('change', ubicar);
+    else if (mq.addListener) mq.addListener(ubicar);
+    ubicar();
+}
+
 function initScrollEffects() {
     const navbar = $('#navbar');
     const button = $('#backToTop');
@@ -1415,6 +1461,25 @@ function initScrollEffects() {
     if (button) {
         button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' }));
     }
+
+    // En móvil/tablet el WhatsApp se oculta mientras el hero/buscador está a la vista
+    const wa = $('.whatsapp-float');
+    const hero = $('#inicio');
+    let heroVisible = true;
+    const updateWa = () => {
+        if (!wa) return;
+        const hide = heroVisible && window.matchMedia('(max-width: 1100px)').matches;
+        wa.classList.toggle('is-hidden', hide);
+    };
+    if (hero && 'IntersectionObserver' in window) {
+        const waObserver = new IntersectionObserver((entries) => {
+            heroVisible = entries.some((entry) => entry.isIntersecting);
+            updateWa();
+        }, { threshold: 0.05 });
+        waObserver.observe(hero);
+    }
+    window.addEventListener('resize', updateWa, { passive: true });
+    updateWa();
 }
 
 function initActiveNav() {
