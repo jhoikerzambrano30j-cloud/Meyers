@@ -842,7 +842,7 @@ table.data .cell-actions {
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    box-shadow: 0 5px 20px rgba(225, 189, 69, 0.5);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
     z-index: 999;
     transition: var(--transition);
 }
@@ -1808,7 +1808,7 @@ table.compare-table tr:hover td {
     background: linear-gradient(135deg, #EBD06A 0%, var(--gold) 45%, #B8931F 100%);
     color: #fff;
     border-color: transparent;
-    box-shadow: 0 8px 18px rgba(225, 189, 69, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
 /* Tarjetas de panel con franja dorada */
