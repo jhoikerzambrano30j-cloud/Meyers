@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meyer's Inmobiliaria — Innovaciones de la plataforma</title>
+<meta name="description" content="Seis innovaciones de la plataforma digital de Meyer's Inmobiliaria: acceso privado, favoritos, panel por roles, comparador, búsqueda inteligente y passkeys con Face ID/huella.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'Master Of Break';
+        src: url('fonts/MasterOfBreak.ttf') format('truetype');
+        font-display: swap;
+    }
+
+    :root {
+        --gold: #E1BD45;
+        --gold-light: #F0D77C;
+        --gold-dark: #8A6D16;
+        --dark: #1A1A1A;
+        --off: #F5F5F5;
+        --silver: #9D9D9C;
+        --chrome: linear-gradient(135deg, #F5E39B 0%, #E1BD45 42%, #B8931F 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+    }
+
+    body {
+        font-family: 'Montserrat', Arial, sans-serif;
+        font-size: 9.6pt;
+        line-height: 1.52;
+        color: var(--dark);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    @page {
+        size: A4;
+        margin: 15mm 14mm;
+    }
+
+    @page :first {
+        margin: 0;
+    }
+
+    img { max-width: 100%; }
+
+    /* ==================== PORTADA ==================== */
+    .cover {
+        width: 210mm;
+        height: 297mm;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 28mm 24mm;
+        color: #fff;
+        background:
+            radial-gradient(circle at 78% 16%, rgba(225, 189, 69, 0.20) 0%, rgba(225, 189, 69, 0) 34%),
+            radial-gradient(circle at 12% 90%, rgba(225, 189, 69, 0.12) 0%, rgba(225, 189, 69, 0) 30%),
+            linear-gradient(145deg, #101010 0%, #1a1813 55%, #292317 100%);
+    }
+
+    .cover::before {
+        content: '';
+        position: absolute;
+        inset: 12mm;
+        border: 1px solid rgba(225, 189, 69, 0.45);
+        border-radius: 4px;
+        pointer-events: none;
+    }
+
+    .cover::after {
+        content: '';
+        position: absolute;
+        width: 420px;
+        height: 420px;
+        right: -190px;
+        bottom: -210px;
+        border: 1px solid rgba(225, 189, 69, 0.18);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .cover .logo {
+        width: 112px;
+        height: 112px;
+        object-fit: contain;
+        margin-bottom: 24px;
+        filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+    }
+
+    .cover .eyebrow {
+        margin: 0 0 16px;
+        font-size: 8pt;
+        font-weight: 700;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+
+    .cover h1 {
+        margin: 0;
+        max-width: 150mm;
+        font-size: 29pt;
+        line-height: 1.16;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .cover h1 span {
+        display: block;
+        margin-top: 8px;
+        font-family: 'Master Of Break', cursive;
+        font-size: 37pt;
+        line-height: 1.20;
+        font-weight: 400;
+        color: var(--gold);
+        -webkit-text-fill-color: var(--gold);
+        filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.25));
+    }
+
+    .cover .sub {
+        max-width: 132mm;
+        margin: 22px 0 0;
+        font-size: 10pt;
+        line-height: 1.65;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .cover .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        margin-top: 26px;
+        padding: 7px 14px;
+        border: 1px solid rgba(225, 189, 69, 0.55);
+        border-radius: 30px;
+        color: var(--gold-light);
+        font-size: 7.6pt;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+    }
+
+    .cover .url {
+        position: absolute;
+        left: 24mm;
+        bottom: 20mm;
+        margin: 0;
+        font-size: 8.5pt;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    .cover .url strong { color: var(--gold); }
+
+    /* ==================== PÁGINAS ==================== */
+    .page {
+        page-break-before: always;
+        min-height: 258mm;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page:last-child {
+        min-height: 0;
+    }
+
+    .page:last-child .page-foot {
+        margin-top: 16px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 8px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid #ececec;
+        font-size: 7.4pt;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--silver);
+    }
+
+    .page-head .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--chrome);
+        color: #fff;
+        font-size: 7.5pt;
+        letter-spacing: 0;
+    }
+
+    .page-head .brand {
+        margin-left: auto;
+        font-family: 'Master Of Break', cursive;
+        font-size: 15pt;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--dark);
+    }
+
+    h2 {
+        margin: 0 0 10px;
+        font-size: 21pt;
+        line-height: 1.18;
+        letter-spacing: -0.4px;
+        font-weight: 700;
+    }
+
+    h2 .accent {
+        color: var(--gold-dark);
+    }
+
+    .lead {
+        margin: 0 0 18px;
+        max-width: 176mm;
+        color: #565656;
+        font-size: 10pt;
+        line-height: 1.65;
+    }
+
+    h3 {
+        margin: 0 0 6px;
+        font-size: 11.5pt;
+        line-height: 1.25;
+    }
+
+    p { margin: 0 0 8px; }
+    ul { margin: 0; padding-left: 14px; }
+    li { margin-bottom: 4px; }
+    b { color: var(--dark); }
+
+    .muted { color: var(--silver); }
+    .gold { color: var(--gold-dark); }
+
+    /* ==================== TARJETAS DE INNOVACIÓN ==================== */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px;
+    }
+
+    .feature-card {
+        position: relative;
+        padding: 15px 16px 14px;
+        border: 1px solid #e7e7e7;
+        border-top: 3px solid var(--gold);
+        border-radius: 12px;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .feature-card .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 9px;
+    }
+
+    .feature-card .icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(225, 189, 69, 0.14);
+        color: var(--gold-dark);
+        font-size: 13pt;
+    }
+
+    .feature-card .n {
+        font-family: 'Master Of Break', cursive;
+        font-size: 19pt;
+        line-height: 1;
+        color: #d8d8d8;
+    }
+
+    .feature-card h3 {
+        margin-bottom: 5px;
+        font-size: 10.4pt;
+    }
+
+    .feature-card p {
+        margin: 0;
+        font-size: 8.8pt;
+        line-height: 1.5;
+        color: #5c5c5c;
+    }
+
+    .feature-card .benefit {
+        display: inline-block;
+        margin-top: 9px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        background: #fbf6e7;
+        color: var(--gold-dark);
+        font-size: 7.4pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .quote {
+        margin-top: 16px;
+        padding: 12px 16px;
+        border-left: 4px solid var(--gold);
+        background: #fbfaf6;
+        border-radius: 0 10px 10px 0;
+        font-family: 'Master Of Break', cursive;
+        font-size: 16pt;
+        line-height: 1.3;
+        color: var(--dark);
+    }
+
+    /* ==================== BLOQUES DE EXPERIENCIA ==================== */
+    .experience-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px;
+    }
+
+    .exp-card {
+        padding: 15px 16px;
+        border: 1px solid #e7e7e7;
+        border-radius: 12px;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .exp-card .head {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 8px;
+    }
+
+    .exp-card .head i {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(225, 189, 69, 0.14);
+        color: var(--gold-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12pt;
+        flex-shrink: 0;
+    }
+
+    .exp-card h3 { margin: 0; font-size: 10.6pt; }
+    .exp-card p { font-size: 8.6pt; color: #5c5c5c; margin-bottom: 7px; }
+    .exp-card ul { padding-left: 13px; }
+    .exp-card li { font-size: 8.5pt; margin-bottom: 3px; }
+
+    .mock-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 9px 10px;
+        border: 1px solid rgba(225, 189, 69, 0.55);
+        border-radius: 30px;
+        background: #fff;
+        box-shadow: 0 5px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .mock-search i { color: var(--gold-dark); font-size: 9pt; }
+    .mock-search span {
+        flex: 1;
+        font-size: 7.3pt;
+        color: #777;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mock-search .go {
+        flex: 0 0 auto;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: var(--chrome);
+        color: #fff;
+        font-size: 6.8pt;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .mock-chips {
+        display: flex;
+        gap: 5px;
+        margin-top: 7px;
+    }
+
+    .mock-chips span {
+        padding: 3px 7px;
+        border-radius: 20px;
+        border: 1px solid rgba(225, 189, 69, 0.45);
+        background: #fff;
+        font-size: 6.8pt;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .mock-chips .dark {
+        background: #171717;
+        color: var(--gold-light);
+        border-color: rgba(225, 189, 69, 0.7);
+    }
+
+    /* ==================== ROLES Y PANEL ==================== */
+    .roles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .role {
+        padding: 14px 14px 12px;
+        border: 1px solid #e7e7e7;
+        border-radius: 12px;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .role .role-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(225, 189, 69, 0.14);
+        color: var(--gold-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12pt;
+        margin-bottom: 8px;
+    }
+
+    .role h3 { font-size: 10.5pt; margin-bottom: 6px; }
+    .role p { font-size: 8.3pt; color: #5c5c5c; margin: 0; }
+    .role .limit {
+        display: inline-block;
+        margin-top: 7px;
+        font-size: 7pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--gold-dark);
+    }
+
+    .modules {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px 10px;
+        padding: 14px 16px;
+        border: 1px solid rgba(225, 189, 69, 0.3);
+        border-radius: 12px;
+        background: #fbfaf6;
+    }
+
+    .module {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 8.6pt;
+        font-weight: 600;
+        color: #444;
+    }
+
+    .module i {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid rgba(225, 189, 69, 0.4);
+        color: var(--gold-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8pt;
+        flex-shrink: 0;
+    }
+
+    .callout {
+        margin-top: 14px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: #171717;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 8.8pt;
+        line-height: 1.55;
+    }
+
+    .callout strong { color: var(--gold-light); }
+    .callout i { color: var(--gold); margin-right: 6px; }
+
+    /* ==================== PASSKEY ==================== */
+    .passkey-hero {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 22px;
+        border-radius: 14px;
+        border: 1px solid rgba(225, 189, 69, 0.55);
+        background:
+            radial-gradient(circle at 88% 20%, rgba(225, 189, 69, 0.18) 0%, rgba(225, 189, 69, 0) 38%),
+            linear-gradient(135deg, #171717 0%, #2a2418 100%);
+        color: #fff;
+        margin-bottom: 14px;
+        break-inside: avoid;
+    }
+
+    .passkey-hero .big-icon {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: rgba(225, 189, 69, 0.14);
+        border: 1px solid rgba(225, 189, 69, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25pt;
+        color: var(--gold);
+        flex-shrink: 0;
+    }
+
+    .passkey-hero h3 {
+        margin: 0 0 4px;
+        font-family: 'Master Of Break', cursive;
+        font-size: 22pt;
+        font-weight: 400;
+        color: var(--gold);
+        -webkit-text-fill-color: var(--gold);
+    }
+
+    .passkey-hero p {
+        margin: 0;
+        font-size: 8.8pt;
+        color: rgba(255, 255, 255, 0.74);
+    }
+
+    .passkey-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+        margin-bottom: 14px;
+    }
+
+    .pstep {
+        padding: 12px 12px;
+        border: 1px solid #e7e7e7;
+        border-radius: 10px;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .pstep .n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 21px;
+        height: 21px;
+        border-radius: 50%;
+        background: var(--chrome);
+        color: #fff;
+        font-size: 7.5pt;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .pstep h4 { margin: 0 0 3px; font-size: 9pt; }
+    .pstep p { margin: 0; font-size: 7.9pt; color: #666; line-height: 1.45; }
+
+    .security-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px 14px;
+        margin-bottom: 12px;
+    }
+
+    .sec {
+        display: flex;
+        gap: 8px;
+        font-size: 8.3pt;
+        color: #4d4d4d;
+        line-height: 1.45;
+    }
+
+    .sec i {
+        color: var(--gold-dark);
+        font-size: 9pt;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .sec strong { display: block; color: var(--dark); font-size: 8.6pt; }
+
+    .note {
+        padding: 10px 14px;
+        border-left: 4px solid var(--gold);
+        background: #fbf6e7;
+        border-radius: 0 8px 8px 0;
+        font-size: 8.3pt;
+        line-height: 1.55;
+        color: #5b4a17;
+    }
+
+    .note strong { color: #4a3a0e; }
+
+    /* ==================== COMPARATIVA ==================== */
+    .compare {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.2pt;
+        margin-bottom: 10px;
+    }
+
+    .compare th {
+        padding: 8px 9px;
+        background: var(--dark);
+        color: #fff;
+        text-align: left;
+        font-size: 7.2pt;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border: none;
+    }
+
+    .compare th:first-child { border-radius: 8px 0 0 0; width: 40%; }
+    .compare th:last-child { border-radius: 0 8px 0 0; }
+    .compare th.meyers { color: var(--gold-light); }
+
+    .compare td {
+        padding: 6.5px 9px;
+        border-bottom: 1px solid #ededed;
+        vertical-align: middle;
+    }
+
+    .compare tr:nth-child(even) td { background: #fbfbf9; }
+    .compare td:first-child { font-weight: 600; color: #333; }
+    .compare td .yes { color: #1e8e4e; font-weight: 700; }
+    .compare td .partial { color: var(--gold-dark); font-weight: 700; }
+    .compare td .no { color: #999; font-weight: 600; }
+    .compare td i { margin-right: 4px; }
+
+    .compare-note {
+        margin: 0 0 14px;
+        font-size: 7.4pt;
+        color: var(--silver);
+        line-height: 1.45;
+    }
+
+    .benefits {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 12px;
+    }
+
+    .benefit-card {
+        padding: 10px 12px;
+        border: 1px solid #e7e7e7;
+        border-radius: 10px;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .benefit-card strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--gold-dark);
+        font-size: 9pt;
+    }
+
+    .benefit-card span {
+        font-size: 7.9pt;
+        color: #5c5c5c;
+        line-height: 1.45;
+    }
+
+    /* ==================== EXTRAS Y CIERRE ==================== */
+    .extras {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 7px;
+        margin-bottom: 14px;
+    }
+
+    .extra {
+        padding: 10px 8px;
+        border: 1px solid #e7e7e7;
+        border-radius: 10px;
+        background: #fff;
+        text-align: center;
+        break-inside: avoid;
+    }
+
+    .extra i {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--gold-dark);
+        font-size: 14pt;
+    }
+
+    .extra strong {
+        display: block;
+        font-size: 7.6pt;
+        line-height: 1.25;
+        margin-bottom: 2px;
+    }
+
+    .extra span {
+        font-size: 6.8pt;
+        line-height: 1.35;
+        color: #777;
+    }
+
+    .contact-card {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 18px 20px;
+        border: 1px solid rgba(225, 189, 69, 0.45);
+        border-radius: 14px;
+        background: #fbfaf6;
+        break-inside: avoid;
+    }
+
+    .contact-card .qr {
+        width: 92px;
+        height: 92px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        background: #fff;
+        padding: 5px;
+        border: 1px solid #e5e5e5;
+    }
+
+    .contact-card h3 {
+        margin: 0 0 4px;
+        font-size: 13pt;
+    }
+
+    .contact-card p {
+        margin: 0 0 6px;
+        font-size: 8.4pt;
+        color: #555;
+    }
+
+    .contact-lines {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3px 14px;
+        font-size: 8pt;
+        color: #444;
+    }
+
+    .contact-lines span i {
+        color: var(--gold-dark);
+        width: 13px;
+        margin-right: 4px;
+    }
+
+    .closing {
+        margin-top: 14px;
+        text-align: center;
+    }
+
+    .closing .script {
+        font-family: 'Master Of Break', cursive;
+        font-size: 25pt;
+        line-height: 1.2;
+        color: var(--gold-dark);
+        -webkit-text-fill-color: var(--gold-dark);
+    }
+
+    .closing p {
+        margin: 4px 0 0;
+        color: var(--silver);
+        font-size: 8pt;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .page-foot {
+        margin-top: auto;
+        padding-top: 8px;
+        border-top: 1px solid #ececec;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 7pt;
+        color: var(--silver);
+        letter-spacing: 0.4px;
+    }
+
+    .page-foot strong { color: var(--gold-dark); }
+</style>
+</head>
+<body>
+
+<!-- ==================== PORTADA ==================== -->
+<section class="cover">
+    <img src="img/logo-meyer.png" alt="Meyer's Inmobiliaria" class="logo">
+    <p class="eyebrow">Meyer's Inmobiliaria · Plataforma digital</p>
+    <h1>Más que una página web.<span>Una experiencia inmobiliaria.</span></h1>
+    <p class="sub">Seis innovaciones que sus clientes van a usar y que no son lo habitual en una web de agencia. Una plataforma privada, segura y autogestionable.</p>
+    <div class="badge"><i class="fas fa-star" aria-hidden="true"></i> Innovaciones · Octubre 2026</div>
+    <p class="url"><strong>meyers-mu.vercel.app</strong></p>
+</section>
+
+<!-- ==================== 01 · LA DIFERENCIA ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">01</span><span>La diferencia</span><span class="brand">Meyer's</span></div>
+    <h2>No es una web más.<br><span class="accent">Es una ventaja competitiva.</span></h2>
+    <p class="lead">La mayoría de las inmobiliarias usa una plantilla: catálogo público, formulario y poco más. Meyer's tiene una plataforma privada, segura y autogestionable, pensada para que el cliente viva una experiencia y la inmobiliaria trabaje mejor.</p>
+
+    <div class="feature-grid">
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-key" aria-hidden="true"></i></span><span class="n">01</span></div>
+            <h3>Acceso privado</h3>
+            <p>Inicio de sesión que abre un catálogo exclusivo para miembros. Las propiedades no quedan expuestas a cualquiera.</p>
+            <span class="benefit">Exclusividad</span>
+        </article>
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-heart" aria-hidden="true"></i></span><span class="n">02</span></div>
+            <h3>Favoritos que vuelven</h3>
+            <p>El cliente guarda las propiedades que le gustan y las encuentra en su cuenta cuando regrese.</p>
+            <span class="benefit">Fidelización</span>
+        </article>
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span><span class="n">03</span></div>
+            <h3>Panel por rangos</h3>
+            <p>Usuario, Administrador y Master. Cada persona ve y hace exactamente lo que le corresponde.</p>
+            <span class="benefit">Control</span>
+        </article>
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-columns" aria-hidden="true"></i></span><span class="n">04</span></div>
+            <h3>Comparador</h3>
+            <p>Hasta cuatro propiedades lado a lado, con precio, ubicación, medidas y características.</p>
+            <span class="benefit">Claridad</span>
+        </article>
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></span><span class="n">05</span></div>
+            <h3>Búsqueda inteligente</h3>
+            <p>El cliente escribe como habla. El sistema busca en toda la descripción y en las características.</p>
+            <span class="benefit">Precisión</span>
+        </article>
+        <article class="feature-card">
+            <div class="top"><span class="icon"><i class="fas fa-fingerprint" aria-hidden="true"></i></span><span class="n">06</span></div>
+            <h3>Face ID y huella</h3>
+            <p>Passkeys con estándar WebAuthn para entrar sin contraseña, con la seguridad del dispositivo.</p>
+            <span class="benefit">Confianza</span>
+        </article>
+    </div>
+
+    <div class="quote">“La diferencia no está en una sola función: está en cómo se conectan todas.”</div>
+
+    <div class="page-foot"><span>Presentación de plataforma · Octubre 2026</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 02 · EXPERIENCIA DEL CLIENTE ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">02</span><span>Experiencia del cliente</span><span class="brand">Meyer's</span></div>
+    <h2>Del primer clic<br><span class="accent">a la decisión.</span></h2>
+    <p class="lead">Una experiencia pensada para que el cliente encuentre, guarde y compare con facilidad. Menos fricción, más confianza.</p>
+
+    <div class="experience-grid">
+        <article class="exp-card">
+            <div class="head"><i class="fas fa-lock" aria-hidden="true"></i><h3>Un club privado</h3></div>
+            <p>El catálogo se abre solo para clientes registrados. La privacidad se convierte en parte del valor.</p>
+            <ul>
+                <li>Inicio de sesión con correo y contraseña.</li>
+                <li>Sesión que se cierra a los 10 minutos de inactividad.</li>
+                <li>Roles: usuario, administrador y master.</li>
+            </ul>
+        </article>
+
+        <article class="exp-card">
+            <div class="head"><i class="fas fa-heart" aria-hidden="true"></i><h3>Favoritos personales</h3></div>
+            <p>Con un toque en el corazón, la propiedad queda guardada en <b>Mi cuenta</b>.</p>
+            <ul>
+                <li>El cliente vuelve y retoma donde dejó.</li>
+                <li>Puede quitar favoritos cuando quiera.</li>
+                <li>Desde ahí mismo puede comparar.</li>
+            </ul>
+        </article>
+
+        <article class="exp-card">
+            <div class="head"><i class="fas fa-columns" aria-hidden="true"></i><h3>Compare antes de decidir</h3></div>
+            <p>Hasta cuatro propiedades en una sola vista, con los datos que importan.</p>
+            <ul>
+                <li>Precio, tipo, ubicación y medidas.</li>
+                <li>Habitaciones, baños y características.</li>
+                <li>Una decisión con datos, no con memoria.</li>
+            </ul>
+        </article>
+
+        <article class="exp-card">
+            <div class="head"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i><h3>Busque como habla</h3></div>
+            <p>La búsqueda inteligente recorre toda la descripción y las características, con sinónimos.</p>
+            <ul>
+                <li>Ejemplo: “casa con jacuzzi cerca de colegios”.</li>
+                <li>Reconoce colegio/escuela, centro comercial/mall, jacuzzi/hidromasaje.</li>
+                <li>Se combina con los filtros de la barra.</li>
+            </ul>
+            <div class="mock-search">
+                <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+                <span>casa con jacuzzi cerca de colegios</span>
+                <span class="go">Buscar</span>
+            </div>
+            <div class="mock-chips"><span>Caracas ×</span><span class="dark">“con jacuzzi” ×</span><span>$80.000 – $250.000 ×</span></div>
+        </article>
+    </div>
+
+    <div class="page-foot"><span>Experiencia del cliente</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 03 · PANEL POR ROLES ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">03</span><span>Panel de administración</span><span class="brand">Meyer's</span></div>
+    <h2>Un panel para cada rol.<br><span class="accent">El control, en sus manos.</span></h2>
+    <p class="lead">La dueña y su equipo administran la plataforma sin depender de un programador. Cada persona entra con el nivel de permiso que le corresponde.</p>
+
+    <div class="roles">
+        <article class="role">
+            <div class="role-icon"><i class="fas fa-user" aria-hidden="true"></i></div>
+            <h3>Usuario</h3>
+            <p>Ve el catálogo, guarda favoritos, compara y gestiona sus datos personales.</p>
+            <span class="limit">Experiencia del cliente</span>
+        </article>
+        <article class="role">
+            <div class="role-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></div>
+            <h3>Administrador</h3>
+            <p>Gestiona propiedades, asesores, reseñas y contenido del sitio. No puede tocar a otros administradores.</p>
+            <span class="limit">Máximo 5</span>
+        </article>
+        <article class="role">
+            <div class="role-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></div>
+            <h3>Master</h3>
+            <p>Control total del sistema y puede nombrar a otros master. No puede cambiar su propio rol ni su estado.</p>
+            <span class="limit">Máximo 3</span>
+        </article>
+    </div>
+
+    <div class="modules">
+        <div class="module"><i class="fas fa-house" aria-hidden="true"></i> Propiedades</div>
+        <div class="module"><i class="fas fa-users" aria-hidden="true"></i> Usuarios</div>
+        <div class="module"><i class="fas fa-user-tie" aria-hidden="true"></i> Asesores</div>
+        <div class="module"><i class="fas fa-landmark" aria-hidden="true"></i> Nuestra Historia</div>
+        <div class="module"><i class="fas fa-sliders" aria-hidden="true"></i> Contenido del sitio</div>
+        <div class="module"><i class="fas fa-layer-group" aria-hidden="true"></i> Títulos de secciones</div>
+        <div class="module"><i class="fas fa-concierge-bell" aria-hidden="true"></i> Servicios</div>
+        <div class="module"><i class="fas fa-star" aria-hidden="true"></i> Reseñas</div>
+        <div class="module"><i class="fas fa-chart-line" aria-hidden="true"></i> Métricas</div>
+        <div class="module"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Historial</div>
+    </div>
+
+    <div class="callout"><i class="fas fa-bolt" aria-hidden="true"></i><strong>100% autogestionable.</strong> Fotos, precios, textos, servicios, reseñas y usuarios: todo se actualiza desde el panel, sin llamar al desarrollador.</div>
+
+    <div class="page-foot"><span>Administración por roles</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 04 · PASSKEY ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">04</span><span>Seguridad</span><span class="brand">Meyer's</span></div>
+    <h2>Seguridad que se siente.<br><span class="accent">Face ID o huella, sin contraseña.</span></h2>
+    <p class="lead">La plataforma incorpora passkeys con el estándar WebAuthn, el mismo tipo de tecnología que usan bancos y grandes plataformas para proteger el acceso.</p>
+
+    <div class="passkey-hero">
+        <div class="big-icon"><i class="fas fa-fingerprint" aria-hidden="true"></i></div>
+        <div>
+            <h3>Entrar es tan simple como mirar el teléfono.</h3>
+            <p>El cliente activa su passkey una vez y después entra con Face ID, huella o el PIN de su dispositivo. Sin escribir contraseñas.</p>
+        </div>
+    </div>
+
+    <div class="passkey-steps">
+        <article class="pstep"><span class="n">1</span><h4>Activa</h4><p>Desde <b>Mi cuenta → Seguridad</b>, pulsa “Agregar Face ID / huella”.</p></article>
+        <article class="pstep"><span class="n">2</span><h4>Confirma</h4><p>El dispositivo pide Face ID, huella o PIN. La biometría nunca sale del teléfono.</p></article>
+        <article class="pstep"><span class="n">3</span><h4>Entra</h4><p>La próxima vez, un toque en “Entrar con Face ID / huella” y listo.</p></article>
+    </div>
+
+    <div class="security-grid">
+        <div class="sec"><i class="fas fa-shield-halved" aria-hidden="true"></i><div><strong>Estándar WebAuthn</strong>Verificación criptográfica en el servidor.</div></div>
+        <div class="sec"><i class="fas fa-key" aria-hidden="true"></i><div><strong>Clave privada en el dispositivo</strong>Nunca se envía a la web.</div></div>
+        <div class="sec"><i class="fas fa-eye-slash" aria-hidden="true"></i><div><strong>Sin datos biométricos</strong>No se guarda la huella ni el rostro.</div></div>
+        <div class="sec"><i class="fas fa-user-lock" aria-hidden="true"></i><div><strong>Resistente al phishing</strong>La passkey está atada al dominio correcto.</div></div>
+        <div class="sec"><i class="fas fa-mobile-screen" aria-hidden="true"></i><div><strong>Varios dispositivos</strong>Teléfono y computadora, cada uno con su passkey.</div></div>
+        <div class="sec"><i class="fas fa-right-to-bracket" aria-hidden="true"></i><div><strong>Respaldo con contraseña</strong>Si pierde el teléfono, puede entrar y eliminar la passkey vieja.</div></div>
+    </div>
+
+    <div class="note"><strong>Una capa más de confianza.</strong> La contraseña sigue existiendo como respaldo. La passkey no reemplaza la seguridad de la cuenta: la hace más cómoda y más resistente al robo de contraseñas.</div>
+
+    <div class="page-foot"><span>Seguridad con passkeys</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 05 · COMPARATIVA ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">05</span><span>Comparativa</span><span class="brand">Meyer's</span></div>
+    <h2>Lo que no es habitual<br><span class="accent">en una web de agencia.</span></h2>
+    <p class="lead">No se trata de tener una función aislada. Se trata de una combinación que cambia la forma en que el cliente busca, decide y confía.</p>
+
+    <table class="compare">
+        <thead>
+            <tr><th>Función</th><th>Web de agencia típica</th><th class="meyers">Meyer's</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Catálogo privado solo para registrados</td><td><span class="no">No, público</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+            <tr><td>Favoritos persistentes</td><td><span class="partial">A veces</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+            <tr><td>Comparador lado a lado</td><td><span class="partial">Poco común</span></td><td><span class="yes"><i class="fas fa-check"></i>Hasta 4</span></td></tr>
+            <tr><td>Búsqueda por características en lenguaje natural</td><td><span class="partial">Filtros básicos</span></td><td><span class="yes"><i class="fas fa-check"></i>Con sinónimos</span></td></tr>
+            <tr><td>Passkeys con Face ID / huella</td><td><span class="no">No</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+            <tr><td>Panel de administración por roles</td><td><span class="no">No / básico</span></td><td><span class="yes"><i class="fas fa-check"></i>3 roles</span></td></tr>
+            <tr><td>Autogestión de contenido y propiedades</td><td><span class="partial">Depende del desarrollador</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+            <tr><td>App instalable desde el navegador (PWA)</td><td><span class="no">No</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+            <tr><td>Fotos optimizadas en WebP</td><td><span class="partial">A veces</span></td><td><span class="yes"><i class="fas fa-check"></i>Sí</span></td></tr>
+        </tbody>
+    </table>
+    <p class="compare-note">Comparación con webs de agencia o plantillas. No es una regla absoluta: es lo habitual en el mercado de páginas inmobiliarias pequeñas y medianas.</p>
+
+    <div class="benefits">
+        <div class="benefit-card"><strong>Exclusividad</strong><span>El catálogo privado se siente como un club, no como una vitrina abierta.</span></div>
+        <div class="benefit-card"><strong>Confianza</strong><span>Roles, sesión controlada y acceso biométrico para proteger la información.</span></div>
+        <div class="benefit-card"><strong>Autonomía</strong><span>La dueña actualiza la web sin depender de un tercero para cada cambio.</span></div>
+        <div class="benefit-card"><strong>Diferenciación</strong><span>Una experiencia que el cliente recuerda y comparte con otras personas.</span></div>
+    </div>
+
+    <div class="page-foot"><span>Comparativa de valor</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 06 · EXTRAS Y CIERRE ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">06</span><span>Todo listo para usar</span><span class="brand">Meyer's</span></div>
+    <h2>Y además,<br><span class="accent">todo suma.</span></h2>
+    <p class="lead">Estas son las piezas que complementan la experiencia y hacen que la plataforma se sienta completa, rápida y profesional.</p>
+
+    <div class="extras">
+        <div class="extra"><i class="fas fa-mobile-screen-button" aria-hidden="true"></i><strong>App instalable</strong><span>PWA sin tiendas: se agrega al inicio y se actualiza sola.</span></div>
+        <div class="extra"><i class="fas fa-images" aria-hidden="true"></i><strong>Fotos optimizadas</strong><span>Conversión a WebP para cargar rápido con alta calidad.</span></div>
+        <div class="extra"><i class="fas fa-star" aria-hidden="true"></i><strong>Reseñas verificadas</strong><span>Enlace de un solo uso, estrellas y aprobación antes de publicar.</span></div>
+        <div class="extra"><i class="fas fa-chart-simple" aria-hidden="true"></i><strong>Métricas e historial</strong><span>El pulso del negocio y las propiedades cerradas, en orden.</span></div>
+        <div class="extra"><i class="fas fa-book-open" aria-hidden="true"></i><strong>Manual incluido</strong><span>La dueña tiene una guía clara para administrar sin depender de nadie.</span></div>
+    </div>
+
+    <div class="quote">“La experiencia no termina en la web: termina en la confianza.”</div>
+
+    <div class="page-foot"><span>Todo listo para usar</span><span><strong>meyers-mu.vercel.app</strong></span></div>
+</section>
+
+<!-- ==================== 07 · CONTACTO ==================== -->
+<section class="page">
+    <div class="page-head"><span class="num">07</span><span>Hablemos</span><span class="brand">Meyer's</span></div>
+    <h2>El siguiente paso<br><span class="accent">es suyo.</span></h2>
+    <p class="lead">Esta plataforma está lista para trabajar. Conversemos sobre cómo puede ayudar a Meyer's a captar mejores clientes, cuidar su cartera y diferenciarse en el mercado.</p>
+
+    <div class="contact-card">
+        <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;margin=0&amp;data=https%3A%2F%2Fmeyers-mu.vercel.app" alt="Código QR de Meyer's Inmobiliaria">
+        <div>
+            <h3>¿Lo vemos en persona?</h3>
+            <p>Conversemos sobre cómo esta plataforma puede trabajar para Meyer's y para sus clientes.</p>
+            <div class="contact-lines">
+                <span><i class="fas fa-phone"></i>0414-1338254</span>
+                <span><i class="fas fa-envelope"></i>inmb.mimeyerhouse@gmail.com</span>
+                <span><i class="fas fa-location-dot"></i>Av. Lamas, Santa Teresa, Piso 1</span>
+                <span><i class="fas fa-clock"></i>Lun–Vie · 9:00 AM – 4:00 PM</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="closing">
+        <div class="script">Somos diferentes, porque mejoramos cada día.</div>
+        <p>Meyer's Inmobiliaria · meyers-mu.vercel.app</p>
+    </div>
+
+    <div class="page-foot"><span>Documento de presentación · Octubre 2026</span><span><strong>Meyer's Inmobiliaria</strong></span></div>
+</section>
+
+</body>
+</html>
