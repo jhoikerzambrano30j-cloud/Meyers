@@ -458,7 +458,7 @@ h1, h2, h3, h4 {
 
 .search-form {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr auto auto;
     gap: 0;
     background: var(--white);
     border-radius: 60px;
@@ -513,6 +513,206 @@ h1, h2, h3, h4 {
 
 .btn-search:hover {
     background: var(--gold-dark);
+}
+
+/* Botón "Más filtros" dentro de la barra */
+.btn-more-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 22px;
+    border: none;
+    border-left: 1px solid #eee;
+    background: var(--white);
+    color: var(--gold-dark);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-more-filters:hover {
+    background: #fffaf0;
+    color: var(--gold);
+}
+
+.filters-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 20px;
+    background: var(--gold-dark);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* ============================================
+   MODAL DE FILTROS AVANZADOS
+   ============================================ */
+.filters-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.62);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.filters-overlay.active {
+    opacity: 1;
+}
+
+.filters-modal {
+    position: relative;
+    width: min(620px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--white);
+    border-radius: 18px;
+    border-top: 5px solid var(--gold);
+    padding: 34px 32px 30px;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(14px);
+    transition: transform 0.25s ease;
+}
+
+.filters-overlay.active .filters-modal {
+    transform: translateY(0);
+}
+
+.filters-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: var(--off-white);
+    color: var(--dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.filters-close:hover {
+    background: var(--gold);
+    color: #fff;
+}
+
+.filters-tag {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: 6px;
+}
+
+.filters-modal h2 {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+}
+
+.filters-sub {
+    color: var(--gray-text);
+    font-size: 0.88rem;
+    margin-bottom: 22px;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.filters-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filters-field label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--silver);
+}
+
+.filters-field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    background: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--dark);
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition);
+}
+
+.filters-field select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(225, 189, 69, 0.18);
+}
+
+.filters-check {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--dark);
+    cursor: pointer;
+}
+
+.filters-check input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold-dark);
+    cursor: pointer;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-modal {
+        padding: 28px 20px 24px;
+    }
+
+    .filters-actions .btn {
+        width: 100%;
+    }
 }
 
 /* ============================================
@@ -1576,6 +1776,9 @@ h1, h2, h3, h4 {
     .search-group {
         border-bottom: 1px solid #eee;
     }
+    .btn-more-filters {
+        border-bottom: 1px solid #eee;
+    }
     .about-container,
     .cta-container {
         grid-template-columns: 1fr;
@@ -1649,6 +1852,12 @@ h1, h2, h3, h4 {
     .btn-search {
         grid-column: span 1;
         border-radius: 0 0 16px 16px;
+    }
+    .btn-more-filters {
+        grid-column: span 1;
+        border-left: none;
+        border-top: 1px solid #eee;
+        padding: 14px;
     }
     .search-group {
         border-right: none;

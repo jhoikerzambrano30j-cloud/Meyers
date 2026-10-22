@@ -70,6 +70,7 @@ async function init() {
     initScrollEffects();
     initMobileMenu();
     initActiveNav();
+    initFiltersDrawer();
 
     if (window.Auth) {
         currentUser = await window.Auth.getUser();
@@ -94,6 +95,9 @@ async function init() {
         await cargarPropiedades();
         await cargarFavoritos();
     }
+
+    poblarZonas();
+    poblarCaracteristicas();
 
     initProperties();
     initTestimonials();
@@ -271,6 +275,7 @@ function initProperties() {
     if (form) form.addEventListener('submit', (event) => { event.preventDefault(); applyFilters(); });
     if (viewAllBtn) viewAllBtn.addEventListener('click', showAll);
     if (clearBtn) clearBtn.addEventListener('click', resetFilters);
+    $('#ubicacion')?.addEventListener('change', poblarZonas);
 
     initModal();
 
@@ -374,7 +379,7 @@ function renderProperties(lista) {
             </div>`;
         return;
     }
-    grid.innerHTML = lista.map((prop, i) => cardTemplate(prop, i)).join('');
+    grid.innerHTML = ordenarPropiedades(lista).map((prop, i) => cardTemplate(prop, i)).join('');
 }
 
 function renderFeatured() {
@@ -397,20 +402,40 @@ function applyFilters() {
     const precioOption = $('#precio')?.selectedOptions?.[0];
     const min = precioOption?.dataset.min ?? '';
     const max = precioOption?.dataset.max ?? '';
+    const zona = $('#zona')?.value || '';
+    const habitaciones = Number($('#habitaciones')?.value || 0);
+    const banos = Number($('#banos')?.value || 0);
+    const areaOption = $('#area')?.selectedOptions?.[0];
+    const areaMin = areaOption?.dataset.min ?? '';
+    const areaMax = areaOption?.dataset.max ?? '';
+    const caracteristica = ($('#caracteristica')?.value || '').toLowerCase();
+    const soloDestacadas = Boolean($('#soloDestacadas')?.checked);
 
     state.visibles = PROPIEDADES.filter((prop) => {
         if (tipo && slug(prop.tipo) !== tipo) return false;
         if (ubicacion && slug(prop.ubicacion) !== ubicacion) return false;
-        if (min !== '' && prop.precio < Number(min)) return false;
-        if (max !== '' && prop.precio > Number(max)) return false;
+        if (zona && prop.zona !== zona) return false;
+        if (min !== '' && Number(prop.precio) < Number(min)) return false;
+        if (max !== '' && Number(prop.precio) > Number(max)) return false;
+        if (habitaciones && Number(prop.habitaciones) < habitaciones) return false;
+        if (banos && Number(prop.banos) < banos) return false;
+        if (areaMin !== '' && Number(prop.area) < Number(areaMin)) return false;
+        if (areaMax !== '' && Number(prop.area) > Number(areaMax)) return false;
+        if (caracteristica && !(prop.caracteristicas || []).some((c) => String(c).toLowerCase().includes(caracteristica))) return false;
+        if (soloDestacadas && !prop.destacada) return false;
         return true;
     });
 
-    state.filtrosActivos = Boolean(tipo || ubicacion || min !== '' || max !== '');
+    state.filtrosActivos = Boolean(
+        tipo || ubicacion || min !== '' || max !== '' || zona ||
+        habitaciones || banos || areaMin !== '' || areaMax !== '' ||
+        caracteristica || soloDestacadas
+    );
     state.mostrarTodas = false;
 
     renderProperties(state.visibles);
     updateResultsBar();
+    actualizarBadgeFiltros();
     $('#propiedades')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
 }
 
@@ -422,7 +447,132 @@ function showAll() {
     updateResultsBar();
 }
 
-function resetFilters() { $('#searchForm')?.reset(); showAll(); }
+function resetFilters() {
+    $('#searchForm')?.reset();
+    ['zona', 'habitaciones', 'banos', 'area', 'caracteristica', 'orden'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.value = '';
+    });
+    const dest = $('#soloDestacadas');
+    if (dest) dest.checked = false;
+    poblarZonas();
+    actualizarBadgeFiltros();
+    showAll();
+}
+
+/** Limpia y repuebla las zonas según la ciudad elegida. */
+function poblarZonas() {
+    const sel = $('#zona');
+    if (!sel) return;
+    const ciudad = $('#ubicacion')?.value || '';
+    const actual = sel.value;
+
+    const zonas = [...new Set(PROPIEDADES
+        .filter((p) => !ciudad || slug(p.ubicacion) === ciudad)
+        .map((p) => p.zona)
+        .filter(Boolean))]
+        .sort((a, b) => String(a).localeCompare(String(b), 'es'));
+
+    sel.innerHTML = '<option value="">Cualquiera</option>' +
+        zonas.map((z) => `<option value="${escapeHtml(z)}">${escapeHtml(z)}</option>`).join('');
+
+    if (zonas.includes(actual)) sel.value = actual;
+}
+
+/** Llena el filtro de características con las que existen en el catálogo. */
+function poblarCaracteristicas() {
+    const sel = $('#caracteristica');
+    if (!sel) return;
+    const actual = sel.value;
+
+    const valores = [...new Set(PROPIEDADES
+        .flatMap((p) => p.caracteristicas || [])
+        .map((c) => String(c).trim())
+        .filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'es'));
+
+    sel.innerHTML = '<option value="">Cualquiera</option>' +
+        valores.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+    if (valores.includes(actual)) sel.value = actual;
+}
+
+/** Cuenta cuántos filtros avanzados están activos. */
+function contarFiltrosExtra() {
+    let n = 0;
+    ['zona', 'habitaciones', 'banos', 'area', 'caracteristica'].forEach((id) => {
+        if ($('#' + id)?.value) n++;
+    });
+    if ($('#soloDestacadas')?.checked) n++;
+    return n;
+}
+
+/** Actualiza el numerito del botón "Más filtros". */
+function actualizarBadgeFiltros() {
+    const badge = $('#filtersBadge');
+    if (!badge) return;
+    const n = contarFiltrosExtra();
+    badge.textContent = n;
+    badge.hidden = n === 0;
+}
+
+/** Abre/cierra el panel de filtros avanzados. */
+function initFiltersDrawer() {
+    const overlay = $('#filtersOverlay');
+    const btn = $('#btnMoreFilters');
+    if (!overlay || !btn) return;
+
+    const abrir = () => {
+        overlay.hidden = false;
+        void overlay.offsetWidth; // permite que la animación se reproduzca
+        overlay.classList.add('active');
+        document.body.classList.add('no-scroll');
+        $('#filtersClose')?.focus();
+    };
+
+    const cerrar = () => {
+        overlay.classList.remove('active');
+        document.body.classList.remove('no-scroll');
+        setTimeout(() => { overlay.hidden = true; }, 250);
+    };
+
+    btn.addEventListener('click', abrir);
+    $('#filtersClose')?.addEventListener('click', cerrar);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !overlay.hidden) cerrar();
+    });
+
+    $('#filtersApply')?.addEventListener('click', () => { applyFilters(); cerrar(); });
+
+    $('#filtersClear')?.addEventListener('click', () => {
+        ['zona', 'habitaciones', 'banos', 'area', 'caracteristica', 'orden'].forEach((id) => {
+            const el = $('#' + id);
+            if (el) el.value = '';
+        });
+        const dest = $('#soloDestacadas');
+        if (dest) dest.checked = false;
+        actualizarBadgeFiltros();
+    });
+
+    ['zona', 'habitaciones', 'banos', 'area', 'caracteristica', 'soloDestacadas'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.addEventListener('change', actualizarBadgeFiltros);
+    });
+
+    actualizarBadgeFiltros();
+}
+
+/** Aplica el orden elegido sin modificar la lista original. */
+function ordenarPropiedades(lista) {
+    const orden = $('#orden')?.value || '';
+    if (!orden) return lista;
+    const copia = [...lista];
+    if (orden === 'precio-asc') copia.sort((a, b) => Number(a.precio) - Number(b.precio));
+    else if (orden === 'precio-desc') copia.sort((a, b) => Number(b.precio) - Number(a.precio));
+    else if (orden === 'area-desc') copia.sort((a, b) => Number(b.area) - Number(a.area));
+    return copia;
+}
 
 function updateResultsBar() {
     const countEl = $('#resultsCount');
