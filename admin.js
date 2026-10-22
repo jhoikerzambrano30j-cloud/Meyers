@@ -24,6 +24,8 @@ let cacheAsesores = [];
 let cachePropiedades = [];
 let asesorFoto = null;
 let asesorPathsViejos = [];
+let aboutImagen = null;
+let aboutPathsViejos = [];
 
 /* ---------- Utilidades ---------- */
 const $ = (s, c = document) => c.querySelector(s);
@@ -189,11 +191,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#btnNewAsesor')?.addEventListener('click', () => openAsesorForm(null));
     $('#btnCancelAsesor')?.addEventListener('click', closeAsesorForm);
     initAsesorForm();
+    initAboutForm();
     $('#asesor')?.addEventListener('change', actualizarCodigoPreview);
     $('#btnCopyReviewLink')?.addEventListener('click', copiarLinkResena);
     $('#btnReviewWhatsapp')?.addEventListener('click', compartirWhatsappResena);
 
-    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas()]);
+    await Promise.all([loadProperties(), loadUsuarios(), cargarAsesores(), loadResenas(), cargarAbout()]);
 
     // Limpieza automática del historial: se borran los tratos con más de 2 meses
     if (await limpiarHistorial()) await loadProperties();
@@ -223,6 +226,7 @@ function initTabs() {
             if (destino === 'metricas') renderMetricas();
             if (destino === 'historial') renderHistorial();
             if (destino === 'resenas') loadResenas();
+            if (destino === 'nosotros') cargarAbout();
         });
     });
 }
@@ -1172,6 +1176,165 @@ async function borrarAsesor(id) {
     if (error) { toast('Error: ' + error.message); return; }
     if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
     await cargarAsesores();
+}
+
+/* ============================================================
+   NUESTRA HISTORIA (contenido editable)
+   ============================================================ */
+async function cargarAbout() {
+    const form = $('#aboutForm');
+    if (!form) return;
+
+    const { data, error } = await window.db
+        .from('about_content')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle();
+
+    if (error) {
+        setStatus($('#aboutStatus'), 'Error al cargar: ' + error.message, 'error');
+        return;
+    }
+
+    const d = data || {};
+    $('#aboutTagInput').value = d.tag || 'Nuestra Historia';
+    $('#aboutTitleInput').value = d.titulo || "Meyer's Inmobiliaria";
+    $('#aboutTextoInput').value = d.texto || '';
+    $('#aboutBadgeLabelInput').value = d.badge_label || 'Desde';
+    $('#aboutBadgeYearInput').value = d.badge_year || '2020';
+    $('#aboutAltInput').value = d.imagen_alt || '';
+    $('#stat1NumeroInput').value = d.stat1_numero || '';
+    $('#stat1EtiquetaInput').value = d.stat1_etiqueta || '';
+    $('#stat2NumeroInput').value = d.stat2_numero || '';
+    $('#stat2EtiquetaInput').value = d.stat2_etiqueta || '';
+    $('#stat3NumeroInput').value = d.stat3_numero || '';
+    $('#stat3EtiquetaInput').value = d.stat3_etiqueta || '';
+
+    if (d.imagen) {
+        aboutImagen = { url: d.imagen, path: d.imagen_path, thumb: d.imagen_thumb, thumb_path: d.imagen_thumb_path };
+        aboutPathsViejos = [d.imagen_path, d.imagen_thumb_path].filter(Boolean);
+    } else {
+        aboutImagen = null;
+        aboutPathsViejos = [];
+    }
+    renderAboutThumb();
+}
+
+function initAboutForm() {
+    const form = $('#aboutForm');
+    if (!form) return;
+
+    form.addEventListener('submit', guardarAbout);
+
+    const uploader = $('#aboutUploader');
+    const input = $('#aboutInput');
+    if (uploader && input) {
+        uploader.addEventListener('click', () => input.click());
+        input.addEventListener('change', (e) => agregarFotoAbout(e.target.files));
+        ['dragenter', 'dragover'].forEach((ev) =>
+            uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach((ev) =>
+            uploader.addEventListener(ev, (e) => { e.preventDefault(); uploader.classList.remove('dragover'); }));
+        uploader.addEventListener('drop', (e) => agregarFotoAbout(e.dataTransfer.files));
+    }
+}
+
+function agregarFotoAbout(fileList) {
+    const MAX_MB = 15;
+    const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
+    if (!file) return;
+    if (file.size > MAX_MB * 1024 * 1024) {
+        toast('La foto supera ' + MAX_MB + ' MB. Usa una imagen más liviana.', 'error');
+        return;
+    }
+    if (aboutImagen && aboutImagen.esNueva && aboutImagen.url) URL.revokeObjectURL(aboutImagen.url);
+    aboutImagen = { url: URL.createObjectURL(file), path: null, thumb: null, thumb_path: null, blob: file, esNueva: true };
+    renderAboutThumb();
+}
+
+function renderAboutThumb() {
+    const cont = $('#aboutThumbs');
+    if (!cont) return;
+    cont.innerHTML = aboutImagen ? `
+        <div class="thumb">
+            <img src="${esc(aboutImagen.thumb || aboutImagen.url)}" alt="">
+            <button type="button" class="thumb-remove" data-remove-about title="Quitar">&times;</button>
+        </div>` : '';
+    const btn = cont.querySelector('[data-remove-about]');
+    if (btn) btn.addEventListener('click', () => { aboutImagen = null; renderAboutThumb(); });
+}
+
+async function guardarAbout(e) {
+    e.preventDefault();
+    const status = $('#aboutStatus');
+    const btn = $('#aboutForm button[type="submit"]');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const reemplazo = aboutImagen && aboutImagen.esNueva;
+
+        if (reemplazo && aboutImagen.blob) {
+            const grande = await window.optimizarImagen(aboutImagen.blob, { maxWidth: 1000, quality: 0.82 });
+            const subida = await window.subirImagen(grande);
+            const mini = await window.optimizarImagen(aboutImagen.blob, { maxWidth: 420, quality: 0.7 });
+            const subidaMini = await window.subirImagen(mini);
+            aboutImagen.url = subida.url;
+            aboutImagen.path = subida.path;
+            aboutImagen.thumb = subidaMini.url;
+            aboutImagen.thumb_path = subidaMini.path;
+            aboutImagen.esNueva = false;
+            aboutImagen.blob = null;
+        }
+
+        const payload = {
+            id: 1,
+            tag: $('#aboutTagInput').value.trim() || 'Nuestra Historia',
+            titulo: $('#aboutTitleInput').value.trim() || "Meyer's Inmobiliaria",
+            texto: $('#aboutTextoInput').value.trim(),
+            badge_label: $('#aboutBadgeLabelInput').value.trim() || 'Desde',
+            badge_year: $('#aboutBadgeYearInput').value.trim() || '2020',
+            imagen_alt: $('#aboutAltInput').value.trim() || null,
+            stat1_numero: $('#stat1NumeroInput').value.trim() || null,
+            stat1_etiqueta: $('#stat1EtiquetaInput').value.trim() || null,
+            stat2_numero: $('#stat2NumeroInput').value.trim() || null,
+            stat2_etiqueta: $('#stat2EtiquetaInput').value.trim() || null,
+            stat3_numero: $('#stat3NumeroInput').value.trim() || null,
+            stat3_etiqueta: $('#stat3EtiquetaInput').value.trim() || null,
+            updated_at: new Date().toISOString()
+        };
+
+        if (aboutImagen) {
+            payload.imagen = aboutImagen.url;
+            payload.imagen_thumb = aboutImagen.thumb || aboutImagen.url;
+            payload.imagen_path = aboutImagen.path || null;
+            payload.imagen_thumb_path = aboutImagen.thumb_path || null;
+        } else {
+            payload.imagen = null;
+            payload.imagen_thumb = null;
+            payload.imagen_path = null;
+            payload.imagen_thumb_path = null;
+        }
+
+        const { error } = await window.db.from('about_content').upsert(payload);
+        if (error) throw error;
+
+        if ((reemplazo || !aboutImagen) && aboutPathsViejos.length) {
+            await window.db.storage.from(window.APP_CONFIG.bucket).remove(aboutPathsViejos);
+        }
+        aboutPathsViejos = [];
+
+        setStatus(status, '¡Nuestra Historia actualizada!', 'success');
+        toast('Nuestra Historia actualizada.', 'success');
+        await cargarAbout();
+    } catch (err) {
+        setStatus(status, 'Error: ' + (err.message || err), 'error');
+        toast('No se pudo guardar: ' + (err.message || err), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
 }
 
 /* ============================================================

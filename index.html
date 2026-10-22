@@ -227,33 +227,35 @@
             <div class="about-container">
                 <div class="about-image reveal">
                     <!-- Reemplazar con foto de la CEO (Mayerlyn Martínez) -->
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" alt="Mayerlyn Martínez, CEO y Broker de Meyer's Inmobiliaria" loading="lazy">
+                    <img id="aboutImage" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" alt="Mayerlyn Martínez, CEO y Broker de Meyer's Inmobiliaria" loading="lazy">
                     <div class="about-badge">
-                        <span class="badge-label">Desde</span>
-                        <span class="badge-year">2020</span>
+                        <span class="badge-label" id="aboutBadgeLabel">Desde</span>
+                        <span class="badge-year" id="aboutBadgeYear">2020</span>
                     </div>
                 </div>
                 <div class="about-content reveal">
-                    <span class="about-tag">Nuestra Historia</span>
-                    <h2 class="section-title-left">Meyer's Inmobiliaria</h2>
-                    <p class="about-text">
-                        Fundada en 2020 por <strong>Mayerlyn Martínez</strong>, Meyer's nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.
-                    </p>
-                    <p class="about-text">
-                        No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.
-                    </p>
+                    <span class="about-tag" id="aboutTag">Nuestra Historia</span>
+                    <h2 class="section-title-left" id="aboutTitle">Meyer's Inmobiliaria</h2>
+                    <div id="aboutText">
+                        <p class="about-text">
+                            Fundada en 2020 por <strong>Mayerlyn Martínez</strong>, Meyer's nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.
+                        </p>
+                        <p class="about-text">
+                            No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.
+                        </p>
+                    </div>
                     <div class="about-stats">
                         <div class="stat">
-                            <span class="stat-number">500+</span>
-                            <span class="stat-label">Propiedades Vendidas</span>
+                            <span class="stat-number" id="stat1Numero">500+</span>
+                            <span class="stat-label" id="stat1Etiqueta">Propiedades Vendidas</span>
                         </div>
                         <div class="stat">
-                            <span class="stat-number">100%</span>
-                            <span class="stat-label">Clientes Satisfechos</span>
+                            <span class="stat-number" id="stat2Numero">100%</span>
+                            <span class="stat-label" id="stat2Etiqueta">Clientes Satisfechos</span>
                         </div>
                         <div class="stat">
-                            <span class="stat-number">5+</span>
-                            <span class="stat-label">Años de Experiencia</span>
+                            <span class="stat-number" id="stat3Numero">5+</span>
+                            <span class="stat-label" id="stat3Etiqueta">Años de Experiencia</span>
                         </div>
                     </div>
                     <a href="#contacto" class="btn btn-primary">Agenda una consulta</a>

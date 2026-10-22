@@ -92,6 +92,7 @@ async function init() {
     await cargarTestimonios();
     await cargarUbicacionesFiltro();
     await cargarEquipo();
+    await cargarNosotros();
     if (catalogoPermitido) {
         await cargarPropiedades();
         await cargarFavoritos();
@@ -203,6 +204,54 @@ async function cargarEquipo() {
             </article>`).join('');
     } catch (e) {
         console.warn('[Meyer\'s] No se pudo cargar el equipo:', e);
+    }
+}
+
+/** Carga el contenido editable de "Nuestra Historia". */
+async function cargarNosotros() {
+    if (!window.isSupabaseReady || !window.isSupabaseReady()) return;
+
+    try {
+        const { data, error } = await window.db
+            .from('about_content')
+            .select('*')
+            .eq('id', 1)
+            .maybeSingle();
+
+        if (error || !data) return;
+
+        const set = (id, valor) => {
+            const el = document.getElementById(id);
+            if (el && valor != null && String(valor).trim() !== '') el.textContent = valor;
+        };
+
+        set('aboutTag', data.tag);
+        set('aboutTitle', data.titulo);
+        set('aboutBadgeLabel', data.badge_label);
+        set('aboutBadgeYear', data.badge_year);
+
+        const cont = document.getElementById('aboutText');
+        if (cont && data.texto) {
+            const parrafos = String(data.texto).split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+            if (parrafos.length) {
+                cont.innerHTML = parrafos.map((p) => `<p class="about-text">${escapeHtml(p)}</p>`).join('');
+            }
+        }
+
+        const img = document.getElementById('aboutImage');
+        if (img && data.imagen) {
+            img.src = data.imagen;
+            if (data.imagen_alt) img.alt = data.imagen_alt;
+        }
+
+        set('stat1Numero', data.stat1_numero);
+        set('stat1Etiqueta', data.stat1_etiqueta);
+        set('stat2Numero', data.stat2_numero);
+        set('stat2Etiqueta', data.stat2_etiqueta);
+        set('stat3Numero', data.stat3_numero);
+        set('stat3Etiqueta', data.stat3_etiqueta);
+    } catch (e) {
+        // Si la tabla aún no existe, se mantiene el contenido estático de la web
     }
 }
 

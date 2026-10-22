@@ -661,6 +661,44 @@ revoke all on function public.crear_resena_con_token(text, text, text, text, int
 grant execute on function public.crear_resena_con_token(text, text, text, text, int) to anon, authenticated;
 
 -- ----------------------------------------------------------------------------
+-- 5c. CONTENIDO DE "NUESTRA HISTORIA"
+-- ----------------------------------------------------------------------------
+create table if not exists public.about_content (
+    id                int primary key default 1 check (id = 1),
+    tag               text not null default 'Nuestra Historia',
+    titulo            text not null default 'Meyer''s Inmobiliaria',
+    texto             text not null default $$Fundada en 2020 por Mayerlyn Martínez, Meyer's nació con una visión clara: revolucionar la experiencia inmobiliaria poniendo a las personas en el centro de cada decisión.
+
+No solo vendemos propiedades; construimos relaciones duraderas basadas en la confianza, la transparencia y un profundo conocimiento del mercado. Nuestro compromiso es que cada cliente se sienta en casa desde el primer contacto.$$,
+    imagen            text,
+    imagen_thumb      text,
+    imagen_path       text,
+    imagen_thumb_path text,
+    imagen_alt        text,
+    badge_label       text not null default 'Desde',
+    badge_year        text not null default '2020',
+    stat1_numero      text not null default '500+',
+    stat1_etiqueta    text not null default 'Propiedades Vendidas',
+    stat2_numero      text not null default '100%',
+    stat2_etiqueta    text not null default 'Clientes Satisfechos',
+    stat3_numero      text not null default '5+',
+    stat3_etiqueta    text not null default 'Años de Experiencia',
+    updated_at        timestamptz not null default now()
+);
+
+insert into public.about_content (id) values (1) on conflict (id) do nothing;
+
+alter table public.about_content enable row level security;
+
+drop policy if exists "about_public_read" on public.about_content;
+create policy "about_public_read" on public.about_content
+    for select using (true);
+
+drop policy if exists "about_admin_write" on public.about_content;
+create policy "about_admin_write" on public.about_content
+    for all using (public.is_admin()) with check (public.is_admin());
+
+-- ----------------------------------------------------------------------------
 -- 6. STORAGE (bucket público para las fotos de propiedades)
 -- ----------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)

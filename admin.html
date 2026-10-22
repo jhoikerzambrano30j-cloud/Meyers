@@ -43,6 +43,7 @@
             <button class="admin-tab active" data-tab="propiedades"><i class="fas fa-house"></i> Propiedades</button>
             <button class="admin-tab" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
             <button class="admin-tab" data-tab="asesores"><i class="fas fa-user-tie"></i> Asesores</button>
+            <button class="admin-tab" data-tab="nosotros"><i class="fas fa-landmark"></i> Nosotros</button>
             <button class="admin-tab" data-tab="resenas"><i class="fas fa-star"></i> Reseñas <span class="tab-badge" id="resenasTabBadge" hidden>0</span></button>
             <button class="admin-tab" data-tab="metricas"><i class="fas fa-chart-simple"></i> Métricas</button>
             <button class="admin-tab" data-tab="historial"><i class="fas fa-clock-rotate-left"></i> Historial</button>
@@ -309,6 +310,84 @@
                     </thead>
                     <tbody id="asesoresTableBody"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- ============ NOSOTROS ============ -->
+        <section class="admin-panel" id="tab-nosotros">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Nuestra Historia</h2>
+                    <p>Edita todo lo que se muestra en la sección "Nosotros" de la web.</p>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <form id="aboutForm">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="aboutTagInput">Etiqueta superior</label>
+                            <input type="text" id="aboutTagInput" placeholder="Nuestra Historia">
+                        </div>
+                        <div class="field">
+                            <label for="aboutTitleInput">Título</label>
+                            <input type="text" id="aboutTitleInput" placeholder="Meyer's Inmobiliaria">
+                        </div>
+                        <div class="field full">
+                            <label for="aboutTextoInput">Historia</label>
+                            <textarea id="aboutTextoInput" rows="8" placeholder="Escribe la historia. Usa ENTER dos veces para separar párrafos."></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="aboutBadgeLabelInput">Texto de la insignia</label>
+                            <input type="text" id="aboutBadgeLabelInput" placeholder="Desde">
+                        </div>
+                        <div class="field">
+                            <label for="aboutBadgeYearInput">Año de la insignia</label>
+                            <input type="text" id="aboutBadgeYearInput" placeholder="2020">
+                        </div>
+                        <div class="field full">
+                            <label>Foto de la sección</label>
+                            <div class="uploader" id="aboutUploader">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Haz clic o arrastra la foto aquí</strong><br>JPG, PNG o WebP · se optimiza automáticamente</p>
+                                <input type="file" id="aboutInput" accept="image/*" hidden>
+                            </div>
+                            <div class="thumbs" id="aboutThumbs"></div>
+                        </div>
+                        <div class="field full">
+                            <label for="aboutAltInput">Descripción de la foto (accesibilidad)</label>
+                            <input type="text" id="aboutAltInput" placeholder="Mayerlyn Martínez, CEO y Broker">
+                        </div>
+                        <div class="field">
+                            <label for="stat1NumeroInput">Dato 1 — número</label>
+                            <input type="text" id="stat1NumeroInput" placeholder="500+">
+                        </div>
+                        <div class="field">
+                            <label for="stat1EtiquetaInput">Dato 1 — texto</label>
+                            <input type="text" id="stat1EtiquetaInput" placeholder="Propiedades Vendidas">
+                        </div>
+                        <div class="field">
+                            <label for="stat2NumeroInput">Dato 2 — número</label>
+                            <input type="text" id="stat2NumeroInput" placeholder="100%">
+                        </div>
+                        <div class="field">
+                            <label for="stat2EtiquetaInput">Dato 2 — texto</label>
+                            <input type="text" id="stat2EtiquetaInput" placeholder="Clientes Satisfechos">
+                        </div>
+                        <div class="field">
+                            <label for="stat3NumeroInput">Dato 3 — número</label>
+                            <input type="text" id="stat3NumeroInput" placeholder="5+">
+                        </div>
+                        <div class="field">
+                            <label for="stat3EtiquetaInput">Dato 3 — texto</label>
+                            <input type="text" id="stat3EtiquetaInput" placeholder="Años de Experiencia">
+                        </div>
+                    </div>
+                    <div style="margin-top:22px">
+                        <button type="submit" class="btn-sm btn-gold"><i class="fas fa-save"></i> Guardar cambios</button>
+                    </div>
+                    <div class="alert" id="aboutStatus" style="margin-top:16px"></div>
+                </form>
             </div>
         </section>
 
