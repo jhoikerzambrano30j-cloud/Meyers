@@ -749,9 +749,15 @@ function applyFilters() {
     const operacion = $('#operacion')?.value || '';
     const tipo = $('#tipo')?.value || '';
     const ubicacion = $('#ubicacion')?.value || '';
-    const precioOption = $('#precio')?.selectedOptions?.[0];
-    const min = precioOption?.dataset.min ?? '';
-    const max = precioOption?.dataset.max ?? '';
+    let precioMin = Number($('#precioMin')?.value || 0);
+    let precioMax = Number($('#precioMax')?.value || 0);
+    if (precioMin < 0) precioMin = 0;
+    if (precioMax < 0) precioMax = 0;
+    if (precioMin > 0 && precioMax > 0 && precioMin > precioMax) {
+        [precioMin, precioMax] = [precioMax, precioMin];
+        if ($('#precioMin')) $('#precioMin').value = String(precioMin);
+        if ($('#precioMax')) $('#precioMax').value = String(precioMax);
+    }
     const zona = $('#zona')?.value || '';
     const habitaciones = Number($('#habitaciones')?.value || 0);
     const banos = Number($('#banos')?.value || 0);
@@ -766,8 +772,8 @@ function applyFilters() {
         if (tipo && slug(prop.tipo) !== tipo) return false;
         if (ubicacion && slug(prop.ubicacion) !== ubicacion) return false;
         if (zona && prop.zona !== zona) return false;
-        if (min !== '' && Number(prop.precio) < Number(min)) return false;
-        if (max !== '' && Number(prop.precio) > Number(max)) return false;
+        if (precioMin > 0 && Number(prop.precio) < precioMin) return false;
+        if (precioMax > 0 && Number(prop.precio) > precioMax) return false;
         if (habitaciones && Number(prop.habitaciones) < habitaciones) return false;
         if (banos && Number(prop.banos) < banos) return false;
         if (areaMin !== '' && Number(prop.area) < Number(areaMin)) return false;
@@ -803,7 +809,7 @@ function applyFilters() {
     }
 
     state.filtrosActivos = Boolean(
-        operacion || tipo || ubicacion || min !== '' || max !== '' || zona ||
+        operacion || tipo || ubicacion || precioMin > 0 || precioMax > 0 || zona ||
         habitaciones || banos || areaMin !== '' || areaMax !== '' ||
         caracteristica || soloDestacadas || consulta
     );

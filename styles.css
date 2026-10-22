@@ -495,6 +495,48 @@ h1, h2, h3, h4 {
     outline: none;
 }
 
+/* Rango de precio editable (Desde / Hasta) */
+.price-range {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.price-range .price-prefix,
+.price-range .price-sep {
+    color: var(--silver);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+.price-range input {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark);
+    outline: none;
+    padding: 0;
+}
+
+.price-range input::placeholder {
+    color: var(--silver);
+    font-weight: 500;
+}
+
+.price-range input::-webkit-outer-spin-button,
+.price-range input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.price-range input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 .btn-search {
     background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
     color: var(--white);

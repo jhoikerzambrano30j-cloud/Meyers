@@ -128,14 +128,13 @@
                     </select>
                 </div>
                 <div class="search-group">
-                    <label for="precio">Precio</label>
-                    <select id="precio" name="precio">
-                        <option value="" data-min="" data-max="">Cualquiera</option>
-                        <option value="hasta-50000" data-min="0" data-max="50000">Hasta $50,000</option>
-                        <option value="50000-100000" data-min="50000" data-max="100000">$50,000 - $100,000</option>
-                        <option value="100000-200000" data-min="100000" data-max="200000">$100,000 - $200,000</option>
-                        <option value="200000-plus" data-min="200000" data-max="">Más de $200,000</option>
-                    </select>
+                    <label for="precioMin">Precio (USD)</label>
+                    <div class="price-range">
+                        <span class="price-prefix" aria-hidden="true">$</span>
+                        <input type="number" id="precioMin" name="precioMin" min="0" step="1" inputmode="numeric" placeholder="Desde" aria-label="Precio mínimo">
+                        <span class="price-sep" aria-hidden="true">–</span>
+                        <input type="number" id="precioMax" name="precioMax" min="0" step="1" inputmode="numeric" placeholder="Hasta" aria-label="Precio máximo">
+                    </div>
                 </div>
                 <button type="button" class="btn-more-filters" id="btnMoreFilters" aria-haspopup="dialog" aria-controls="filtersOverlay">
                     <i class="fas fa-sliders-h" aria-hidden="true"></i>
