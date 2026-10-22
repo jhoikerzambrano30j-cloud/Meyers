@@ -39,6 +39,54 @@ function esc(v) {
 const money = (n) => '$' + Number(n || 0).toLocaleString('en-US');
 const fecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '—';
 
+/** Aviso elegante (toast) con el estilo de la marca. */
+function toast(mensaje, tipo) {
+    let cont = document.getElementById('toastContainer');
+    if (!cont) {
+        cont = document.createElement('div');
+        cont.id = 'toastContainer';
+        cont.className = 'toast-container';
+        cont.setAttribute('role', 'status');
+        cont.setAttribute('aria-live', 'polite');
+        document.body.appendChild(cont);
+    }
+
+    const texto = String(mensaje || '');
+    const esError = tipo === 'error' ||
+        (/error|no se pudo|no se pudieron|no hay|ya existe|supera|ignoraron|primero/i.test(texto) && tipo !== 'success');
+    const clase = tipo === 'success' ? 'success' : (esError ? 'error' : 'info');
+    const icono = clase === 'error' ? 'fa-circle-exclamation' : clase === 'success' ? 'fa-circle-check' : 'fa-circle-info';
+
+    const el = document.createElement('div');
+    el.className = 'toast ' + clase;
+    el.innerHTML = `<i class="fas ${icono}" aria-hidden="true"></i><span>${esc(texto)}</span>`;
+    cont.appendChild(el);
+
+    setTimeout(() => {
+        el.classList.add('out');
+        setTimeout(() => el.remove(), 260);
+    }, clase === 'error' ? 4600 : 3600);
+}
+
+/** Copia texto al portapapeles con respaldo para navegadores sin permiso. */
+async function copiarAlPortapapeles(texto) {
+    try {
+        await navigator.clipboard.writeText(texto);
+        return true;
+    } catch (e) {
+        const area = document.createElement('textarea');
+        area.value = texto;
+        area.style.position = 'fixed';
+        area.style.left = '-9999px';
+        document.body.appendChild(area);
+        area.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        area.remove();
+        return ok;
+    }
+}
+
 /** Muestra un elemento con una animación suave (y la reinicia cada vez). */
 function mostrarConAnimacion(el) {
     if (!el) return;
@@ -88,7 +136,7 @@ function confirmar(titulo, mensaje, textoOk) {
 }
 
 function exportCSV(rows, filename) {
-    if (!rows || !rows.length) { alert('No hay datos para exportar.'); return; }
+    if (!rows || !rows.length) { toast('No hay datos para exportar.'); return; }
     const headers = Object.keys(rows[0]);
     const line = (r) => headers.map((h) => {
         const v = (r[h] == null ? '' : String(r[h])).replace(/"/g, '""');
@@ -302,7 +350,7 @@ function initUbicaciones() {
 async function cargarCiudades() {
     const list = $('#ciudadesList');
     const { data, error } = await window.db.from('locations').select('id, nombre').order('nombre');
-    if (error) { alert('No se pudieron cargar las ciudades: ' + error.message); return; }
+    if (error) { toast('No se pudieron cargar las ciudades: ' + error.message); return; }
     ciudadesPorNombre = new Map((data || []).map((c) => [c.nombre, c.id]));
     if (list) list.innerHTML = (data || []).map((c) => `<option value="${esc(c.nombre)}"></option>`).join('');
 }
@@ -335,19 +383,19 @@ async function cargarZonas(nombreCiudad) {
 async function agregarCiudad() {
     const input = $('#ubicacion');
     const nombre = (input.value || '').trim().toUpperCase();
-    if (!nombre) { alert('Escribe una ciudad primero.'); return; }
+    if (!nombre) { toast('Escribe una ciudad primero.'); return; }
     if (ciudadesPorNombre.has(nombre)) {
         input.value = nombre;
-        alert('La ciudad "' + nombre + '" ya existe.');
+        toast('La ciudad "' + nombre + '" ya existe.');
         return;
     }
     const { error } = await window.db.from('locations').insert({ nombre });
-    if (error) { alert('No se pudo agregar la ciudad: ' + error.message); return; }
+    if (error) { toast('No se pudo agregar la ciudad: ' + error.message); return; }
     await cargarCiudades();
     input.value = nombre;
     ultimaCiudad = null;
     await onCiudadCambia();
-    alert('Ciudad "' + nombre + '" agregada. Ahora agrega sus zonas.');
+    toast('Ciudad "' + nombre + '" agregada. Ahora agrega sus zonas.');
 }
 
 async function agregarZona() {
@@ -356,30 +404,30 @@ async function agregarZona() {
     const ciudad = (inputCiudad.value || '').trim().toUpperCase();
     const zona = (inputZona.value || '').trim().toUpperCase();
 
-    if (!ciudad) { alert('Primero escribe la ciudad.'); return; }
-    if (!zona) { alert('Escribe la zona que quieres agregar.'); return; }
+    if (!ciudad) { toast('Primero escribe la ciudad.'); return; }
+    if (!zona) { toast('Escribe la zona que quieres agregar.'); return; }
 
     let ciudadId = ciudadesPorNombre.get(ciudad);
     if (!ciudadId) {
         const { data, error } = await window.db.from('locations').insert({ nombre: ciudad }).select('id').single();
-        if (error) { alert('No se pudo crear la ciudad: ' + error.message); return; }
+        if (error) { toast('No se pudo crear la ciudad: ' + error.message); return; }
         ciudadId = data.id;
         await cargarCiudades();
     }
 
     if (zonasCiudadActual.includes(zona)) {
         inputZona.value = zona;
-        alert('La zona "' + zona + '" ya existe en ' + ciudad + '.');
+        toast('La zona "' + zona + '" ya existe en ' + ciudad + '.');
         return;
     }
 
     const { error } = await window.db.from('zonas').insert({ ciudad_id: ciudadId, nombre: zona });
-    if (error) { alert('No se pudo agregar la zona: ' + error.message); return; }
+    if (error) { toast('No se pudo agregar la zona: ' + error.message); return; }
 
     ultimaCiudad = null;
     await cargarZonas(ciudad);
     inputZona.value = zona;
-    alert('Zona "' + zona + '" agregada a ' + ciudad + '.');
+    toast('Zona "' + zona + '" agregada a ' + ciudad + '.');
 }
 
 /** Pone en MAYÚSCULAS todos los campos marcados con data-upper. */
@@ -505,8 +553,8 @@ function agregarArchivos(fileList) {
     const grandes = todos.filter((f) => f.type.startsWith('image/') && f.size > MAX_MB * 1024 * 1024);
     const files = todos.filter((f) => f.type.startsWith('image/') && f.size <= MAX_MB * 1024 * 1024);
 
-    if (noImagen.length) alert('Se ignoraron archivos que no son imágenes.');
-    if (grandes.length) alert('Estas imágenes superan ' + MAX_MB + ' MB y se ignoraron: ' + grandes.map((f) => f.name).join(', '));
+    if (noImagen.length) toast('Se ignoraron archivos que no son imágenes.');
+    if (grandes.length) toast('Estas imágenes superan ' + MAX_MB + ' MB y se ignoraron: ' + grandes.map((f) => f.name).join(', '));
     if (!files.length) return;
 
     files.forEach((file) => {
@@ -678,7 +726,7 @@ async function cambiarEstado(id, estado) {
     }
     const fecha = estado === 'Disponible' ? null : new Date().toISOString().slice(0, 10);
     const { error } = await window.db.from('properties').update({ estado, fecha_cierre: fecha }).eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
     await loadProperties();
     renderMetricas();
     renderHistorial();
@@ -694,7 +742,7 @@ async function borrarPropiedad(id) {
 
     // Borrar la propiedad (sus filas de property_images se borran en cascada)
     const { error } = await window.db.from('properties').delete().eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
 
     // Borrar las fotos del almacenamiento (evita archivos huérfanos)
     if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
@@ -777,14 +825,14 @@ function accionesUsuario(u) {
 async function bloquearUsuario(id, bloquear) {
     if (!confirm(bloquear ? '¿Bloquear a este usuario? No podrá iniciar sesión.' : '¿Desbloquear a este usuario?')) return;
     const { error } = await window.db.rpc('admin_set_blocked', { target_id: id, blocked: bloquear });
-    if (error) alert('No se pudo actualizar: ' + error.message);
+    if (error) toast('No se pudo actualizar: ' + error.message);
     await loadUsuarios();
 }
 
 async function eliminarUsuario(id) {
     if (!confirm('¿Eliminar definitivamente a este usuario? No se puede deshacer.')) return;
     const { error } = await window.db.rpc('admin_delete_user', { target_id: id });
-    if (error) alert('No se pudo eliminar: ' + error.message);
+    if (error) toast('No se pudo eliminar: ' + error.message);
     await loadUsuarios();
 }
 
@@ -821,7 +869,7 @@ async function cambiarRol(sel) {
         const msg = /5 administradores|máximo/i.test(error.message)
             ? 'Ya hay 5 administradores (el máximo permitido).'
             : error.message;
-        alert('No se pudo cambiar el rol: ' + msg);
+        toast('No se pudo cambiar el rol: ' + msg);
     }
     await loadUsuarios();
 }
@@ -982,7 +1030,7 @@ function agregarFotoAsesor(fileList) {
     const file = Array.from(fileList || []).find((f) => f.type.startsWith('image/'));
     if (!file) return;
     if (file.size > MAX_MB * 1024 * 1024) {
-        alert('La foto supera ' + MAX_MB + ' MB. Usa una imagen más liviana.');
+        toast('La foto supera ' + MAX_MB + ' MB. Usa una imagen más liviana.');
         return;
     }
     if (asesorFoto && asesorFoto.esNueva && asesorFoto.url) URL.revokeObjectURL(asesorFoto.url);
@@ -1178,7 +1226,7 @@ async function guardarAsesor(e) {
 
 async function toggleAsesor(id, activo) {
     const { error } = await window.db.from('asesores').update({ activo }).eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
     await cargarAsesores();
 }
 
@@ -1188,7 +1236,7 @@ async function borrarAsesor(id) {
     const a = cacheAsesores.find((x) => x.id === id);
     const rutas = a ? [a.foto_path, a.foto_thumb_path].filter(Boolean) : [];
     const { error } = await window.db.from('asesores').delete().eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
     if (rutas.length) await window.db.storage.from(window.APP_CONFIG.bucket).remove(rutas);
     await cargarAsesores();
 }
@@ -1304,7 +1352,7 @@ function bindResenaAcciones(cont) {
 
 async function cambiarEstadoResena(id, estado) {
     const { error } = await window.db.from('testimonials').update({ estado }).eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
     await loadResenas();
 }
 
@@ -1312,7 +1360,7 @@ async function borrarResena(id) {
     const ok = await confirmar('Eliminar reseña', 'Se borrará esta reseña definitivamente. Esta acción no se puede deshacer.', 'Sí, eliminar');
     if (!ok) return;
     const { error } = await window.db.from('testimonials').delete().eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { toast('Error: ' + error.message); return; }
     await loadResenas();
 }
 
@@ -1322,11 +1370,11 @@ function enlaceResena() {
 
 async function copiarLinkResena() {
     const link = enlaceResena();
-    try {
-        await navigator.clipboard.writeText(link);
-        alert('Enlace copiado:\n' + link + '\n\nCompártelo con tus clientes.');
-    } catch (e) {
-        window.prompt('Copia y comparte este enlace:', link);
+    const ok = await copiarAlPortapapeles(link);
+    if (ok) {
+        toast('Enlace copiado. Compártelo con tus clientes.', 'success');
+    } else {
+        toast('No se pudo copiar el enlace: ' + link, 'error');
     }
 }
 
@@ -1478,7 +1526,7 @@ function renderHistorial() {
         const ok = await confirmar('Reabrir propiedad', '¿Reabrir? La propiedad volverá al catálogo público.', 'Sí, reabrir');
         if (!ok) return;
         const { error } = await window.db.from('properties').update({ estado: 'Disponible', fecha_cierre: null }).eq('id', b.dataset.reabrir);
-        if (error) { alert('Error: ' + error.message); return; }
+        if (error) { toast('Error: ' + error.message); return; }
         await loadProperties();
         renderHistorial();
         renderMetricas();

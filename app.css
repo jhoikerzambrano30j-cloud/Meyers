@@ -2229,3 +2229,88 @@ a, button {
         justify-content: center;
     }
 }
+
+/* ============================================================
+   AVISOS ELEGANTES (TOASTS) DEL PANEL
+   ============================================================ */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: min(380px, calc(100vw - 40px));
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    background: var(--white);
+    color: var(--dark);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+}
+
+.toast i {
+    color: var(--gold-dark);
+    font-size: 1rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.toast.success {
+    border-left-color: #2ecc71;
+}
+
+.toast.success i {
+    color: #1e8e4e;
+}
+
+.toast.error {
+    border-left-color: #e74c3c;
+}
+
+.toast.error i {
+    color: #c0392b;
+}
+
+.toast.out {
+    animation: toastOut 0.26s ease forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(26px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes toastOut {
+    to {
+        opacity: 0;
+        transform: translateX(26px);
+    }
+}
+
+@media (max-width: 600px) {
+    .toast-container {
+        top: 14px;
+        right: 14px;
+        left: 14px;
+        max-width: none;
+    }
+}
