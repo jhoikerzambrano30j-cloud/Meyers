@@ -18,7 +18,8 @@
                 storage: window.sessionStorage, // la sesión termina al cerrar el navegador
                 persistSession: true,
                 autoRefreshToken: true,
-                detectSessionInUrl: true
+                detectSessionInUrl: true,
+                experimental: { passkey: true } // Face ID / huella (WebAuthn)
             }
         })
         : null;

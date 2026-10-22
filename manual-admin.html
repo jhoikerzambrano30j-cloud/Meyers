@@ -384,6 +384,7 @@
                 <li>Preguntas frecuentes</li>
                 <li>Flujo recomendado</li>
                 <li>Últimos cambios</li>
+                <li>Face ID y huella</li>
             </ol>
         </div>
     </div>
@@ -740,6 +741,7 @@
             <li><b>Precios premium:</b> el precio se muestra sobre una placa oscura con borde dorado, sin tapar la foto de la propiedad.</li>
             <li><b>Móvil y tablet:</b> el logo ya no se deforma, el menú incluye <b>Ingresar / Crear cuenta</b>, el buscador es más compacto, los campos usan 16 px (sin zoom automático en iPhone), las fotos se eligen en alta calidad según la pantalla y los botones táctiles miden al menos 44 px. También se respetan las áreas seguras (notch) y los modales se desplazan suavemente.</li>
             <li><b>Formulario de propiedad:</b> las características ahora se ven en tarjetas uniformes (4 columnas en escritorio, 3 en tablet, 2 en teléfono y 1 en pantallas muy pequeñas), con los campos y botones alineados y las acciones de guardar/cancelar separadas al final.</li>
+            <li><b>Face ID y huella:</b> los usuarios registrados pueden agregar passkeys desde <b>Mi cuenta → Seguridad</b> y entrar sin contraseña; la contraseña sigue funcionando como respaldo. Puedes tener varias passkeys (teléfono y computadora) y renombrarlas o eliminarlas.</li>
         </ul>
 
         <h3>Cambios anteriores · octubre 2026</h3>
@@ -755,6 +757,51 @@
             <strong>¿Ves algo nuevo en la web o en el panel?</strong>
             Este apartado se actualiza con cada mejora. Si algo no coincide con lo que ves, actualiza la página con <b>Ctrl + F5</b>.
         </div>
+    </div>
+
+    <!-- ==================== 15. FACE ID Y HUELLA ==================== -->
+    <div class="section page-break" id="passkeys">
+        <h2>15. Face ID y huella (passkeys)</h2>
+        <p class="lead">Entra sin escribir contraseña usando Face ID, huella o el PIN de tu dispositivo.</p>
+
+        <h3>Qué es una passkey</h3>
+        <p>Es una credencial segura que queda guardada en tu teléfono o computadora. La clave privada nunca se envía a la web; Supabase solo guarda la parte pública para verificar tu identidad. Es resistente al phishing y no se puede reutilizar en otro sitio.</p>
+        <p class="muted">Ni Meyer's ni Supabase reciben tu huella o tu rostro: la biometría la maneja el sistema operativo de tu dispositivo.</p>
+
+        <h3>Cómo activarla</h3>
+        <ol class="steps">
+            <li>Inicia sesión con tu correo y contraseña como siempre.</li>
+            <li>Entra a <b>Mi cuenta → Seguridad</b>.</li>
+            <li>Pulsa <b>Agregar Face ID / huella</b>.</li>
+            <li>Confirma con Face ID, huella o el PIN de tu dispositivo.</li>
+            <li>Ponle un nombre (ej. “iPhone de Meyer's”) y guarda.</li>
+        </ol>
+
+        <h3>Cómo entrar con Face ID / huella</h3>
+        <ol class="steps">
+            <li>En la pantalla de ingreso pulsa <b>Entrar con Face ID / huella</b>.</li>
+            <li>El dispositivo te pedirá Face ID, huella o PIN.</li>
+            <li>Listo: entras sin escribir correo ni contraseña.</li>
+        </ol>
+
+        <h3>Varias passkeys</h3>
+        <ul>
+            <li>Puedes registrar tu teléfono y tu computadora por separado.</li>
+            <li>Desde <b>Mi cuenta → Seguridad</b> puedes renombrarlas o eliminarlas.</li>
+            <li>Tu contraseña sigue funcionando como respaldo.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Si pierdes el dispositivo</strong>
+            Entra con tu contraseña y elimina la passkey vieja desde <b>Mi cuenta → Seguridad</b>. Así nadie más podrá usarla.
+        </div>
+
+        <div class="warn">
+            <strong>Requisitos técnicos</strong>
+            La web debe estar en <b>HTTPS</b> (Vercel ya lo está) y las passkeys deben estar activadas en Supabase con el dominio exacto. Si el botón no aparece, usa Safari o Chrome actualizado. En iPhone se recomienda iOS 16 o superior. Las passkeys se atan al dominio: si más adelante se cambia de dominio, hay que configurarlas de nuevo.
+        </div>
+
+        <p class="muted">Passkeys es una función beta de Supabase; la contraseña se mantiene como respaldo. La configuración del dominio (RP ID y origen) se hace una sola vez en Supabase → Authentication → Passkeys.</p>
     </div>
 
 </div>

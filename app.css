@@ -160,6 +160,71 @@
     text-decoration: underline;
 }
 
+/* ---------- Ingreso con passkey (Face ID / huella) ---------- */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 14px;
+    color: var(--silver);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: #e6e6e6;
+}
+
+.btn-passkey {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border: 1.5px solid rgba(225, 189, 69, 0.72);
+    border-radius: 30px;
+    background: var(--white);
+    color: var(--dark);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-passkey i {
+    color: var(--gold-dark);
+    font-size: 1.15rem;
+}
+
+.btn-passkey:hover {
+    border-color: var(--gold);
+    background: #fffaf0;
+    transform: translateY(-1px);
+}
+
+.btn-passkey:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+.passkey-hint {
+    margin: 10px 0 0;
+    text-align: center;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    color: var(--gray-text);
+}
+
 .auth-back {
     position: absolute;
     top: calc(30px + env(safe-area-inset-top, 0px));
@@ -842,6 +907,188 @@ table.data .cell-actions {
 .account-wrap .account-sub {
     color: var(--gray-text);
     margin-bottom: 30px;
+}
+
+/* ---------- Passkeys / seguridad ---------- */
+.passkey-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.passkey-toolbar .btn-sm {
+    min-height: 44px;
+}
+
+.passkey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.passkey-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    background: var(--white);
+}
+
+.passkey-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.passkey-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(225, 189, 69, 0.16);
+    color: var(--gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.passkey-info strong {
+    display: block;
+    font-size: 0.92rem;
+    color: var(--dark);
+    overflow-wrap: anywhere;
+}
+
+.passkey-info small {
+    display: block;
+    font-size: 0.76rem;
+    color: var(--gray-text);
+    margin-top: 2px;
+}
+
+.passkey-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.passkey-actions .btn-sm {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.passkey-empty {
+    padding: 20px;
+    border: 1px dashed #ddd;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--gray-text);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    background: #fafafa;
+}
+
+.passkey-empty i {
+    color: var(--gold-dark);
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.passkey-note {
+    margin: 12px 0 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--gray-text);
+}
+
+.passkey-note.is-error {
+    color: #c0392b;
+}
+
+.passkey-note.is-success {
+    color: #1e8e4e;
+}
+
+.passkey-modal {
+    width: min(480px, 100%);
+}
+
+.passkey-modal .modal-content {
+    padding: 32px;
+}
+
+.passkey-modal .modal-content h2 {
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+}
+
+.passkey-modal .modal-description {
+    color: var(--gray-text);
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.passkey-modal .form-group label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-text);
+    margin-bottom: 6px;
+}
+
+.passkey-modal .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    background: var(--off-white);
+    outline: none;
+}
+
+.passkey-modal .form-group input:focus {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(225, 189, 69, 0.15);
+}
+
+.passkey-modal .modal-cta {
+    margin-top: 22px;
+}
+
+.passkey-modal .modal-cta .btn {
+    flex: 1 1 150px;
+}
+
+@media (max-width: 600px) {
+    .passkey-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .passkey-actions {
+        width: 100%;
+    }
+
+    .passkey-actions .btn-sm {
+        flex: 1;
+    }
+
+    .passkey-modal .modal-content {
+        padding: 26px 20px;
+    }
 }
 
 .fav-grid {

@@ -45,13 +45,22 @@
                 <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
             </form>
 
+            <div class="auth-divider" id="passkeyDivider"><span>o</span></div>
+            <button type="button" class="btn-passkey" id="passkeyLogin">
+                <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                Entrar con Face ID / huella
+            </button>
+            <p class="passkey-hint" id="passkeyHint">
+                Sin contraseña. Si aún no la tienes, entra normal y actívala en Mi cuenta → Seguridad.
+            </p>
+
             <p class="auth-foot">
                 ¿No tienes cuenta? <a href="registro.html">Crear cuenta</a>
             </p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
     <script src="config.js"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
@@ -62,6 +71,18 @@
             alertBox.textContent = msg;
             alertBox.className = 'alert show ' + (tipo === 'error' ? 'alert-error' : 'alert-success');
         };
+
+        function mensajePasskey(err) {
+            const name = err && err.name;
+            const msg = String((err && err.message) || '');
+            if (name === 'NotAllowedError' || name === 'AbortError') return 'Cancelaste el inicio con Face ID / huella. Inténtalo de nuevo o usa tu contraseña.';
+            if (name === 'NotSupportedError') return 'Este dispositivo no permite passkeys. Usa Safari o Chrome actualizado.';
+            if (name === 'SecurityError') return 'La passkey no coincide con este sitio. Revisa la configuración de seguridad.';
+            if (/not found|no passkey|no credentials|credential/i.test(msg)) return 'No encontramos una passkey en este dispositivo. Ingresa con tu contraseña y actívala en Mi cuenta → Seguridad.';
+            if (/not enabled|disabled|passkey.*(off|disabl)/i.test(msg)) return 'El inicio con passkey aún no está activado en el sitio. Usa tu contraseña por ahora.';
+            if (/webauthn|verification|origin|rp id|challenge/i.test(msg)) return 'No pudimos verificar la passkey. Revisa la configuración del dominio en Supabase.';
+            return 'No se pudo iniciar con Face ID / huella. Inténtalo de nuevo o usa tu contraseña.';
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!window.isSupabaseReady()) {
@@ -83,6 +104,48 @@
                 const admin = await Auth.isAdmin();
                 window.location.href = admin ? 'admin.html' : 'index.html';
                 return;
+            }
+
+            // Entrada con passkey (Face ID / huella) si el navegador la soporta
+            const passkeyBtn = document.getElementById('passkeyLogin');
+            const passkeyHint = document.getElementById('passkeyHint');
+            const passkeyDivider = document.getElementById('passkeyDivider');
+            const passkeyOk = window.Auth && Auth.passkeysSupported && Auth.passkeysSupported();
+            if (!passkeyOk) {
+                if (passkeyBtn) passkeyBtn.hidden = true;
+                if (passkeyHint) passkeyHint.hidden = true;
+                if (passkeyDivider) passkeyDivider.hidden = true;
+            } else if (passkeyBtn) {
+                passkeyBtn.addEventListener('click', async () => {
+                    const original = passkeyBtn.innerHTML;
+                    passkeyBtn.disabled = true;
+                    passkeyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Esperando Face ID / huella…';
+                    try {
+                        const { error } = await Auth.signInWithPasskey();
+                        if (error) {
+                            console.error('[passkey]', error);
+                            show(mensajePasskey(error), 'error');
+                            passkeyBtn.disabled = false;
+                            passkeyBtn.innerHTML = original;
+                            return;
+                        }
+                        const perfil = await Auth.getProfile();
+                        if (perfil && perfil.bloqueado) {
+                            await window.db.auth.signOut();
+                            show('Tu cuenta está bloqueada. Contacta al administrador.', 'error');
+                            passkeyBtn.disabled = false;
+                            passkeyBtn.innerHTML = original;
+                            return;
+                        }
+                        const admin = await Auth.isAdmin();
+                        window.location.href = admin ? 'admin.html' : 'index.html';
+                    } catch (err) {
+                        console.error('[passkey]', err);
+                        show(mensajePasskey(err), 'error');
+                        passkeyBtn.disabled = false;
+                        passkeyBtn.innerHTML = original;
+                    }
+                });
             }
 
             // Captcha anti-robots (solo aparece si Cloudflare lo pide)

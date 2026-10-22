@@ -62,6 +62,22 @@
                 </form>
             </div>
 
+            <div class="panel-card" id="securityCard">
+                <h3><i class="fas fa-shield-halved" style="color:#B8931F"></i> Seguridad</h3>
+                <p class="account-sub" style="text-align:left;margin-bottom:16px">
+                    Entra con Face ID, huella o el PIN de tu dispositivo. Tu contraseña sigue funcionando como respaldo.
+                </p>
+                <div class="passkey-toolbar">
+                    <button type="button" class="btn-sm btn-gold" id="btnAddPasskey">
+                        <i class="fas fa-fingerprint"></i> Agregar Face ID / huella
+                    </button>
+                </div>
+                <div class="passkey-list" id="passkeyList"></div>
+                <p class="passkey-note" id="passkeyHint">
+                    Puedes registrar tu teléfono y tu computadora. La passkey se guarda en tu dispositivo, no en la web.
+                </p>
+            </div>
+
             <div class="panel-card">
                 <h3><i class="fas fa-heart" style="color:#B8931F"></i> Mis favoritos</h3>
 
@@ -100,13 +116,36 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <!-- Modal passkey: renombrar / eliminar -->
+    <div class="modal-overlay" id="passkeyModal" hidden>
+        <div class="modal passkey-modal" role="dialog" aria-modal="true" aria-labelledby="passkeyModalTitle">
+            <button type="button" class="modal-close" id="passkeyModalClose" aria-label="Cerrar">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-content">
+                <h2 id="passkeyModalTitle">Passkey</h2>
+                <p class="modal-description" id="passkeyModalText"></p>
+                <div class="form-group" id="passkeyNameGroup">
+                    <label for="passkeyNameInput">Nombre para reconocerla</label>
+                    <input type="text" id="passkeyNameInput" maxlength="50" placeholder="Ej: iPhone de Meyer">
+                </div>
+                <div class="modal-cta">
+                    <button type="button" class="btn btn-primary" id="passkeyModalConfirm">Guardar</button>
+                    <button type="button" class="btn btn-outline" id="passkeyModalCancel">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
     <script src="config.js"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
         let user = null;
         let favoritosProps = [];
+        let passkeys = [];
+        let passkeyModalAction = null;
         let compareMode = false;
         let seleccion = new Set();
         const MAX_COMPARE = 4;
@@ -132,6 +171,8 @@
                 $('#greeting').textContent = 'Hola, ' + ((profile.full_name || '').split(' ')[0] || 'bienvenido');
             }
 
+            initPasskeys();
+
             $('#profileForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const { error } = await window.db.from('profiles').update({
@@ -150,6 +191,236 @@
 
             cargarFavoritos();
         });
+
+        /* ---------- Passkeys (Face ID / huella) ---------- */
+        function fechaPasskey(valor) {
+            if (!valor) return '';
+            const d = new Date(valor);
+            if (Number.isNaN(d.getTime())) return '';
+            return d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function setPasskeyMsg(mensaje, tipo) {
+            const hint = $('#passkeyHint');
+            if (!hint) return;
+            hint.textContent = mensaje;
+            hint.className = 'passkey-note' + (tipo === 'error' ? ' is-error' : tipo === 'success' ? ' is-success' : '');
+        }
+
+        function mensajePasskey(err, contexto) {
+            const name = err && err.name;
+            const msg = String((err && err.message) || '');
+            if (name === 'NotAllowedError' || name === 'AbortError') {
+                return contexto === 'registro'
+                    ? 'Cancelaste el registro. Puedes intentarlo de nuevo cuando quieras.'
+                    : 'Cancelaste la operación. No se hizo ningún cambio.';
+            }
+            if (name === 'InvalidStateError') return 'Este dispositivo ya tiene una passkey registrada para tu cuenta.';
+            if (name === 'NotSupportedError') return 'Este dispositivo no permite passkeys. Usa Safari o Chrome actualizado.';
+            if (name === 'SecurityError') return 'El dominio no coincide con la configuración de passkeys.';
+            if (/not enabled|disabled|passkey.*(off|disabl)/i.test(msg)) return 'El servicio de passkeys aún no está activado en el sitio. Avisa al administrador.';
+            if (/webauthn|verification|origin|rp id|challenge/i.test(msg)) return 'No pudimos verificar la passkey. Revisa la configuración del dominio en Supabase.';
+            if (contexto === 'lista') return 'No pudimos cargar tus passkeys. Revisa la configuración del servicio.';
+            if (contexto === 'registro') return 'No se pudo registrar la passkey. Inténtalo de nuevo.';
+            if (contexto === 'eliminar') return 'No se pudo eliminar la passkey. Inténtalo de nuevo.';
+            return 'No se pudo actualizar la passkey. Inténtalo de nuevo.';
+        }
+
+        async function initPasskeys() {
+            const btn = $('#btnAddPasskey');
+            const list = $('#passkeyList');
+            if (!btn || !list) return;
+
+            if (!window.Auth || !Auth.passkeysSupported()) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-ban"></i> Passkeys no disponibles';
+                setPasskeyMsg('Este navegador no permite Face ID/huella. Usa Safari o Chrome actualizado y una conexión segura (HTTPS).', 'error');
+                list.innerHTML = '<div class="passkey-empty"><i class="fas fa-lock"></i>Las passkeys no están disponibles en este navegador.</div>';
+                return;
+            }
+
+            btn.addEventListener('click', agregarPasskey);
+
+            const overlay = $('#passkeyModal');
+            $('#passkeyModalClose')?.addEventListener('click', cerrarModalPasskey);
+            $('#passkeyModalCancel')?.addEventListener('click', cerrarModalPasskey);
+            $('#passkeyModalConfirm')?.addEventListener('click', confirmarModalPasskey);
+            overlay?.addEventListener('click', (e) => { if (e.target === overlay) cerrarModalPasskey(); });
+            $('#passkeyNameInput')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); confirmarModalPasskey(); }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay && !overlay.hidden) cerrarModalPasskey();
+            });
+
+            await cargarPasskeys();
+        }
+
+        async function cargarPasskeys() {
+            const list = $('#passkeyList');
+            if (!list) return;
+            list.innerHTML = '<div class="passkey-empty"><i class="fas fa-spinner fa-spin"></i>Cargando passkeys…</div>';
+            const { data, error } = await Auth.listPasskeys();
+            if (error) {
+                console.error('[passkeys lista]', error);
+                list.innerHTML = '<div class="passkey-empty"><i class="fas fa-lock"></i>No pudimos cargar tus passkeys.</div>';
+                setPasskeyMsg(mensajePasskey(error, 'lista'), 'error');
+                return;
+            }
+            passkeys = (data || []).slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            renderPasskeys();
+        }
+
+        function renderPasskeys() {
+            const list = $('#passkeyList');
+            if (!list) return;
+            if (!passkeys.length) {
+                list.innerHTML = '<div class="passkey-empty"><i class="fas fa-fingerprint"></i>Aún no tienes una passkey. Agrega Face ID o huella para entrar sin contraseña.</div>';
+                return;
+            }
+
+            list.innerHTML = passkeys.map((p) => {
+                const nombre = p.friendly_name || 'Passkey';
+                const fecha = fechaPasskey(p.created_at);
+                return `
+                    <div class="passkey-item">
+                        <div class="passkey-info">
+                            <span class="passkey-icon"><i class="fas fa-fingerprint"></i></span>
+                            <div>
+                                <strong>${esc(nombre)}</strong>
+                                <small>${fecha ? 'Creada el ' + esc(fecha) : 'Passkey registrada'}</small>
+                            </div>
+                        </div>
+                        <div class="passkey-actions">
+                            <button type="button" class="btn-sm btn-edit" data-passkey-rename="${esc(p.id)}" title="Cambiar nombre" aria-label="Cambiar nombre de ${esc(nombre)}"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="btn-sm btn-danger" data-passkey-delete="${esc(p.id)}" title="Eliminar" aria-label="Eliminar ${esc(nombre)}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            list.querySelectorAll('[data-passkey-rename]').forEach((b) => {
+                b.addEventListener('click', () => {
+                    const p = passkeys.find((x) => String(x.id) === String(b.dataset.passkeyRename));
+                    if (p) abrirModalPasskey('rename', p);
+                });
+            });
+            list.querySelectorAll('[data-passkey-delete]').forEach((b) => {
+                b.addEventListener('click', () => {
+                    const p = passkeys.find((x) => String(x.id) === String(b.dataset.passkeyDelete));
+                    if (p) abrirModalPasskey('delete', p);
+                });
+            });
+        }
+
+        async function agregarPasskey() {
+            const btn = $('#btnAddPasskey');
+            if (!btn) return;
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Esperando Face ID…';
+            setPasskeyMsg('Confirma con Face ID, huella o el PIN de tu dispositivo.', '');
+            try {
+                const { error } = await Auth.registerPasskey();
+                if (error) {
+                    console.error('[passkey registro]', error);
+                    setPasskeyMsg(mensajePasskey(error, 'registro'), 'error');
+                    return;
+                }
+                setPasskeyMsg('Passkey agregada. Ya puedes entrar con Face ID o huella.', 'success');
+                await cargarPasskeys();
+            } catch (err) {
+                console.error('[passkey registro]', err);
+                setPasskeyMsg(mensajePasskey(err, 'registro'), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
+
+        function abrirModalPasskey(tipo, p) {
+            const overlay = $('#passkeyModal');
+            if (!overlay) return;
+            passkeyModalAction = { tipo, id: p.id, nombre: p.friendly_name || 'Passkey' };
+
+            const title = $('#passkeyModalTitle');
+            const text = $('#passkeyModalText');
+            const group = $('#passkeyNameGroup');
+            const input = $('#passkeyNameInput');
+            const confirm = $('#passkeyModalConfirm');
+
+            if (tipo === 'rename') {
+                title.textContent = 'Cambiar nombre';
+                text.textContent = 'Ponle un nombre para reconocerla (por ejemplo, “iPhone de Meyer”).';
+                group.hidden = false;
+                input.value = passkeyModalAction.nombre;
+                confirm.textContent = 'Guardar';
+                confirm.className = 'btn btn-primary';
+            } else {
+                title.textContent = 'Eliminar passkey';
+                text.textContent = `¿Eliminar “${passkeyModalAction.nombre}”? Seguirás entrando con tu contraseña.`;
+                group.hidden = true;
+                confirm.textContent = 'Eliminar';
+                confirm.className = 'btn btn-danger';
+            }
+
+            overlay.hidden = false;
+            document.body.classList.add('no-scroll');
+            requestAnimationFrame(() => overlay.classList.add('active'));
+            window.setTimeout(() => {
+                if (tipo === 'rename') { input.focus(); input.select(); }
+                else confirm.focus();
+            }, 60);
+        }
+
+        function cerrarModalPasskey() {
+            const overlay = $('#passkeyModal');
+            if (!overlay || overlay.hidden) return;
+            overlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+            passkeyModalAction = null;
+            window.setTimeout(() => { overlay.hidden = true; }, 300);
+        }
+
+        async function confirmarModalPasskey() {
+            if (!passkeyModalAction) return;
+            const { tipo, id } = passkeyModalAction;
+            const btn = $('#passkeyModalConfirm');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
+            try {
+                if (tipo === 'rename') {
+                    const nombre = ($('#passkeyNameInput').value || '').trim();
+                    if (nombre.length < 2 || nombre.length > 50) {
+                        setPasskeyMsg('El nombre debe tener entre 2 y 50 caracteres.', 'error');
+                        return;
+                    }
+                    const { error } = await Auth.updatePasskey(id, nombre);
+                    if (error) {
+                        console.error('[passkey renombrar]', error);
+                        setPasskeyMsg(mensajePasskey(error, 'renombrar'), 'error');
+                        return;
+                    }
+                    setPasskeyMsg('Nombre actualizado.', 'success');
+                } else {
+                    const { error } = await Auth.deletePasskey(id);
+                    if (error) {
+                        console.error('[passkey eliminar]', error);
+                        setPasskeyMsg(mensajePasskey(error, 'eliminar'), 'error');
+                        return;
+                    }
+                    setPasskeyMsg('Passkey eliminada. Tu contraseña sigue funcionando.', 'success');
+                }
+                cerrarModalPasskey();
+                await cargarPasskeys();
+            } catch (err) {
+                console.error('[passkey]', err);
+                setPasskeyMsg(mensajePasskey(err, tipo === 'rename' ? 'renombrar' : 'eliminar'), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
 
         /* ---------- Favoritos ---------- */
         async function cargarFavoritos() {
@@ -221,7 +492,7 @@
             if (chk.checked) {
                 if (seleccion.size >= MAX_COMPARE) {
                     chk.checked = false;
-                    alert('Puedes comparar hasta ' + MAX_COMPARE + ' propiedades.');
+                    show('Puedes comparar hasta ' + MAX_COMPARE + ' propiedades.', 'error');
                     return;
                 }
                 seleccion.add(id);

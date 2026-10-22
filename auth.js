@@ -52,6 +52,58 @@
         return window.db.auth.signInWithPassword({ email, password, options });
     };
 
+    // ------------------------------------------------------------
+    // Passkeys / WebAuthn (Face ID, huella o PIN del dispositivo)
+    // La verificación la hace Supabase Auth en el servidor.
+    // ------------------------------------------------------------
+    Auth.passkeysSupported = function () {
+        return Boolean(
+            window.isSecureContext &&
+            typeof window.PublicKeyCredential !== 'undefined' &&
+            window.isSupabaseReady() &&
+            window.db.auth &&
+            typeof window.db.auth.registerPasskey === 'function' &&
+            typeof window.db.auth.signInWithPasskey === 'function' &&
+            window.db.auth.passkey &&
+            typeof window.db.auth.passkey.list === 'function'
+        );
+    };
+
+    Auth.registerPasskey = async function () {
+        if (!Auth.passkeysSupported()) {
+            return { data: null, error: new Error('Este navegador o dispositivo no permite passkeys.') };
+        }
+        return window.db.auth.registerPasskey();
+    };
+
+    Auth.signInWithPasskey = async function () {
+        if (!Auth.passkeysSupported()) {
+            return { data: null, error: new Error('Este navegador o dispositivo no permite passkeys.') };
+        }
+        return window.db.auth.signInWithPasskey();
+    };
+
+    Auth.listPasskeys = async function () {
+        if (!Auth.passkeysSupported()) {
+            return { data: [], error: new Error('Passkeys no disponibles en este navegador.') };
+        }
+        return window.db.auth.passkey.list();
+    };
+
+    Auth.updatePasskey = async function (passkeyId, friendlyName) {
+        if (!Auth.passkeysSupported()) {
+            return { data: null, error: new Error('Passkeys no disponibles en este navegador.') };
+        }
+        return window.db.auth.passkey.update({ passkeyId, friendlyName });
+    };
+
+    Auth.deletePasskey = async function (passkeyId) {
+        if (!Auth.passkeysSupported()) {
+            return { data: null, error: new Error('Passkeys no disponibles en este navegador.') };
+        }
+        return window.db.auth.passkey.delete({ passkeyId });
+    };
+
     Auth.signOut = async function () {
         if (window.isSupabaseReady()) await window.db.auth.signOut();
         window.location.href = 'index.html';

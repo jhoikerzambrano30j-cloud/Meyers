@@ -66,6 +66,16 @@ Proyecto/
      **`...`** → **Promote to Production**.
    - Después del despliegue, recarga con **Ctrl + F5**.
 
+5. **Activar passkeys (Face ID / huella)**
+   - Supabase Dashboard → **Authentication → Passkeys** → activar.
+   - **Display name:** `Meyer's Inmobiliaria`.
+   - **RP ID:** `meyers-mu.vercel.app` (sin `https://`, sin rutas).
+   - **Origins:** `https://meyers-mu.vercel.app`.
+   - El cliente ya se crea con `auth.experimental.passkey: true` y el SDK
+     queda fijado en `2.118.0`.
+   - Debe probarse en el dominio de producción: las passkeys se atan al
+     dominio y no funcionan en `localhost` con el RP ID de producción.
+
 ## Qué puede hacer cada rol
 
 | Rol | Puede |
@@ -78,6 +88,9 @@ Proyecto/
 ## Funciones principales
 
 - **Catálogo privado:** solo usuarios con sesión iniciada ven las propiedades disponibles.
+- **Passkeys (Face ID / huella):** registro desde **Mi cuenta → Seguridad** y
+  entrada sin contraseña. Supabase verifica la firma en el servidor; la clave
+  privada queda en el dispositivo. La contraseña sigue como respaldo.
 - **Filtros + búsqueda inteligente:** se combinan. Ejemplo: Ciudad **Caracas** +
   búsqueda **“con jacuzzi”** devuelve solo Caracas con jacuzzi. Los filtros
   activos se muestran como **chips** removibles.
@@ -114,3 +127,5 @@ Proyecto/
 - **Historial:** las propiedades cerradas se conservan **2 meses**.
 - **Sin Supabase configurado:** la web muestra datos de ejemplo en modo
   demostración; el catálogo real requiere sesión.
+- **Passkeys:** función **beta** de Supabase Auth. Requiere HTTPS y la
+  configuración de RP ID/orígenes; no usa SQL ni guarda datos biométricos.
