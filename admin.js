@@ -156,13 +156,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 function initTabs() {
     $$('.admin-tab').forEach((tab) => {
         tab.addEventListener('click', () => {
+            const destino = tab.dataset.tab;
+            const activa = $$('.admin-tab').find((t) => t.classList.contains('active'));
+            const origen = activa ? activa.dataset.tab : null;
+
+            // Al salir de una pestaña, cerrar su formulario y volver a la lista
+            if (origen && origen !== destino) {
+                if (origen === 'propiedades') closeForm();
+                if (origen === 'asesores') closeAsesorForm();
+            }
+
             $$('.admin-tab').forEach((t) => t.classList.remove('active'));
             $$('.admin-panel').forEach((p) => p.classList.remove('active'));
             tab.classList.add('active');
-            const panel = document.getElementById('tab-' + tab.dataset.tab);
+            const panel = document.getElementById('tab-' + destino);
             if (panel) panel.classList.add('active');
-            if (tab.dataset.tab === 'metricas') renderMetricas();
-            if (tab.dataset.tab === 'historial') renderHistorial();
+            if (destino === 'metricas') renderMetricas();
+            if (destino === 'historial') renderHistorial();
         });
     });
 }
