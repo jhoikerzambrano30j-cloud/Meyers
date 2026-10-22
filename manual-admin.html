@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual del Panel de Administración | Meyer's Inmobiliaria</title>
+<meta name="robots" content="noindex">
+<style>
+    @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: swap;
+    }
+
+    @page {
+        size: A4;
+        margin: 18mm 16mm;
+    }
+
+    @page :first {
+        margin: 0;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Montserrat', Arial, sans-serif;
+        color: #1A1A1A;
+        font-size: 10.5pt;
+        line-height: 1.6;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ---------- Portada ---------- */
+    .cover {
+        width: 210mm;
+        height: 297mm;
+        background: linear-gradient(150deg, #111 0%, #1f1c15 60%, #2a2518 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 30mm;
+        page-break-after: always;
+        position: relative;
+    }
+
+    .cover::after {
+        content: '';
+        position: absolute;
+        inset: 12mm;
+        border: 1px solid rgba(225, 189, 69, 0.45);
+        border-radius: 6px;
+    }
+
+    .cover img {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 22px;
+    }
+
+    .cover .eyebrow {
+        font-size: 9pt;
+        font-weight: 700;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: #E1BD45;
+        margin: 0 0 14px;
+    }
+
+    .cover h1 {
+        font-size: 30pt;
+        line-height: 1.15;
+        margin: 0 0 16px;
+        font-weight: 800;
+    }
+
+    .cover .sub {
+        font-size: 11pt;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 120mm;
+        margin: 0 auto 34px;
+    }
+
+    .cover .date {
+        font-size: 8.5pt;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 0;
+    }
+
+    /* ---------- Contenido ---------- */
+    .content {
+        padding: 0;
+    }
+
+    h2 {
+        font-size: 17pt;
+        margin: 0 0 6px;
+        padding-bottom: 8px;
+        border-bottom: 3px solid #E1BD45;
+        color: #1A1A1A;
+    }
+
+    h3 {
+        font-size: 12pt;
+        margin: 20px 0 6px;
+        color: #1A1A1A;
+    }
+
+    h4 {
+        font-size: 10.5pt;
+        margin: 14px 0 4px;
+        color: #8a6d16;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    p {
+        margin: 0 0 8px;
+    }
+
+    ul, ol {
+        margin: 0 0 10px;
+        padding-left: 18px;
+    }
+
+    li {
+        margin-bottom: 4px;
+    }
+
+    .section {
+        margin-bottom: 22px;
+    }
+
+    .lead {
+        font-size: 10.5pt;
+        color: #555;
+        margin-bottom: 14px;
+    }
+
+    .muted {
+        color: #777;
+        font-size: 9pt;
+    }
+
+    .gold {
+        color: #8a6d16;
+        font-weight: 700;
+    }
+
+    /* ---------- Índice ---------- */
+    .toc {
+        background: #FAF8F2;
+        border: 1px solid rgba(225, 189, 69, 0.35);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin: 14px 0 20px;
+    }
+
+    .toc h3 {
+        margin: 0 0 8px;
+        font-size: 11pt;
+    }
+
+    .toc ol {
+        margin: 0;
+        padding-left: 20px;
+        columns: 2;
+        column-gap: 22px;
+    }
+
+    .toc li {
+        margin-bottom: 2px;
+        font-size: 9.5pt;
+    }
+
+    /* ---------- Tablas ---------- */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 12px;
+        font-size: 9pt;
+    }
+
+    th {
+        background: #1A1A1A;
+        color: #E1BD45;
+        text-align: left;
+        padding: 7px 9px;
+        font-weight: 700;
+        font-size: 8.5pt;
+        letter-spacing: 0.4px;
+    }
+
+    td {
+        padding: 7px 9px;
+        border-bottom: 1px solid #e8e4d8;
+        vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+        background: #FBF9F3;
+    }
+
+    /* ---------- Avisos ---------- */
+    .tip, .warn, .note {
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin: 10px 0;
+        font-size: 9.5pt;
+        page-break-inside: avoid;
+    }
+
+    .tip {
+        background: #F3F9EF;
+        border-left: 4px solid #2ecc71;
+    }
+
+    .warn {
+        background: #FDF2F0;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .note {
+        background: #FBF6E7;
+        border-left: 4px solid #E1BD45;
+    }
+
+    .tip strong, .warn strong, .note strong {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    /* ---------- Tarjetas de pasos ---------- */
+    .steps {
+        counter-reset: paso;
+        margin: 8px 0 12px;
+        padding: 0;
+        list-style: none;
+    }
+
+    .steps li {
+        counter-increment: paso;
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 7px;
+    }
+
+    .steps li::before {
+        content: counter(paso);
+        position: absolute;
+        left: 0;
+        top: 1px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #E1BD45;
+        color: #1A1A1A;
+        font-size: 8.5pt;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .card {
+        border: 1px solid rgba(225, 189, 69, 0.4);
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: #fff;
+        page-break-inside: avoid;
+    }
+
+    .card h4 {
+        margin-top: 0;
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
+
+    .avoid-break {
+        page-break-inside: avoid;
+    }
+
+    /* ---------- Pie de página (solo pantalla) ---------- */
+    .screen-note {
+        background: #1A1A1A;
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 9pt;
+        margin-bottom: 18px;
+    }
+
+    @media print {
+        .screen-note {
+            display: none;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- ==================== PORTADA ==================== -->
+<section class="cover">
+    <img src="img/logo-meyer.png" alt="Meyer's Inmobiliaria">
+    <p class="eyebrow">Meyer's Inmobiliaria</p>
+    <h1>Manual del Panel<br>de Administración</h1>
+    <p class="sub">Todo lo que puedes gestionar por tu cuenta, explicado paso a paso.</p>
+    <p class="date">Actualizado · Octubre 2026</p>
+</section>
+
+<!-- ==================== CONTENIDO ==================== -->
+<div class="content">
+
+    <div class="screen-note">
+        Este documento está pensado para leerse en pantalla o imprimirse. Para guardarlo como PDF:
+        <b>Ctrl + P</b> → destino <b>Guardar como PDF</b>.
+    </div>
+
+    <div class="section">
+        <h2>Antes de empezar</h2>
+        <p class="lead">Este manual explica cómo usar el panel para mantener tu página web actualizada sin depender de nadie.</p>
+
+        <div class="two-col">
+            <div class="card">
+                <h4>Dirección del panel</h4>
+                <p><b>meyers-mu.vercel.app/admin.html</b></p>
+                <p class="muted">Ingresa con tu correo y contraseña de administradora.</p>
+            </div>
+            <div class="card">
+                <h4>Dirección de la web</h4>
+                <p><b>meyers-mu.vercel.app</b></p>
+                <p class="muted">Los cambios que guardes se ven aquí.</p>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>La sesión se cierra sola</strong>
+            Por seguridad, si pasas <b>10 minutos sin actividad</b> o cierras el navegador, deberás volver a iniciar sesión.
+        </div>
+
+        <div class="toc">
+            <h3>Contenido</h3>
+            <ol>
+                <li>Propiedades</li>
+                <li>Usuarios y roles</li>
+                <li>Asesores</li>
+                <li>Reseñas</li>
+                <li>Nuestra Historia</li>
+                <li>Contenido del sitio (Sitio)</li>
+                <li>Títulos de las secciones</li>
+                <li>Servicios</li>
+                <li>Métricas</li>
+                <li>Historial</li>
+                <li>Buenas prácticas y límites</li>
+                <li>Preguntas frecuentes</li>
+                <li>Flujo recomendado</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ==================== 1. PROPIEDADES ==================== -->
+    <div class="section page-break" id="propiedades">
+        <h2>1. Propiedades</h2>
+        <p class="lead">Es la pestaña principal. Aquí publicas, editas y cierras las propiedades.</p>
+
+        <h3>Publicar una propiedad nueva</h3>
+        <ol class="steps">
+            <li>Entra a <b>Propiedades</b> y pulsa <b>Nueva propiedad</b>.</li>
+            <li>Completa <b>Negocio</b>: Venta, Alquiler, Alquiler con opción a compra o Traspaso.</li>
+            <li>Elige el <b>Tipo</b> (Casa, Apartamento, Oficina, Galpón, etc.).</li>
+            <li>Escribe la <b>Ciudad</b> y la <b>Zona</b> (puedes crearlas desde el mismo campo).</li>
+            <li>Agrega <b>precio, habitaciones, baños y área</b>.</li>
+            <li>Escribe una <b>descripción</b> clara y marca las características.</li>
+            <li>Sube las <b>fotos</b> (la primera será la portada).</li>
+            <li>Si quieres que salga en el inicio, marca <b>Destacada</b>.</li>
+            <li>Pulsa <b>Guardar propiedad</b>.</li>
+        </ol>
+
+        <div class="note">
+            <strong>Código automático</strong>
+            El sistema asigna un código por asesor, por ejemplo <b>BP-0007</b>. No se reutiliza aunque borres la propiedad.
+        </div>
+
+        <h3>Las fotos</h3>
+        <ul>
+            <li>Formatos: <b>JPG, PNG o WebP</b>. Tamaño máximo: <b>15 MB</b> por foto.</li>
+            <li>Se convierten automáticamente a <b>WebP</b> y se crean dos versiones (grande y miniatura) para que la web cargue rápido.</li>
+            <li>La <b>primera foto</b> es la portada. Puedes cambiar el orden quitando y volviendo a subir.</li>
+            <li>Al reemplazar o eliminar una propiedad, las fotos viejas se borran del almacenamiento.</li>
+        </ul>
+
+        <h3>Cambiar el estado de una propiedad</h3>
+        <table>
+            <tr><th>Estado</th><th>Qué significa</th></tr>
+            <tr><td><b>Disponible</b></td><td>Se muestra en el catálogo público.</td></tr>
+            <tr><td><b>Vendida</b></td><td>Sale del catálogo y pasa al Historial.</td></tr>
+            <tr><td><b>Alquilada</b></td><td>Sale del catálogo y pasa al Historial.</td></tr>
+            <tr><td><b>Acordado</b></td><td>Trato cerrado; sale del catálogo y pasa al Historial.</td></tr>
+        </table>
+        <p class="muted">El cambio se hace con el selector de estado en la lista. El sistema pide confirmación.</p>
+
+        <h3>Editar o eliminar</h3>
+        <ul>
+            <li><b>Editar:</b> abre el formulario con los datos cargados. Si cambias de pestaña, el formulario se cierra y vuelve a la lista.</li>
+            <li><b>Eliminar:</b> borra la propiedad y sus fotos. Pide confirmación y <b>no se puede deshacer</b>.</li>
+            <li>El sistema evita guardados dobles si haces clic varias veces.</li>
+        </ul>
+    </div>
+
+    <!-- ==================== 2. USUARIOS ==================== -->
+    <div class="section page-break">
+        <h2>2. Usuarios y roles</h2>
+        <p class="lead">Aquí ves a las personas registradas y controlas quién puede administrar el sistema.</p>
+
+        <table>
+            <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            <tr><td><b>Usuario</b></td><td>Ver el catálogo, guardar favoritos y comparar propiedades.</td></tr>
+            <tr><td><b>Administrador</b></td><td>Gestionar propiedades, asesores, reseñas y contenido. No puede crear master ni tocar a otros administradores.</td></tr>
+            <tr><td><b>Master</b></td><td>Todo el sistema. Puede nombrar a otros master.</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>Máximo 3 master</strong>
+            Solo un master puede dar el rol <b>Master</b> a otra persona. Al llegar a 3, la opción se bloquea automáticamente. También hay un máximo de <b>5 administradores</b> (contando masters).
+        </div>
+
+        <h3>Dar permisos</h3>
+        <ol class="steps">
+            <li>En la fila del usuario, abre el selector de <b>rol</b>.</li>
+            <li>Elige <b>Administrador</b> o <b>Master</b>.</li>
+            <li>Si eliges Master, confirma el aviso.</li>
+        </ol>
+
+        <h3>Bloquear, desbloquear y eliminar</h3>
+        <ul>
+            <li><b>Bloquear:</b> la persona no puede iniciar sesión.</li>
+            <li><b>Desbloquear:</b> vuelve a tener acceso.</li>
+            <li><b>Eliminar:</b> borra la cuenta definitivamente. Pide confirmación.</li>
+            <li><b>Exportar CSV:</b> descarga la lista de usuarios.</li>
+        </ul>
+
+        <div class="warn">
+            <strong>Protecciones</strong>
+            Nadie puede cambiarse su propio rol ni bloquearse a sí mismo. Un master <b>no puede ser degradado desde la app</b> (para evitar bloqueos). Si algún día necesitas quitar ese rol, se hace por SQL.
+        </div>
+    </div>
+
+    <!-- ==================== 3. ASESORES ==================== -->
+    <div class="section">
+        <h2>3. Asesores</h2>
+        <p class="lead">Administra el equipo que aparece en la web y la nomenclatura de los códigos de propiedad.</p>
+
+        <h3>Crear un asesor</h3>
+        <ol class="steps">
+            <li>Ve a <b>Asesores</b> → <b>Nuevo asesor</b>.</li>
+            <li>Escribe <b>nombre completo</b> y una <b>nomenclatura</b> de 2 a 4 letras (ej. <b>BP</b>).</li>
+            <li>Agrega cargo, teléfono, correo, Instagram y una breve biografía.</li>
+            <li>Sube la <b>foto</b> (se optimiza a WebP).</li>
+            <li>Guarda.</li>
+        </ol>
+
+        <div class="note">
+            <strong>La nomenclatura importa</strong>
+            Se usa para los códigos de captación (ej. <b>BP-0007</b>). No puede repetirse.
+        </div>
+
+        <h3>Editar, ocultar o eliminar</h3>
+        <ul>
+            <li><b>Editar:</b> cambia cualquier dato o la foto.</li>
+            <li><b>Activo / Inactivo:</b> si lo desactivas, deja de aparecer en la web.</li>
+            <li><b>Orden:</b> menor número aparece primero.</li>
+            <li><b>Eliminar:</b> borra al asesor y su foto. Pide confirmación.</li>
+        </ul>
+    </div>
+
+    <!-- ==================== 4. RESEÑAS ==================== -->
+    <div class="section page-break">
+        <h2>4. Reseñas</h2>
+        <p class="lead">Recibe opiniones de tus clientes con estrellas y publícalas solo cuando las apruebes.</p>
+
+        <h3>Generar el enlace para un cliente</h3>
+        <ol class="steps">
+            <li>Ve a <b>Reseñas</b>.</li>
+            <li>Pulsa <b>Generar enlace</b> (se copia automáticamente) o <b>Compartir por WhatsApp</b>.</li>
+            <li>Envíaselo al cliente.</li>
+        </ol>
+
+        <div class="warn">
+            <strong>Cada enlace sirve una sola vez</strong>
+            Cuando el cliente envía su reseña, el enlace deja de funcionar. Si necesita otra, genera uno nuevo. Así evitas reseñas repetidas.
+        </div>
+
+        <h3>Aprobar o rechazar</h3>
+        <table>
+            <tr><th>Sección</th><th>Acciones</th></tr>
+            <tr><td><b>Pendientes</b></td><td>Aprobar · Rechazar · Eliminar</td></tr>
+            <tr><td><b>Publicadas</b></td><td>Ocultar · Eliminar</td></tr>
+            <tr><td><b>Rechazadas</b></td><td>Aprobar · Eliminar</td></tr>
+        </table>
+        <p>El número rojo en la pestaña indica cuántas reseñas están pendientes.</p>
+
+        <h3>Cómo se ven en la web</h3>
+        <ul>
+            <li>Solo aparecen las <b>aprobadas</b>.</li>
+            <li>Muestran la <b>puntuación real</b> en estrellas (1 a 5).</li>
+            <li>Si el cliente no tiene foto, se muestra un <b>círculo dorado con su inicial</b>.</li>
+        </ul>
+    </div>
+
+    <!-- ==================== 5. NUESTRA HISTORIA ==================== -->
+    <div class="section">
+        <h2>5. Nuestra Historia</h2>
+        <p class="lead">Edita la sección "Nosotros" sin tocar código.</p>
+
+        <table>
+            <tr><th>Campo</th><th>Qué escribir</th></tr>
+            <tr><td>Etiqueta superior</td><td>Ej. "Nuestra Historia".</td></tr>
+            <tr><td>Título</td><td>Ej. "Meyer's Inmobiliaria".</td></tr>
+            <tr><td>Historia</td><td>Texto libre. Usa <b>ENTER dos veces</b> para separar párrafos.</td></tr>
+            <tr><td>Insignia</td><td>Texto ("Desde") y año ("2020").</td></tr>
+            <tr><td>Foto</td><td>Foto de la CEO o del equipo (WebP automático).</td></tr>
+            <tr><td>Descripción de la foto</td><td>Texto para accesibilidad (ej. "Mayerlyn Martínez, CEO").</td></tr>
+            <tr><td>Datos 1, 2 y 3</td><td>Número y texto (ej. 500+ Propiedades Vendidas).</td></tr>
+        </table>
+        <p class="muted">Los cambios se ven en la web al guardar. Si no subes foto, se mantiene la actual.</p>
+    </div>
+
+    <!-- ==================== 6. SITIO ==================== -->
+    <div class="section page-break">
+        <h2>6. Contenido del sitio (Sitio)</h2>
+        <p class="lead">Aquí cambias la portada, los datos de contacto, las redes y el SEO.</p>
+
+        <h3>Portada (Hero)</h3>
+        <ul>
+            <li>Texto superior, título, frase destacada, descripción y texto del botón.</li>
+            <li><b>Imagen de fondo:</b> sube tu propia foto (se optimiza a WebP).</li>
+        </ul>
+
+        <h3>Contacto</h3>
+        <table>
+            <tr><th>Campo</th><th>Detalle</th></tr>
+            <tr><td>Teléfono</td><td>Como quieres que se vea (ej. 0414-1338254).</td></tr>
+            <tr><td>WhatsApp</td><td><b>Solo números</b>, sin + ni guiones (ej. 584141338254).</td></tr>
+            <tr><td>Correo</td><td>Correo de atención.</td></tr>
+            <tr><td>Dirección</td><td>Dirección física.</td></tr>
+            <tr><td>Horario</td><td>Ej. "Lun a Vie: 9:00 AM - 4:00 PM".</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>Se actualiza en toda la web</strong>
+            Al cambiar el teléfono, WhatsApp o correo, se actualizan automáticamente la tarjeta de contacto, el pie de página, el botón flotante de WhatsApp y los enlaces del detalle de cada propiedad.
+        </div>
+
+        <h3>Redes sociales</h3>
+        <p>Pega los enlaces completos de Instagram, Facebook y LinkedIn (deben empezar por <b>https://</b>). Si dejas uno vacío, el icono se oculta.</p>
+
+        <h3>Pie de página y SEO</h3>
+        <ul>
+            <li><b>Descripción del pie:</b> frase corta que aparece abajo.</li>
+            <li><b>Título de la página:</b> el que se ve en la pestaña del navegador y en Google.</li>
+            <li><b>Descripción:</b> el texto que sale al compartir el enlace.</li>
+        </ul>
+    </div>
+
+    <!-- ==================== 7. SECCIONES ==================== -->
+    <div class="section">
+        <h2>7. Títulos de las secciones</h2>
+        <p class="lead">Cambia las etiquetas, títulos y subtítulos de la web.</p>
+
+        <table>
+            <tr><th>Sección</th><th>Campos</th></tr>
+            <tr><td>Propiedades</td><td>Etiqueta · Título · Subtítulo</td></tr>
+            <tr><td>Servicios</td><td>Etiqueta · Título · Subtítulo</td></tr>
+            <tr><td>Equipo</td><td>Etiqueta · Título · Subtítulo</td></tr>
+            <tr><td>Testimonios</td><td>Etiqueta · Título · Subtítulo</td></tr>
+            <tr><td>Contacto</td><td>Etiqueta · Título · Texto</td></tr>
+        </table>
+        <p class="muted">Los textos se muestran tal cual los escribas; no se permite código.</p>
+    </div>
+
+    <!-- ==================== 8. SERVICIOS ==================== -->
+    <div class="section">
+        <h2>8. Servicios</h2>
+        <p class="lead">Las tarjetas de servicios de la web son totalmente editables.</p>
+
+        <ol class="steps">
+            <li>Ve a <b>Servicios</b> → <b>Nuevo servicio</b>.</li>
+            <li>Elige un <b>icono</b> de la lista.</li>
+            <li>Escribe <b>título</b> y <b>descripción</b>.</li>
+            <li>Define el <b>orden</b> (menor número aparece primero).</li>
+            <li>Marca <b>Mostrar en la web</b> y guarda.</li>
+        </ol>
+
+        <p>Puedes editarlas o eliminarlas desde la lista. Si desmarcas "Mostrar en la web", la tarjeta se oculta sin borrarse.</p>
+    </div>
+
+    <!-- ==================== 9 y 10. MÉTRICAS E HISTORIAL ==================== -->
+    <div class="section page-break">
+        <h2>9. Métricas</h2>
+        <p class="lead">Un resumen del movimiento del negocio.</p>
+        <ul>
+            <li>Totales del mes y mejores asesores.</li>
+            <li>Resumen por asesor: captaciones, disponibles, vendidas, alquiladas y cierres.</li>
+        </ul>
+
+        <h2 style="margin-top:28px">10. Historial</h2>
+        <p class="lead">Aquí quedan las propiedades cerradas.</p>
+        <ul>
+            <li>Se guardan las <b>vendidas, alquiladas o acordadas</b>.</li>
+            <li>Se limpian automáticamente al pasar <b>2 meses</b> desde el cierre.</li>
+            <li>Puedes reabrir una propiedad cambiando su estado de nuevo a <b>Disponible</b>.</li>
+        </ul>
+    </div>
+
+    <!-- ==================== 11. BUENAS PRÁCTICAS ==================== -->
+    <div class="section">
+        <h2>11. Buenas prácticas y límites</h2>
+
+        <h3>Para que nada se dañe</h3>
+        <ul>
+            <li>No publiques la misma propiedad dos veces.</li>
+            <li>Usa <b>Disponible</b> solo para propiedades activas.</li>
+            <li>Sube fotos nítidas, horizontales y de buena luz.</li>
+            <li>No cambies tu propio rol ni tu estado.</li>
+            <li>No compartas tu contraseña de master.</li>
+        </ul>
+
+        <h3>Límites del sistema</h3>
+        <table>
+            <tr><th>Concepto</th><th>Límite</th></tr>
+            <tr><td>Máximo de master</td><td>3</td></tr>
+            <tr><td>Máximo de administradores (con masters)</td><td>5</td></tr>
+            <tr><td>Tamaño por foto</td><td>15 MB</td></tr>
+            <tr><td>Enlace de reseña</td><td>1 uso</td></tr>
+            <tr><td>Historial de cierres</td><td>2 meses</td></tr>
+            <tr><td>Inactividad de sesión</td><td>10 minutos</td></tr>
+        </table>
+
+        <div class="note">
+            <strong>Los cambios se ven al guardar</strong>
+            Si acabas de guardar y no ves el cambio, actualiza la página con <b>Ctrl + F5</b>.
+        </div>
+    </div>
+
+    <!-- ==================== 12. FAQ ==================== -->
+    <div class="section page-break">
+        <h2>12. Preguntas frecuentes</h2>
+
+        <h3>No veo los cambios en la web</h3>
+        <p>Actualiza con <b>Ctrl + F5</b>. Si el cambio fue en el código o en Vercel, puede tardar unos minutos en publicarse.</p>
+
+        <h3>No puedo poner a alguien como master</h3>
+        <p>Puede ser porque ya hay <b>3 master</b> o porque tu cuenta no es master. Solo un master puede otorgar ese rol.</p>
+
+        <h3>El enlace de reseña dice "no válido"</h3>
+        <p>Ese enlace ya fue utilizado. Genera uno nuevo desde <b>Reseñas → Generar enlace</b>.</p>
+
+        <h3>Subí una foto y no aparece</h3>
+        <p>Verifica que sea JPG, PNG o WebP y que no supere 15 MB. Si la propiedad ya estaba guardada, revisa que hayas pulsado <b>Guardar</b>.</p>
+
+        <h3>¿Puedo eliminar a un master?</h3>
+        <p>No desde la app, por seguridad. Si es necesario, se hace por SQL con soporte técnico.</p>
+
+        <h3>¿Cómo cambio el número de WhatsApp?</h3>
+        <p><b>Sitio → Contacto → WhatsApp</b>. Escríbelo solo con números (ej. 584141338254). Se actualiza en todos los botones.</p>
+
+        <h3>¿Puedo ocultar una propiedad sin eliminarla?</h3>
+        <p>Sí. Cámbiale el estado a <b>Vendida</b>, <b>Alquilada</b> o <b>Acordado</b>. Sale del catálogo y queda en el Historial.</p>
+
+        <h3>¿Qué pasa si borro una propiedad?</h3>
+        <p>Se borra la propiedad y sus fotos del almacenamiento. <b>No se puede deshacer</b>.</p>
+    </div>
+
+    <!-- ==================== 13. FLUJO ==================== -->
+    <div class="section">
+        <h2>13. Flujo recomendado</h2>
+        <p class="lead">El orden que te recomendamos para trabajar cómodamente.</p>
+
+        <ol class="steps">
+            <li><b>Crea al asesor</b> con su nomenclatura (ej. BP).</li>
+            <li><b>Publica la propiedad</b> con negocio, tipo, ciudad, zona, fotos y precio.</li>
+            <li>Si quieres que salga en el inicio, marca <b>Destacada</b>.</li>
+            <li>Cuando se venda o alquile, cambia el <b>estado</b>. Pasa al Historial.</li>
+            <li>Pide una <b>reseña</b>: Reseñas → Generar enlace → envíaselo al cliente.</li>
+            <li>Cuando llegue, <b>apruébala</b> para que se publique con sus estrellas.</li>
+            <li>Actualiza <b>Métricas</b> y revisa el <b>Historial</b> una vez al mes.</li>
+        </ol>
+
+        <div class="tip">
+            <strong>Todo desde un solo lugar</strong>
+            Propiedades, usuarios, asesores, reseñas, historia, contenido, secciones, servicios y métricas. No necesitas llamar a nadie para mantener la web al día.
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
